@@ -40,6 +40,11 @@
       - Variational 
         - Optimization
   - *Learning* (how to fit a model to real-world data)
+    - *Bayesian Predictive Distribution*: $p(x^{new} \vert \mathbf{x}) = \int p(x^{new} \vert \theta) p(\theta \vert \mathbf{x})d \theta$
+
+### Probability Review
+
+
 
 ## Bayesian Reasoning and Machine Learning
 
