@@ -48,3 +48,9 @@
 
 ## Bayesian Reasoning and Machine Learning
 
+## Graphical Models, Exponential Families, and Variational Inference
+
+
+
+
+
