@@ -1,6 +1,42 @@
 # Probabilistic Graphical Models
 
+## Change Log?
+
+* 9/30/20: Added chapter one to "Probabilistic Graphical Models: Prinicples and Techniques"
+
 ## Probabilistic Graphical Models: Principles and Techniques
+
+### Chapter 1: Introduction
+
+* **Declarative Representation**: construction of a model of the system
+  * The key property of a declarative representation is the separation of knowledge and reasoning. 
+    * Can develop general algorithms
+    * Can improve model without modifying algorithms
+* Uncertainty arises because of
+  * limitations in our ability to observe the world
+  * limitations in our ability to model the world
+  * possibly innate determinism 
+* To obtain meaning conclusions, need to not just reason about what is possible, but what is probable
+* ![image-20200930063903786](/Users/mopugh/Library/Application Support/typora-user-images/image-20200930063903786.png)
+* A graph is a compact representation of a set of independies of the form X is independent of Y given Z
+  * $P(\text{Congestion} \vert \text{Flu, Hayfever, Season}) = P(\text{Congestion} \vert \text{Flu, Hayfever})$
+    * Note: Season is not independent of congestion. 
+* The graph defines a skeleton for compactly representing a high dimensional distribution
+  * Break up joint distribution into a product of smaller factors
+  * The graph structure defines the factorization of the distribution P
+    * The set of factors and the variables they encompass
+* The graph representation of a set of independencies and the graph as a skeleton for factorizing the distribution are equivalent
+  * The independence properties of the distribution are what allow it to be represented compactly in a factorized form
+  * A particular factorization of the distribution guarantees that certain independencies hold
+* Two families of graphical representations
+  * Bayesian networks: directed graph
+  * Markov networks: undirected graph
+  * Differ in the set of independencies they encode and the factorization of the distribution they induce
+* Graphical models useful because in practice variables tend to interact directly only with very few other variables
+* For graphical models, representation, inference and learning are critical:
+  * Need a representation that is a reasonable encoding of the world model
+  * Need to use this representation for inference to answer questions of interest
+  * Need to acquire the distribution combining expert knowledge and accumulated data (learning)
 
 ## [Stanford PGM Course: CS228](https://ermongroup.github.io/cs228-notes/)
 
