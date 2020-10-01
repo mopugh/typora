@@ -2,7 +2,8 @@
 
 ## Change Log?
 
-* 9/30/20: Added chapter one to "Probabilistic Graphical Models: Prinicples and Techniques"
+* 9/30/20: Added chapter one to "Probabilistic Graphical Models: Prinicples and Techniques".
+* 10/1/20: Added notes on Probability Review from cs228 stanford notes unto and including sections 2.3.
 
 ## Probabilistic Graphical Models: Principles and Techniques
 
@@ -80,7 +81,106 @@
 
 ### Probability Review
 
+#### Elements of Probability
 
+* **Sample Space** $\Omega$: The set of all outcomes of a random experiment. $\omega \in \Omega$ is an individual outcome.
+* **Set of Events (Event Space)** $F$: A set whose elements $A \text{ in } F$ (called events) are subsets of $\Omega$. 
+* **Probability Measure**: A function $P: F \rightarrow \mathbb{R}$ satisfying
+  * $P(a) \geq 0$ for all $A \in F$
+  * $P(\Omega) = 1$
+  * If $A_{1}, A_{2}, \ldots$ are disjoint events (i.e. $A_{i} \cap A_{j} = \emptyset$), then $P(\cup_{i} A_{i}) = \sum_{i} P(A_{i})$ 
+  * These three properties are the **axioms of probability**
+* **Properties**
+  * $A \subseteq B \Rightarrow P(A) \leq P(B)$
+  * $P(A \cap B) \leq \min (P(A), P(B))$
+  * **Union Bound**: $P(A \cup B) \leq P(A) + P(B)$
+  * $P(\Omega - A) = 1 - P(A)$
+  * **Law of Total Probability**: If $A_{1}, \ldots, A_{k}$ are a set of disjoint events such that $\cup_{i=1}^{k} A_{i} = \Omega$, then $\sum_{i=1}^{k} P(A_{i}) = 1$
+
+#### Conditional Probability
+
+Let $B$ be an event with non-zero probability. Then the conditional probability of any event $A$ given $B$ is 
+$$
+P(A \vert B) = \frac{P(A \cap B)}{P(B)}
+$$
+
+#### Chain Rule
+
+Let $S_{1}, \ldots, S_{k}$ be events and $P(S_{i}) > 0$ for all i. Then the chain rule states:
+$$
+P(S_{1} \cap S_{2} \cap \cdots \cap S_{k}) = P(S_{1}) P(S_{2} \vert S_{1}) P(S_{3} \vert S_{2} \cap S_{1}) \cdots P(S_{k} \vert S_{1} \cap S_{2} \cap \cdots S_{k-1})
+$$
+*Outline of Proof*: Example with k = 4
+$$
+\begin{aligned}
+&P(S_{1} \cap S_{2} \cap S_{3} \cap S_{4}) \\
+&= P(S_{1}\cap S_{2} \cap S_{3})P(S_{4} \vert S_{1} \cap S_{2} \cap S_{3}) \\
+&= P(S_{1} \cap S_{2}) P(S_{3} \vert S_{1} \cap S_{2}) P(S_{4} \vert S_{1} \cap S_{2} \cap S_{3}) \\
+&= P(S_{1}) P(S_{2} \vert S_{1}) P(S_{3} \vert S_{1} \cap S_{2}) P(S_{4} \vert S_{1} \cap S_{2} \cap S_{3})
+\end{aligned}
+$$
+
+#### Independence
+
+* **Definition**: Two events are **independent** if
+  * $P(A \cap B) = P(A) P(B)$ or equivalently
+  * $P(A \vert B) = P(A)$
+* Intuitively, observing the event $B$ does not affect the probability of $A$
+
+### Random Variables
+
+* A random variable $X$ is a function $X: \Omega \rightarrow \mathbb{R}$.
+  * Denoted $X(\omega)$ or $X$. 
+  * The value that a random variable $X$ takes on is denoted $x$. 
+    * $X = x$ means we assign the value of $x \in \mathbb{R}$ to the random variable $X$. 
+* **Example**: Number of heads in 10 coin tosses
+  * $X(\omega)$ is the number of heads which occur in the sequence of tosses $\omega$
+  * $P(X = k) \doteq P(\{\omega : X(\omega) = k \})$
+  * **Note**: In this example the possible outcomes are discrete, so $X$ is a *discrete random variable*
+* **Example**: Suppose $X(\omega)$ is a random variable denoting the amount of time taken for a radioactive particle to decay. In this case the random variable $X(\omega)$ is continuous, so it is called a *continuous random variable*. 
+  * Need to consider the random variable lying in an interval
+  * $P(a \leq X \leq b) \doteq P(\{ w : a \leq X(\omega) \leq b \})$
+* **Definition**: Indicator function $\mathbf{1}_{A}$ equals 1 if the event $A$ happens and zero otherwise.
+
+#### Cumulative Distribution Functions
+
+* **Definition**: A **cumulative distribution function** (CDF) is a function $F_{X}: \mathbb{R} \rightarrow [0,1]$ such that
+  * $F_{X}(x) = P(X \leq x)$
+* **Properties**:
+  * $0 \leq F_{X}(x) \leq 1$
+  * $\lim_{x \rightarrow -\infty} F_{X}(x) = 0$
+  * $\lim_{x \rightarrow \infty} F_{X}(x) = 1$
+  * $x \leq y \Rightarrow F_{X}(x) \leq F_{X}(y)$ 
+
+#### Probability Mass Function
+
+* When $X$ is a discrete random variable, can specify the probability of outcomes directly. The **probability mass function** (PMF) is a function $p_{X} : \Omega \rightarrow [0,1]$ such that
+  * $p_{X}(x) = P(X = x)$
+* Let $Val(X)$ denote the possible values $X$ may assume.
+* **Properties**:
+  * $0 \leq p_{X}(x) \leq 1$
+  * $\sum_{x \in Val(X)} p_{X}(x) = 1$
+  * $\sum_{x \in A} p_{X}(x) = P(X \in A)$
+
+#### Probability Density Functions
+
+* For continuous random variables which have a continuously differentiable CDF, the **probability density function** is defined as the derivative of the CDF:
+
+  * $f_{X}(x) = \frac{dF_{X}(x)}{dx}$
+
+* For small $\delta x$: $P(x \leq X \leq x + \delta x) \approx f_{X}(x) \delta x$
+
+* **Note**: the value fo the pdf at a point $x$ **is not** the probability of that event, i.e. $f_{X}(x) \neq P(X = x)$ 
+
+* **Properties**
+
+  * $f_{X}(x) \geq 0$
+
+  * $\int_{-\infty}^{\infty} f_{X}(x)dx = 1$
+
+  * $\int_{x \in A} f_{X}(x) dx = P(X \in A)$
+
+    
 
 ## Bayesian Reasoning and Machine Learning
 
