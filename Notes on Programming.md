@@ -3,6 +3,7 @@
 ## Change Log
 
 * 9/30/20: Started Chapter 2 up to page 38.
+* 10/1/20: Started chapter 2 of Haskell from First Principles. Fisished upto and including section 2.4
 
 ## Python
 
@@ -253,6 +254,38 @@ tokyo[1]
       for i in range(3):
       	board.append(row)
       ```
+
+## Haskell
+
+### Haskell Programming from First Principles
+
+#### Chapter 2: Hello, Haskell!
+
+* :: is a way to write down the type signature
+  * saying *has the type* 
+* In GHCI, type
+  * ":q" to quit
+  * ":l" to load a file
+  * ":m" stands for module, to unload a file
+  * ":r" reload the same file
+* Everything in Haskell is an *expression* or a *declaration* 
+  * Expressions may be values, combination of values, and/or functions applied to values
+  * Expressions evaluate to a result
+    * For a literal value, the value evaluates to itself
+* *Normal Form*: an expression is in normal form when there are no more evaluation steps that can be taken, i.e. the expression is in an irreducible form.
+  * Reducible expressions are called *redexes*. 
+* A **function** 
+  * maps an input or set of inputs to an output
+  * an expression that is applied to an argument and always returns a result
+    * In Haskell always takes one argument
+      * Multiple arguments are handled by **currying** 
+* Functions allow abstractions - abstract the parts of the code we want to reuse for different literal values.
+* Functions
+  * start with the name of the function (function declaration)
+    * Function names (and variable names) must start with a lowercase letter
+  * followed by the formal parameters of the functions separated by white space
+  * followed by an equal sign
+  * concluded by an expression that is the body of the function
 
 # End for 9/30/20: Page 38 Augmented Assignment with Sequences
 
