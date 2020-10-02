@@ -308,9 +308,67 @@ tokyo[1]
   * **value**
   * There's a difference between a variable and the object the variable represents
 
-* 
+* Can use the `is` keyword to see if two objects are the same
 
+  ```python
+  x = [1, 2, 3]
+  y = x
+  z = [1, 2, 3]
   
+  print(x is y) # True
+  print(x is z) # False
+  print(x == z) # True
+  ```
+
+* An object cannot change its identity
+
+* You cannot change the type of an object
+
+* You can reassign a variable to point to a different object
+
+  ```python
+  x = 2
+  print('x =', x) # x = 2
+  print('float(x) =', float(x)) # float(x) = 2.0
+  print('x still has type', type(x)) # x still has type <class 'int'>
+  
+  print('Overwriting x.') # Overwriting x
+  x = float(x)
+  print('Now, x has type', type(x)) # Now, x has type <class 'float'>
+  ```
+
+* A **string** is a sequence of characters.
+
+  * There is no character class
+  * Strings are immutable
+
+* If the value of an object can be changed, it is **mutable**
+
+* If the value of an object cannot be changed, it is **immutable**  
+
+##### Collections
+
+###### Strings
+
+* **Strings** are sequences of characters
+* You can **concatenate** strings to create a new string with the plus sign
+* You can access individual characters using square brackets and an **index**
+* The name of the class for strings is **str** 
+* You can turn many objects into a string with the `str()` function
+
+###### Lists
+
+* **Lists** are ordered sequences of objects
+  * They do not have to be the same type
+* The **elements** of the list are separated by commas
+* You can append an item to the end of a list `L` by `L.append(newitem)` 
+* You can index into a list with square brackets
+  * You can use negative indices to count backwards fro the end of the list
+* You can overwrite values in a list using regular assignment statements
+
+###### Tuples
+
+
 
 ## Haskell
 
