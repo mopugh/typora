@@ -255,6 +255,43 @@ tokyo[1]
       	board.append(row)
       ```
 
+### First Course on Data Structures in Python
+
+#### Chapter 2: Basic Python
+
+##### Sequence, Selection, and Iteration
+
+* One model for imperative programming: Sequence-Selection-Iteration
+  1. **Sequence**: Performing operations one at a time in a specified order
+  2. **Selection**: Using conditional statements such as `if` to select which operations to execute
+  3. **Iteration**: Repeating some operation using loops or recursion
+
+##### Expressions and Evaluation
+
+* **Expressions** get **evaluated** and produce a **value** 
+* **Operator precedence** determines order of operations
+
+##### Variables, Types and State
+
+* **State**: stored information
+* Store information in **variables**
+* In Python a variable is created by an **assignment** statement
+  * `variable name = some_value`
+  * The equal sign is doing something (assignment) rather than describing something (equality)
+  * RHS of equal sign is evaluated first
+    * thus `x = x+1` works
+  * An assignment statement is not an expression: it does not have a value
+* Every name is associated with a piece of data called an object
+* The name of a variable, by itself, is treated as an expression that evaluates to whatever object it is mapped to.
+* Every object has a **type**
+  * types often determine what you can do with the variable
+* **Atomic types**
+  * integers
+  * floats
+  * booleans
+* Can inspect the type of a variable using `type()` 
+* There's a difference between a variable and the object the variable represents
+
 ## Haskell
 
 ### Haskell Programming from First Principles
