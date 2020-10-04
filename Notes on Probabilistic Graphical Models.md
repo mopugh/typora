@@ -3,7 +3,8 @@
 ## Change Log?
 
 * 9/30/20: Added chapter one to "Probabilistic Graphical Models: Prinicples and Techniques".
-* 10/1/20: Added notes on Probability Review from cs228 stanford notes unto and including sections 2.3.
+* 10/1/20: Added notes on Probability Review from cs228 stanford notes upto and including sections 2.3.
+* 10/4/20: Finished Section 2 of Probability Review from cs228 stanford notes
 
 ## Probabilistic Graphical Models: Principles and Techniques
 
