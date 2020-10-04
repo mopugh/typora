@@ -175,12 +175,104 @@ $$
 * **Properties**
 
   * $f_{X}(x) \geq 0$
-
-  * $\int_{-\infty}^{\infty} f_{X}(x)dx = 1$
-
+* $\int_{-\infty}^{\infty} f_{X}(x)dx = 1$
   * $\int_{x \in A} f_{X}(x) dx = P(X \in A)$
 
-    
+#### Expectation
+
+* Suppose $X$ is a discrete random variable with PMF $p_{X}(x)$ and $g: \mathbb{R} \rightarrow \mathbb{R}$ is an arbitrary function. Then $g(X)$ is a random variable and the **expectation** or **expected value** of $g(X)$ is 
+  $$
+  \mathbb{E} [g(X)] = \sum_{x \in Val(X)} g(x) p_{X}(x)
+  $$
+
+* If $X$ is a continuous random variable with PDF $f_{X}(x)$, then the expected value of $g(X)$ is 
+  $$
+  \mathbb{E} [g(X)] = \int_{-\infty}^{\infty} g(x) f_{X}(x) dx
+  $$
+
+* Intuitively, the expectation of $g(X)$ is the "weight average" of teh values that $g(x)$ can take on for different values of x, where the weights are given by $p_{X}(x)$ or $f_{X}(x)$. 
+
+  * Special case: $\mathbb{E}[X]$ is taken by letting $g(x) = x$. 
+    * This is the **mean** of $X$
+
+* **Properties**
+
+  * $\mathbb{E}[a] = a$ for any constant $a \in \mathbb{R}$
+  * $\mathbb{E} [af(X)] = a \mathbb{E} [f(X)]$ for any constant $a \in \mathbb{R}$
+  * (Linearity of Expectation) $\mathbb{E} [f(X) + g(X)] = \mathbb{E}[f(X)] + \mathbb{E} [g(X)]$
+  * For a discrete random variable $X$, $\mathbb{E} [\mathbf{1}{X = k}] = P(X = k)$
+
+#### Variance
+
+* The variance of a random variable $X$ is a measure of how concentrated the distribution of a random variable $X$ is around its mean.
+  $$
+  \begin{aligned}
+  Var[X] &= \mathbb{E} [(X - \mathbb{E}[X])^{2}] \\
+  &= \mathbb{E} [X^{2} - 2 \mathbb{E}[X] X + \mathbb{E} [X]^{2}] \\
+  &= \mathbb{E}[X^{2}] - 2 \mathbb{E}[X] \mathbb{E}[X] + \mathbb{E}[X]^{2} \\
+  &= \mathbb{E}[X^{2}] - \mathbb{E}[X]^{2}
+  \end{aligned}
+  $$
+
+* 
+
+* **Properties**
+  * $Var[a] = 0$ for any constant $a \in \mathbb{R}$ 
+  * $Var[af(X)]$ = $a^{2} Var[f(X)]$ for any constant $a \in \mathbb{R}$ 
+
+#### Some Common Random Variables
+
+##### Discrete Random Variables
+
+* $X \sim \text{Bernoulli}(p)$ where $0 \leq p \leq 1$: E.g. the outcome of a coin flip
+  $$
+  p(x) = 
+  \begin{cases}
+  p, &\textrm{if x = 1}\\
+  1-p, &\textrm{if x = 0}
+  \end{cases}
+  $$
+
+* $X \sim \textrm{Binomial}(n,p)$ where $0 \leq p \leq 1$: E.g. number of heads in $n$ independent flips
+  $$
+  p(x) = {n \choose x} p^{x} (1-p)^{n-x}
+  $$
+
+* $X \sim \textrm{Geometric}(p)$ where $p > 0$: E.g. the number of flips until the first heads
+  $$
+  p(x) = p(1-p)^{x-1}
+  $$
+
+* $X \sim \textrm{Poisson}(\lambda)$:
+  $$
+  p(x) = e^{-\lambda} \frac{\lambda^{x}}{x!}
+  $$
+
+##### Continuous Random Variables
+
+* $X \sim \textrm{Uniform}(a, b)$ where $a < b$:
+  $$
+  p(x) = 
+  \begin{cases}
+  \frac{1}{b-a}, &\textrm{if } a \leq x \leq b \\
+  0, &\textrm{otherwise}
+  \end{cases}
+  $$
+
+* $X \sim \textrm{Exponential}(\lambda)$ 
+  $$
+  f(x) = 
+  \begin{cases}
+  \lambda e^{-\lambda x}, &\textrm{if } x \geq 0\\
+  0, &otherwise
+  \end{cases}
+  $$
+
+* $X \sim \textrm{Normal}(\mu, \sigma^{2})$ 
+  $$
+  f(x) = \frac{1}{\sqrt{2 \pi} \sigma} e^{-\frac{(x - \mu)^{2}}{2 \sigma^{2}}}
+  $$
+  
 
 ## Bayesian Reasoning and Machine Learning
 
