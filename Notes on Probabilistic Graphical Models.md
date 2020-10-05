@@ -5,6 +5,7 @@
 * 9/30/20: Added chapter one to "Probabilistic Graphical Models: Prinicples and Techniques".
 * 10/1/20: Added notes on Probability Review from cs228 stanford notes upto and including sections 2.3.
 * 10/4/20: Finished Section 2 of Probability Review from cs228 stanford notes
+* 10/5/20: Finished Probability Review from cs228 standford notes
 
 ## Probabilistic Graphical Models: Principles and Techniques
 
@@ -273,7 +274,160 @@ $$
   $$
   f(x) = \frac{1}{\sqrt{2 \pi} \sigma} e^{-\frac{(x - \mu)^{2}}{2 \sigma^{2}}}
   $$
-  
+
+### Two Random Variables
+
+Would like to know more than one quantity from a random experiment.
+
+#### Joint and Marginal Distributions
+
+Suppose there are two random variables $X$ and $Y$. 
+
+* Can view them them independently. Thus only need $f_{X}(x)$ and $f_{Y}(y)$. 
+
+* If we want to know the values of $X$ and $Y$ from the same random experiment, need a more compliciated structure: the **joint distribution** 
+
+  * Joint cumulative distribution function of $X$ and $Y$
+    $$
+    F_{XY}(x,y) = P(X \leq x, Y \leq y)
+    $$
+
+  * Knowing the joint distribution function allows one to compute any event involving $X$ and $Y$. 
+
+  * Relationship between joint and individual cumulative distribution functions:
+
+    * $F_{X}(x) = \lim_{y \rightarrow \infty} F_{XY}(x,y)$
+    * $F_{Y}(y) = \lim_{x \rightarrow \infty} F_{XY}(x,y)$
+
+    These are the **marginal cumulative distributions functions**
+
+* **Properties**:
+  * $0 \leq F_{XY}(x,y) \leq 1$
+  * $\lim_{x,y \rightarrow \infty} F_{XY}(x,y) = 1$
+  * $\lim_{x,y \rightarrow -\infty} F_{XY}(x,y) = 0$
+  * $F_{X}(x) = \lim_{y \rightarrow \infty} F_{XY}(x,y)$
+
+#### Joint and Marginal Probability Mass Functions
+
+If $X$ and $Y$ are discrete random variables, the joint probability mass function $p_{XY}: Val(X) \times Val(Y) \rightarrow [0,1]$ is
+$$
+p_{XY}(x,y) = P(X = x, Y = y)
+$$
+
+* $0 \leq P_{XY}(x,y) \leq 1$ for all $x,y$
+* $\sum_{x \in Val(x)} \sum_{y \in Val(y)} P_{XY}(x,y) = 1$
+* $p_{X}(x) = \sum_{y \in Val(y)} P_{XY}(x,y)$
+  * This it the **marginal probability mass funciton** of $X$
+  * The process of computing the marginal w.r.t. one variable is called *marginalization*
+
+#### Joint and Marginal Probability Density Functions
+
+Let $X$ and $Y$ be two continuous random variables with joint distribution function $F_{XY}(x,y)$ and if $F_{XY}(x,y)$ is every differentiable w.r.t. $x$ and $y$, then the **joint probability density function** is defined as
+$$
+f_{XY}(x,y) = \frac{\partial^{2} F_{XY}(x,y)}{\partial x \partial y}
+$$
+
+* **Note**: Like in the single variable case, $f_{XY}(x,y) \neq P(X = x, Y = y)$
+* $\int \int_{(x,y) \in A} f_{XY}(x,y) dx dy = P((X,Y) \in A)$
+* $0 \leq f_{XY}(x,y)$, but $f_{XY}(x,y)$ can be greater than 1
+* $\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} f_{XY}(x,y)dx dy = 1$
+* $f_{X}(x) = \int_{-\infty}^{\infty} f_{XY}(x,y) dy $
+  * This is the **marginal probability density function** or **marginal density** of X. 
+
+### Conditional Distributions
+
+Try to answer the question: what is the probability distribution over $Y$, when we know that $X = x$
+
+* Discrete case:
+  $$
+  p_{Y \vert X}(y \vert x) = \frac{p_{XY}(x,y)}{p_{X}(x)}
+  $$
+  if $p_{X}(x) \neq 0$
+
+* Continuous case:
+
+  * Technical point, the probability of any single point is zero in the continuous case
+
+  * Assuming $f_{X}(x) \neq 0$
+    $$
+    f_{Y \vert X}(y \vert x) = \frac{p_{XY}(x,y)}{p_{X}(x)}
+    $$
+
+### Chain Rule
+
+The chain rule for events applies to random variables
+$$
+\begin{aligned}
+&p_{X_{1},\ldots,X_{n}}(x_{1},\ldots,x_{n})\\
+&= p_{X_{1}}(x_{1})p_{X_{2} \vert X_{1}}(x_{2} \vert x_{1}) \cdots p_{X_{n} \vert X_{1}, \ldots, X_{n-1}}(x_{n} \vert x_{1}, \ldots, x_{n-1})
+\end{aligned}
+$$
+
+### Bayes' Rule
+
+Writing a conditional distribution in terms of a different conditional distribution
+
+* Discrete Case
+  $$
+  p_{Y \vert X}(y \vert x) = \frac{P_{XY}(x,y)}{P_{X}(x)} = \frac{P_{X \vert Y}(x \vert y) P_{Y}(y)}{\sum_{y' \in Val(Y)} P_{X \vert Y}(x \vert y') P_{Y}(y')}
+  $$
+
+* Continuous case
+  $$
+  f_{Y \vert X}(y \vert x) = \frac{f_{XY}(x,y)}{f_{X}(x)} = \frac{f_{X \vert Y}(x \vert y) f_{Y}(y)}{\int_{-\infty}^{\infty} f_{X \vert Y}(x \vert y') f_{Y}(y') dy'}
+  $$
+
+* 
+
+### Independence
+
+Two random variables $X$ and $Y$ are independent if $F_{XY}(x,y) = F_{X}(x)F_{Y}(y)$ for all $x$ and $y$. Equivalently:
+
+* For discrete random variables, $p_{XY}(x,y) = p_{X}(x) p_{Y}(y)$ for all $x \in Val(X)$ and $y \in Val(Y)$ 
+* For discrete random variables, $p_{Y \vert X}(y \vert x) = p_{Y}(y)$ whenever $p_{X}(x) \neq 0$ for all $y \in Val(Y)$ 
+* For continuous random variables, $f_{XY}(x,y) = f_{X}(x) f_{Y}(y)$ for all $x, y \in \mathbb{R}$ 
+* For continuous random variables, $f_{Y \vert X}(y \vert x) = f_{Y}(y)$ whenever $f_{X}(x) \neq 0$ for all $y \in \mathbb{R}$ 
+
+The idea is that two random variables are independent if knowing the value of one variable will never effect the conditional distribution of the other variable
+
+* **Lemma**: If $X$ and $Y$ are independent random variables, then for any subsets $A, B \subseteq \mathbb{R}$
+  $$
+  P(X \in A, Y \in B) = P(X \in A) P(Y \in B)
+  $$
+
+* You can use the previous lemma to prove that if $X$ and $Y$ are independent, then any function of $X$ is independent of any function of $Y$
+
+### Expectation and Covariance
+
+* For two discrete random variables $X$ and $Y$ and a function $g: \mathbb{R}^{2} \rightarrow \mathbb{R}$ 
+  $$
+  \mathbb{E} [g(X,Y)] = \sum_{x \in Val(X)} \sum_{y \in Val(Y)} g(x,y) p_{XY}(x,y)
+  $$
+
+* For two continuous random variables
+  $$
+  \mathbb{E}[g(X,Y)] = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty}g(x,y)f_{XY}(x,y)dxdy
+  $$
+
+* Can use expectations to study the relationship between random variables
+  $$
+  \begin{aligned}
+  Cov[X,Y] &= \mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])] \\
+  &= \mathbb{E}[XY - X \mathbb{E}[Y] - Y \mathbb{E}[X] + \mathbb{E}[X] \mathbb{E}[Y]] \\
+  &= \mathbb{E}[XY] - \mathbb{E}[X]\mathbb{E}[Y] - \mathbb{E}[Y]\mathbb{E}[X] + \mathbb{E}[X]\mathbb{E}[Y] \\ 
+  &= \mathbb{E}[XY] - \mathbb{E}[X] \mathbb{E}[Y]
+  \end{aligned}
+  $$
+
+  * Note: $\mathbb{E}[X]$ and $\mathbb{E}[Y]$ are constants and can be pulled out of the expectation
+  * If $Cov[X,Y] = 0$, the random variables are said to be uncorrelated
+
+* **Properties**
+
+  * (Linearity of expectation) $\mathbb{E}[f(X,Y) + g(X,Y)] = \mathbb{E}[f(X,Y)] + \mathbb{E}[g(X,Y)]$ 
+  * $Var[X + Y] = Var[X] + Var[Y] + 2Cov[X,Y]$
+  * If $X$ and $Y$ are independent, then $Cov[X,Y] = 0$
+  * If $X$ and $Y$ are independent, then $\mathbb{E}[f(X)g(Y)] = \mathbb{E}[f(X)] \mathbb{E}[g(Y)]$ 
 
 ## Bayesian Reasoning and Machine Learning
 
