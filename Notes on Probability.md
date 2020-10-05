@@ -8,6 +8,8 @@
 
 ### Chapter 1: Probability and Counting
 
+#### Sample Spaces
+
 ![PebbleWorld](./figures/probability/pebble_world.png)
 
 * **Definition**: The *sample space* $\mathcal{S}$ of an experiment is the set of all possible outcomes of the experiment
@@ -25,3 +27,33 @@
 
 ![SetTerminology](./figures/probability/set_terminology.png)
 
+#### Naive Definition of Probability
+
+* **Definition** (Naive definition of probability): Let $A$ be the event for an experiment with a finite sample space $S$. The *naive probability* of $A$ is
+  $$
+  P_{naive}(A) = \frac{\vert A \vert}{\vert S \vert} = \frac{\textrm{number of outcomes favorable to }A}{\textrm{total number of outcomes in }S}
+  $$
+
+* Note:
+  $$
+  P_{naive}(A^{c}) = \frac{\vert A^{c} \vert}{\vert S \vert} = \frac{\vert S \vert - \vert A \vert}{\vert S \vert} = 1 - \frac{\vert A \vert}{\vert S \vert} = 1 - P_{naive}(A)
+  $$
+
+* *Strategy*: Is it easier to find the probability of an event or of the probability of the complement of the event?
+
+* **Restrictions**: The naive definition of probability assumes:
+
+  * $\vert S \vert$ is finite
+  * Each outcome has the same probability
+
+* Naive probability is applicable:
+
+  * symmetry, e.g. symmetry of a coin, cards in a deck
+  * by design, e.g. surveys
+  * null model
+
+#### How to Count
+
+Calculating naive probabilities requires computing $\vert A \vert$ and $\vert S \vert$. 
+
+* Theorem (Multiplication rule): 

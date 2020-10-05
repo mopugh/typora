@@ -368,7 +368,71 @@ tokyo[1]
 
 ###### Tuples
 
+* An immutable ordered sequence of objects 
+  * Can access items
+  * Cannot change what items are in a tuple
+    * Same is true of strings
 
+###### Dictionaries
+
+* store key-value pairs
+  * key provides value
+* Keys can be different types but must be immutable
+* Accessing a key that's not in the dictionary is a `KeyError`
+* Dictionaries are unordered 
+  * **nonsequential collection**
+
+###### Sets
+
+* An unordered collection of items without duplication
+  * **nonsequential collection**
+* Add an element to a set with the `add` method
+
+##### Common things to do with collections
+
+* `len` function gets the number of elements (length) of the collection
+* For sequential types (list, tuples, string) can **slice** a subsequence
+  * Slices are half-open (do not include the end index)
+  * Slicing a collectoin creates a new object
+
+##### Iterating Over a Collection
+
+* `for` loop 
+
+##### Other Forms of Control Flow
+
+* **Control flow** refers to the commands in a language that affect the order in which operations are executed.
+  * `if`
+    * Evaluates *predicate* and if `True` then a block of code is executed
+    * An example of *selection* 
+    * can also have an `else` clause
+  * `while` loop
+    * repeat block of code until predicate is `False` 
+  * `try` block is the way to catch and recover from errors
+  * functions change the control flow
+    * functions can be treated like any other object (first class)
+
+##### Modules and Imports
+
+* A single `.py` file is called a **module** 
+* Import a module using the keyword `import` and use the name of the file without the `.py` extension
+* The module has its own namespace
+  * ``__name__`` attribute to determine how the module is being used
+    * `__main__` means its being run directly
+    * `__name__` has the name of the module means its being imported
+* Modules are only exectued the first time they are imported
+* `from module name import thethingIwanted` imports `thethingIwanted` and does not need to be preced by `modulename` and a dot
+* Do not use `from modulename import *` 
+* Can rename module after importing, e.g. `import numpy as np` 
+  * Shorter name
+  * avoid naming conflicts
+
+#### Chapter 3: Object-Oriented Programming
+
+* A primary goal of **object-oriented programming** is to make it possible to write code that is close to the way you think about the things your code represents.
+* A **class** is a data type
+  * An **object** is an **instance** of a class
+  * *type* and *class* are (mostly) synonymous in Python
 
 ## Haskell
 
