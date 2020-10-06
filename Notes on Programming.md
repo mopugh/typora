@@ -432,7 +432,105 @@ tokyo[1]
 * A primary goal of **object-oriented programming** is to make it possible to write code that is close to the way you think about the things your code represents.
 * A **class** is a data type
   * An **object** is an **instance** of a class
+    * E.g. ``myList = []``, myList is an object of type list
+  * Can use `isinstance` to return boolean 
+  * Can use ``type`` to print type
   * *type* and *class* are (mostly) synonymous in Python
+* A function defined in a class is called a **method**. 
+  * Standard convention to use `self` as the first parameter to a method which is the object to be operated on by the method
+    * Do not need to pass in the `self` parameter explicitly
+      * E.g. `u.norm()` is translated to `vector.norm(u)` 
+* ``__init__`` methd is called the **initializer** 
+* methods that start and end with two underscores are **magic methods** or **dunder methods** 
+  * Don't write your own dunder methods
+  * Dunder methods are usually invoked via other mechanisms
+    * i.e. `__init__` is called by using the class name as a function, e.g. `Vector(3,4)`
+* `__add__` implements `+` operator for a class (class on LHS)
+* `__str__` is called by `print` 
+* Can use older formatting `"(%f, %f)" % (self.x, self.y)` 
+
+#### Encapsulation and the Public Interface of a Class
+
+* **Encapsulation** has two related meanings
+  * Combining data and methods into a single thing - a class
+  * Boundary between inside and outside
+* In Python, everything is public
+  * Can start things that *ought* to be private with a single underscore
+* The collection of public attributes (variables and methods) constitute the **public interface** of the class.
+  * Used to help write working code
+  * Not security
+
+#### Inheritance and "is a" relationships
+
+* **superclass** and **subclass** 
+
+  * Common attributes in superclass
+
+  ```python
+  class Polygon:
+    def __init__(self, sides, points):
+      self._sides = sides
+      self._points = list(points)
+        if len(self._points) != self._sides:
+        raise ValueError("Wrong number of points.")
+        
+    def sides(self):
+    	return self._sides
+    
+  class Triangle(Polygon):
+  	def __init__(self, points):
+  		Polygon.__init__(self, 3, points)
+  
+    def __str__(self):
+  		return "I'm a triangle."
+  
+  class Square(Polygon):
+  	def __init__(self, points):
+  		Polygon.__init__(self, 4, points)
+  	def __str__(self):
+  		return "I'm so square."
+  ```
+
+  * In the above, `Polygon` is the superclass and `Square` and `Triangle` are the subclasses
+
+* If a method is called and it is not defined in the class, it looks in the superclass.
+
+* The search for the correct function to call is called the **method resolution order** (MRO)
+
+* The initializer of the superclass is not called automatically when we create a new instance of the subclass (unless the subclass doesn't define `__init__`)
+
+* **Inheritance means is a**
+
+* **DRY**: Don't repeat yourself
+* The process of removing duplication by putting common code into a superclass is called **factoring out a superclass** 
+
+#### Duck Typing
+
+* Python has build in (parametric) **polymorphism**, so we can pass any type of object we want to a function.
+* **Duck typing**: using objects with the appropriately defined methods
+  * a concept related to dynamic **typing**, where the type or the class of an object is less important than the methods it defines.
+* not every "is a" relationship needs to be expressed by inheritance
+  * Example: `str` function works on any object that implements `__str__`, so `str(t)` for `Triangle t` calls `t.__str__()` which is equivalent to `Triangle.__str__(t)`
+
+#### Composition and "has a " relationships
+
+* **Composition**: one class stores an instance of another class
+
+* **Composition means "has a"** 
+
+  ```python
+  class MyLimitedList:
+    def __init__(self):
+      self._L = []
+      
+    def append(self, item):
+      self._L.append(item)
+    
+    def __getitem__(self, index):
+      return self._L[index]
+  ```
+
+  
 
 ## Haskell
 
@@ -441,30 +539,71 @@ tokyo[1]
 #### Chapter 2: Hello, Haskell!
 
 * :: is a way to write down the type signature
+  
   * saying *has the type* 
+  
 * In GHCI, type
   * ":q" to quit
   * ":l" to load a file
   * ":m" stands for module, to unload a file
   * ":r" reload the same file
+  
 * Everything in Haskell is an *expression* or a *declaration* 
   * Expressions may be values, combination of values, and/or functions applied to values
   * Expressions evaluate to a result
     * For a literal value, the value evaluates to itself
+  
 * *Normal Form*: an expression is in normal form when there are no more evaluation steps that can be taken, i.e. the expression is in an irreducible form.
+  
   * Reducible expressions are called *redexes*. 
+  
 * A **function** 
   * maps an input or set of inputs to an output
   * an expression that is applied to an argument and always returns a result
     * In Haskell always takes one argument
       * Multiple arguments are handled by **currying** 
+  
 * Functions allow abstractions - abstract the parts of the code we want to reuse for different literal values.
+
 * Functions
   * start with the name of the function (function declaration)
     * Function names (and variable names) must start with a lowercase letter
   * followed by the formal parameters of the functions separated by white space
   * followed by an equal sign
   * concluded by an expression that is the body of the function
+  
+* As with the Lambda calculus, application is evaluation
+
+  * Can replace a function with its definition
+
+* Haskell reduces to Weak Head Normal Form (WHNF)
+
+* Operators are functions that can be used in infix style
+
+* Can somtimes use function infix style
+
+  ```haskell
+  10 `div` 4 -- these are equivalent and the answer is 2
+  div 10 4
+  ```
+
+* alphanumeric function names are prefix by default
+
+* not all prefix functions can be made infix
+
+* If the name is a symbol, it is infix by default and can be made prefix by wrapping it in parentheses, e.g. (+) 
+
+* use ``:info`` command to get associativity and precedence 
+
+  * precedence is on a scale of 0-9, with higher number being higher precedence
+
+* Module names are capitalized
+
+* Indentation is significant in Haskell
+
+* Use spaces and not tabs
+
+* All declarations must start at the same indentation, which is set by the first declaration
 
 # End for 9/30/20: Page 38 Augmented Assignment with Sequences
 

@@ -20,7 +20,7 @@
   * limitations in our ability to model the world
   * possibly innate determinism 
 * To obtain meaning conclusions, need to not just reason about what is possible, but what is probable
-* ![image-20200930063903786](/Users/mopugh/Library/Application Support/typora-user-images/image-20200930063903786.png)
+* ![BN__vs_MRF](/Users/mopugh/Documents/typora/typora/figures/pgm/bayes_net_vs_mrf_example.png)
 * A graph is a compact representation of a set of independies of the form X is independent of Y given Z
   * $P(\text{Congestion} \vert \text{Flu, Hayfever, Season}) = P(\text{Congestion} \vert \text{Flu, Hayfever})$
     * Note: Season is not independent of congestion. 
@@ -41,7 +41,7 @@
   * Need to use this representation for inference to answer questions of interest
   * Need to acquire the distribution combining expert knowledge and accumulated data (learning)
 
-## [Stanford PGM Course: CS228](https://ermongroup.github.io/cs228-notes/)
+## [Stanford PGM Course: CS228](https://ermongroup.github.io/cs228-notes/) 
 
 ### Introduction
 
@@ -428,6 +428,150 @@ The idea is that two random variables are independent if knowing the value of on
   * $Var[X + Y] = Var[X] + Var[Y] + 2Cov[X,Y]$
   * If $X$ and $Y$ are independent, then $Cov[X,Y] = 0$
   * If $X$ and $Y$ are independent, then $\mathbb{E}[f(X)g(Y)] = \mathbb{E}[f(X)] \mathbb{E}[g(Y)]$ 
+
+### Real-World Applications
+
+#### Images
+
+Suppose $p(\mathbf{x})$ is a distribution over images, where $\mathbf{x}$ is an image represented by a vector of pixels. The distribution assigns high probability to images that look realistic and a low probability to everything else
+
+* generate images by sampling the model
+  * the model has far fewer parameters than the amount of data, so the "distilled the essence"
+* In-Painting: with a model of $p(\mathbf{x})$ and a patch of an existing image, we can sample $p(\textrm{image} \vert \textrm{patch})$ 
+* Image Denoising: use sampling or exact inference on $p(\textrm{original image} \vert \textrm{noisy image})$ 
+
+#### Language Models
+
+Want to construct a probability distribution $p(\mathbf{x})$ over sequences of words or characters that assign high probability to (English) sentences. The distribution can be learned from a variety of sources (e.g. Wikipedia)
+
+* Generation: sample from learned $p(\mathbf{x})$ 
+* Translation: build model $p(y \vert x)$ to generate an English sentence $y$ from a Chinese sentence $x$
+
+#### Audio Models
+
+Construct a probability distribution $p(\mathbf{x})$ over audio signals that assigns high probability to ones that sound like human speech.
+
+* Upsampling or Super-Resolution: sample or inference on $p(\mathbf{I} \vert \mathbf{O})$ where $\mathbf{O}$ is the original signal and $\mathbf{I}$ is the intermediate signal
+* Speech Synthesis: sample from model to generate speech
+* Speech Recognition: Given joint model of speech and language (text), can attempt to infer spoken words from audio signals
+
+#### Applications in Science
+
+* Error Correcting Codes
+* Computational Biology
+* Ecology
+* Economics
+
+#### Applications in Health Care and Medicine
+
+* Medical Diagnosis
+
+### Bayesian Networks
+
+**Representation**: How do we choose a probability distribution to model some interesting aspect of the world?
+
+* Want to learn effective and general technique for parameterizing probability distributions using only a few parameters
+* Leverage **directed acyclic graphs** (DAGs)
+* Connections between the structure of a DAG and the modeling assumptions of the distribution that it describes. 
+
+The use of DAGs leads to **Bayesian network** models, i.e. a directed graphic model is a Bayesian network
+
+* Bayesian networks show causality
+* **Markov random fields** (MRFs) use undirected graphs and cannot show causality
+
+#### Probabilistic Modeling with Bayesian Networks
+
+**Idea**: Recall from the chain rule
+$$
+p(x_{1},\ldots,x_{n}) = p(x_{1})p(x_{2} \vert x_{1}) \cdots p(x_{n} \vert x_{n-1},\ldots,x_{1})
+$$
+A Bayesian network is a distribution in which each factor on the right hand side depends only on a small number of *ancestor variables* $x_{A_{i}}$ 
+$$
+p(x_{i} \vert x_{i-1} \ldots x_{1}) = p(x_{i} \vert x_{A_{i}})
+$$
+
+* Example: approximate the factor $p(x_{5} \vert x_{4}, x_{3}, x_{2}, x_{1})$ with $p(x_{5} \vert x_{4}, x_{3})$ and $x_{A_{5}} = \{ x_{4}, x_{3} \}$ 
+
+When the random variables are discrete, the factors $p(x_{i} \vert x_{A_{i}})$ can be viewed as *probability tables* where each row is an assignment of $x_{A_{i}}$ and each column a value of $x_{i}$. If each variable takes $d$ values and has at most $k$ ancestors, then
+
+* The table contains at most $O(d^{k+1})$ entries
+* One table per variable, so the entire distribution can be described in $O(nd^{k+1})$ parameters
+  * This is compared to $O(d^{n})$ for the naive approach
+
+##### Graphical Representation
+
+Can represent distribution using a directed acyclic graph.
+
+* Vertices are the variables $x_{i}$
+* Edges indidcate dependecy relationships
+  * The parents of $x_{i}$ are its ancestors $x_{A_{i}}$ 
+
+* Example:
+
+ <img src="/Users/mopugh/Documents/typora/typora/figures/pgm/letter_bayes_net_example.png" alt="letter_bayes_net_example" style="zoom:50%;" />
+$$
+p(l,g,i,d,s) = p(l \vert g)p(g \vert d, i) p(i) p(d) p(s \vert i)
+$$
+
+##### Formal Definition
+
+A Bayesian network is a directed graph $G = (V, E)$ together with
+
+* A random variable $x_{i}$ for each node $i \in V$ 
+* One conditional probability distribution $p(x_{i} \vert x_{A_{i}})$ per node specifying the probability of $x_{i}$ conditioned on its parents' values.
+
+A Bayesian network defines a probability distribution on $p$. Conversely a probability distribution $p$ *factorizes* over a DAG $G$ if it can be decomposed into a product of factors as specified by $G$. 
+
+* Can show that a probability distribution $p$ represented by a Bayesian network is valid
+* Can show that if $G$ contains cycles, the associated probability may not sum to one
+
+#### The Dependencies of a Bayes Net
+
+Bayesian networks represent probability distribution that can be formed by the products of smaller, local probability distributions (one for each variable). This introduces independence assumptions
+
+* **Question**: Which independence assumptions are being made by using a Bayesian network model with a given structure described by $G$? 
+  * We should know precisely what model assumptions are being made
+    * Are they correct?
+
+Let $I(p)$ be the set of all independencies that hold for a joint distribution $p$
+
+* Example: if $p(x,y) = p(x)p(y)$, then $x \perp y \in I(p)$ 
+
+##### Independencies Described by Directed Graphs
+
+Bayesian networks described independencies in $I(p)$ by three structures. Consider a Bayesian network $G$ with three nodes: $A, B, C$. There are only three possible structures, which lead to the three different independence assumptions.
+
+* **Common Parent**: If $G$ is of the form $A \leftarrow B \rightarrow C$
+  * $B$ observed, then $A \perp C \vert B$. 
+  * B unobserved, then $A \not \perp C$ 
+  * **Idea**: B contains all the information that determines that outcomes of $A$ and $C$. Once $B$ is observed, there is nothing else that affects the outcomes of $A$ and $C$.
+* **Cascade**: If $G$ equals $A \rightarrow B \rightarrow C$
+  * $B$ is observed, then $A \perp C \vert B$.
+  * B unobserved, then $A \not \perp C$
+  * **Idea**: B holds all the information that determines the outcome of C, thus it does not matter what value $A$ takes
+* **V-Structure** (Explaining Away): If $G$ is $A \rightarrow C \leftarrow B$, then knowing $C$ couples $A$ and $B$. 
+  * $A \perp B$ if C is unobserved
+  * $A \not \perp B \vert C$ if C is observed
+  * Example: Suppose that $C$ is a Boolean variable that indicates whether our lawn is wet one morning; $A$ and$B$ are two explanations for it being wet: either it rained (indicated by $A$), or the sprinkler turned on (indicated by $B$). If we know that the grass is wet ($C$ is true) and the sprinkler didn’t go on ($B$ is false), then the probability that $A$ is true must be one, because that is the only other possible explanation. Hence, $A$ and$B$ are not independent given $C$.
+
+![Bayesian networks over three variables, encoding different types of dependencies: cascade (a,b), common parent (c), and v-structure (d).](./figures/pgm/3node-bayesnets.png)
+
+* Bayesian networks over three variables, encoding different types of dependencies: cascade (a,b), common parent (c), and v-structure (d).
+
+Can extend the above structures to larger graphs recursively. Let $Q, W, O$ be three sets of nodes in a Bayesian network $G$. $Q$ and $W$ are **d-separated** given $O$ (i.e. the variables $O$ are observed) if $Q$ and $W$ are not connected by an **active path**. An undirected path in G is called **active** given observed variables $O$ if for every consecutive triple of variables $X,Y, Z$ on the path, one of the following holds:
+
+* $X \leftarrow Y \leftarrow X$ and $Y$ is unobserved $Y \notin O$
+* $X \rightarrow Y \rightarrow Z$ and $Y$ is unobserved $Y \notin O$
+* $X \leftarrow Y \rightarrow Z$ and Y is unobserved $Y \notin O$
+* $X \rightarrow Y \leftarrow Z$ and Y or any of its descendants are observed
+
+![In this example, $$X_1$$ and $$X_6$$ are $$d$$-separated given $$X_2, X_3$$.](./figures/pgm/dsep2.png)
+
+* In this example, $$X_1$$ and $$X_6$$ are $$d$$-separated given $$X_2, X_3$$.
+
+![However, $$X_2, X_3$$ are not $$d$$-separated given $$X_1, X_6$$. There is an active pass which passed through the V-structure created when $$X_6$$ is observed.](./figures/pgm/dsep1.png)
+
+* However, $$X_2, X_3$$ are not $$d$$-separated given $$X_1, X_6$$. There is an active pass which passed through the V-structure created when $$X_6$$ is observed
 
 ## Bayesian Reasoning and Machine Learning
 
