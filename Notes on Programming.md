@@ -1,4 +1,4 @@
-# Notes on Programming
+# 1Notes on Programming
 
 ## Change Log
 
@@ -233,27 +233,77 @@ tokyo[1]
       [['_', '_', '_'], ['_', '_', '_'], ['X', '_', '_']]
       ```
 
-      
-
     * Wrong:
 
       ```python
-      weird_board = [['_'] * 3] * 3
+  weird_board = [['_'] * 3] * 3
       weird_board
       [['_', '_', '_'], ['_', '_', '_'], ['_', '_', '_']]
       weird_board[1][2] = 'O'
       weird_board
       [['_', '_', 'O'], ['_', '_', 'O'], ['_', '_', 'O']]
       ```
-
+    
       Acts like
 
       ```python
-      row = ['_'] * 3
+  row = ['_'] * 3
       board = []
       for i in range(3):
       	board.append(row)
       ```
+
+##### Augmented Assignment with Sequences
+
+* `+=` uses the method `__iadd__` (in-place addition)
+  * If `__iadd__` is not implemented, Python falls back to `__add__` 
+  * If `__iadd__` is implemented and called on a mutable sequence (e.g. list), then the object will be changed in place
+  * If `__iadd__` is not implemented, then `a += b` is the same as `a = a + b` which may change the identity of `a` 
+* For immutable sequences, in-place modification is not possible (return new object)
+* Same holds for `*=` 
+* Repeated concatenation of immutable sequences is inefficient due to copying
+* **Tip** don't put mutable items in tuples
+
+##### list.sort and sorted build-in function
+
+* `list.sort` method sorts a list in place (i.e. without making a copy)
+  * return `None` to remind us that it changes the target object and does not create a new list
+* **Convention**: functions or methods that change an object in-place should return `None` 
+  * Downside: Cannot cascade calls to these methods
+* `sorted` returns a new list
+* `list.sort` and `sorted` take two optional keyword arguments
+  * `reverse`
+    * if `True` returns in descending order
+    * default is `False`
+  * `key` 
+    * a one-argument function that is applied to each item to produce a sorting key
+* Python uses Timsort
+  * Timsort is stable: maintains relative ordering of items that compare equal
+
+##### Managing Ordered Sequences with bisect
+
+* `bisect` module has two main functions
+  * `bisect`
+    * `bisect(haystack, needle)` performs binary search for needle in haystack (haystack must be sorted) to find location where needle can be inserted while mainting haystack in ascending order, i.e. all items less than the index are less than needle.
+  * `insort`
+    * `insort(seq, item)`: finds position and inserts item into sorted list
+
+##### When a List Is Not The Answer
+
+* Arrays: use when storing many values of the same type, i.e. floats, as it only stores the values and not the full objects
+* use `pickle` module for serialization
+* A memoryview is essentially a generalized NumPy array structure in Python itself (without the math). It allows you to share memory between data-structures (things like PIL images, SQLlite databases, NumPy arrays, etc.) without first copying. This is very important for large data sets.
+
+##### Deques and Other Queues
+
+* `collections.deque` is a thread-safe double-ended queue designed for fast inserting and removing from both ends.
+  * has optional `maxlen` argument
+* optimized for appending and popping, not for adding or removing in the middle
+
+##### Summary
+
+* Flat sequences are compact, faster and easier to use than container sequences, but must use atomic data such as numbers, characters and bytes
+* Container sequences are flexible but may surprise you when they hold mutable objects.
 
 ### First Course on Data Structures in Python
 
@@ -527,10 +577,275 @@ tokyo[1]
       self._L.append(item)
     
     def __getitem__(self, index):
-      return self._L[index]
+      return self._L[index[]]
   ```
 
+### Python Tricks: The Book
+
+#### Patterns for Cleaner Python
+
+##### Covering Your A** with Assertions 
+
+* assert statements are a debugging aid that test a condition
+
+  * If the condition is true, nothing happens
+  * If false, an ``AssertionError`` exception is raised with an optional error message
+
+* **Example**:
+
+  ```python
+  def apply_discount(product, discount):
+      price = int(product['price'] * (1.0 - discount))
+      assert 0 <= price <= product['price']
+      return price
+  ```
+
+  Guarantees price is less than original price and positive.
+
+* **Tip** Use currency values as integers in cents
+
+###### Why Not Just Use a Regular Exception?
+
+* The proper use of assertions is to inform developers about *unrecoverable* errors in a program. 
+* Assertions are meant to be *internal self-checks* 
+  * Declaring some condition to be impossible
+* **NOT** meant as a mechanism to handle run-time errors.
+
+###### Python's Assert Syntax
+
+* ```python
+  assert_stmt ::= "assert" expression1 ["," expression2]
+  ```
+
+  * `expression1` is the condition to test
+  * `expression2` is the optional error message
+
+* The above gets converteed to roughly
+
+  ```python
+  if __debug__:
+      if not expression1:
+          raise AssertionError(expression2)
+  ```
+  * Note the debug condition.
+
+###### Common Pitfalls With Using Asserts in Python
+
+* **Caveat #1: Don't Use Asserts for Data Validation**
+
+  * assertions can be globally disabled with the `-O` and `-OO` command line switches, as well as the `PYTHONOPTIMIZE` environmental variable in CPython
+
+  * **Example** 
+
+    ```python
+    def delete_product(prod_id, user):
+        assert user.is_admin(), 'Must be admin'
+        assert store.has_product(prod_id), 'Unknown product'
+        store.get_product(prod_id).delete()
+    ```
+
+    * **Checking for admin privileges with an assert statement is dangerous** 
+      * If asserts are disabled, any user can delete products (the asserts are never run)
+    * **The `has_product()` check is skipped when asserts are disabled** 
+
+  * **TAKE AWAY: NEVER USER ASSERTS TO DO DATA VALIDATION** 
+
+  * Better solution
+
+    ```python
+    def delete_product(product_id, user):
+        if not user.is_admin():
+            raise AuthError('Must be admin to delete')
+        if not store.has_product(product_id):
+            raise ValueError('Unknown product id')
+        store.get_product(product_id).delete()
+    ```
+
+    * In addition to be safer, raises the appropriate error
+
+* **Caveat #2: Asserts That Never Fail** 
+
+  * Passing a tuple as the first argument in an assert statement will always evaluate to true and never fail
+
+    * tuples are truthy in Python
+
+    * E.g. of an assertion that will never fail
+
+      ```python
+      assert(1 == 2, 'This should fail')
+      ```
+
+  * **TIP**: Test to make sure your assertions fail (i.e. work)
+
+##### Complacent Comma Placement
+
+End all lines with a comma for lists, dicts, and sets
+
+* Bad:
+
+  ```python
+  names = ['Alice', 'Bob', 'Dilbert']
+  ```
+
+* Good:
+
+  ```python
+  names = [
+    'Alice',
+    'Bob',
+    'Dilbert', # Notice the comma!
+  ]
+  ```
+
+  * When you add an item, only have to modify (add one line) rather than modify two lines by adding a comma to the last line. Good for version control.
+
+##### Context Managers and the `with` Statement
+
+* `with` statement simplifies exception handling by encapsulating standard uses of try/finally statements in so-called context managers
+* most commonly used to manage the safe acquisition and release of system resources
+  * resources are acquired by the `with` statement and released when execution leaves the `with` context.
+
+* Example:
+
+  ```python
+  with open('hello.txt', 'w') as f:
+    f.write('hello, world!')
+  ```
+
+  Translates to:
+
+  ```python
+  f = open('hello.txt', 'w')
+  try:
+    f.write('hello, world!')
+  finally:
+    f.close()
+  ```
+
+  * The `with` statement makes properly acquiring and releasing resources a breeze
+
+  * Note it is not enough to write
+
+    ```python
+    f = open('hello.txt', 'w')
+    f.write('hello, world!')
+    f.close()
+    ```
+
+    because if there was an error in `f.write` then the file wouldn't close and the file descriptor would leak.
+
+* Another example:
+
+  ```python
+  some_lock = threading.Lock()
   
+  # Harmful:
+  some_lock.acquire()
+  try:
+      # Do something...
+  finally:
+      some_lock.release()
+  
+  # Better:
+  with some_lock:
+      # Do something... 
+  ```
+
+* Makes code more readable, and less buggy/leaky
+
+###### Supporting `with` in Your Own Objects
+
+* Context Manager: a "protocol" that an object needs to follow in order to support the `with` statement . Require the following methods:
+
+  * `__enter__`
+  * `__exit__` 
+
+* Example:
+
+  ```python
+  class ManagedFile:
+      def __init__(self, name):
+          self.name = name
+  
+  def __enter__(self):
+          self.file = open(self.name, 'w')
+          return self.file
+  
+  def __exit__(self, exc_type, exc_val, exc_tb):
+      if self.file:
+          self.file.close() 
+  ```
+
+  ```python
+  >>> with ManagedFile('hello.txt') as f:
+  ...    f.write('hello, world!')
+  ...    f.write('bye now')
+  ```
+
+* Using `contextlib` for the above example
+
+  ```python
+  from contextlib import contextmanager
+  
+  @contextmanager
+  def managed_file(name):
+      try:
+          f = open(name, 'w')
+          yield f
+      finally:
+          f.close()
+  
+  >>> with managed_file('hello.txt') as f:
+  ...     f.write('hello, world!')
+  ...     f.write('bye now')
+  ```
+
+  `managed_file()` is a generator that first acquires the resource and then suspends its own execution and yields the resource so it can be used by the caller. When the caller leaves the `with` context, the generator continues to execute so that any remaining clean-up steps can occur and the resource can get released back to the system.
+
+* Timer Example
+
+  ```python
+  import time
+  from contextlib import contextmanager
+  
+  
+  class Timer:
+      def __init__(self):
+          self.start = 0
+          self.end = 0
+  
+      def __enter__(self):
+          self.start = time.time()
+          return self
+  
+      def __exit__(self, exc_type, exc_val, exc_tb):
+          self.end = time.time()
+          print('Time taken: {} seconds'.format(self.end-self.start))
+  
+  
+  @contextmanager
+  def timer2():
+      try:
+          start = time.time()
+          yield
+      finally:
+          end = time.time()
+          print('Time taken: {} seconds'.format(end-start))
+  
+  
+  if __name__ == '__main__':
+      with Timer() as t:
+          for i in range(1000000):
+              pass
+  
+      with timer2() as t2:
+          for i in range(1000000):
+              pass
+  ```
+
+##### Underscores, Dunders, and More
+
+
 
 ## Haskell
 
