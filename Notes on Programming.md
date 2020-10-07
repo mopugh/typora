@@ -1,4 +1,4 @@
-# 1Notes on Programming
+# Notes on Programming
 
 ## Change Log
 
@@ -703,8 +703,9 @@ End all lines with a comma for lists, dicts, and sets
 
 * `with` statement simplifies exception handling by encapsulating standard uses of try/finally statements in so-called context managers
 * most commonly used to manage the safe acquisition and release of system resources
-  * resources are acquired by the `with` statement and released when execution leaves the `with` context.
-
+  
+* resources are acquired by the `with` statement and released when execution leaves the `with` context.
+  
 * Example:
 
   ```python
@@ -1073,9 +1074,285 @@ End all lines with a comma for lists, dicts, and sets
 
 If your format strings are user-supplied, use Template Strings to avoid security issues. Otherwise, use Literal String Interpolation if you’re on Python 3.6+, and “New Style” String Formatting if you’re not.
 
-##### "The Zen of Python" Easter Egg
+#### Effective Functions
 
+##### Python's Functions Are First-Class
 
+* Python functions are first-class
+
+  * assign to variables
+  * store them in a data structure
+  * pass them to other functions
+  * return them as values from functions
+
+* Example that will be used throughout
+
+  ```python
+  def yell(text):
+      return text.upper() + '!'
+  
+  >>> yell('hello')
+  'HELLO!' 
+  ```
+
+###### Functions Are Objects
+
+* All data in a Python program are represented by objects or relations between objects
+
+* Example: Assigning the `yell` function to a variable
+
+  ```python
+  bark = yell
+  >>> bark('woof')
+  'WOOF!'
+  ```
+
+  bark is a variable pointing to the function yell
+
+* Function objects and their names are two separate concerns.
+
+  * Can delete `yell` and `bark` still works
+
+* Python attaches a string identifier to every function at creation time
+
+  ```python
+  >>> bark.__name__
+  'yell'
+  ```
+
+* **a variable pointing to a function and the function itself are two separate concerns** 
+
+###### Functions Can Be Stored in Data Structures
+
+```python
+>>> funcs = [bark, str.lower, str.capitalize]
+>>> funcs
+[<function yell at 0x10ff96510>,
+ <method 'lower' of 'str' objects>,
+ <method 'capitalize' of 'str' objects>]
+
+>>> for f in funcs:
+...     print(f, f('hey there'))
+<function yell at 0x10ff96510> 'HEY THERE!'
+<method 'lower' of 'str' objects> 'hey there'
+<method 'capitalize' of 'str' objects> 'Hey there'
+
+>>> funcs[0]('heyho')
+'HEYHO!'
+```
+
+###### Functions Can Be Passed to Other Functions
+
+```python
+def greet(func):
+    greeting = func('Hi, I am a Python program')
+    print(greeting)
+
+>>> greet(bark)
+'HI, I AM A PYTHON PROGRAM!'
+```
+
+* Ability to pass function objects as arguments allows one to abstract away and pass around **behavior**. 
+
+* Functions that can accept other functions are also call **higher-order functions**. 
+
+  * They are necessary for the functional programming style
+
+  * Example:
+
+    ```python
+    >>> list(map(bark, ['hello', 'hey', 'hi']))
+    ['HELLO!', 'HEY!', 'HI!']
+    ```
+
+###### Functions Can Be Nested
+
+* Example
+
+  ```python
+  def speak(text):
+      def whisper(t):
+          return t.lower() + '...'
+      return whisper(text)
+  
+  >>> speak('Hello, World')
+  'hello, world...'
+  ```
+
+  `whisper` does not exist outside speak
+
+* Functions can return functions (i.e. return behaviors)
+
+###### Functions Can Capture Local State
+
+* Inner functions can capture and carry some of the parent function's state
+
+  ```python
+  def get_speak_func(text, volume):
+      def whisper():
+          return text.lower() + '...'
+      def yell():
+          return text.upper() + '!'
+      if volume > 0.5:
+          return yell
+      else:
+          return whisper
+  ```
+
+  Notice the inner function captures the text from the outer function
+
+* A **lexical closure** remembers the values from its enclosing lexical scope even when the program flow is no longer in that scope.
+
+  * In practical terms, this means not only can functions return behaviors but they can also pre-configure those behaviors.
+
+  * Example:
+
+    ```python
+    def make_adder(n):
+        def add(x):
+            return x + n
+        return add
+    
+    >>> plus_3 = make_adder(3)
+    >>> plus_5 = make_adder(5)
+    
+    >>> plus_3(4)
+    7
+    >>> plus_5(4)
+    9
+    ```
+
+    * `make_adder` serves as a **factory** 
+
+###### Objects Can Behave Like Functions
+
+* Objects can be made **callable** by the `__call__` dunder method
+
+  ```python
+  class Adder:
+      def __init__(self, n):
+           self.n = n
+  
+      def __call__(self, x):
+          return self.n + x
+  
+  >>> plus_3 = Adder(3)
+  >>> plus_3(4)
+  7
+  ```
+
+  * can use ``callable`` function to determine if an object is callable or not
+
+##### Lambdas Are Single-Expression Functions
+
+* Example:
+
+  ```python
+  >>> add = lambda x, y: x + y
+  >>> add(5, 3)
+  8
+  
+  >>> def add(x, y):
+  ...     return x + y
+  >>> add(5, 3)
+  8
+  ```
+
+  * The key difference here is that one does not have to bind the function object to a name before I used it.
+
+    ```python
+    >>> (lambda x, y: x + y)(5, 3)
+    8
+    ```
+
+  * Lambda functions are restricted to a single expression. This means a lambda function can’t use statements or annotations—not even a return statement.
+
+###### Lambdas You Can Use 
+
+```python
+>>> tuples = [(1, 'd'), (2, 'b'), (4, 'a'), (3, 'c')]
+>>> sorted(tuples, key=lambda x: x[1])
+[(4, 'a'), (2, 'b'), (3, 'c'), (1, 'd')]
+
+>>> sorted(range(-5, 6), key=lambda x: x * x)
+[0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5]
+```
+
+* lambdas also work as lexical closures.
+
+  ```python
+  >>> def make_adder(n):
+  ...     return lambda x: x + n
+  
+  >>> plus_3 = make_adder(3)
+  >>> plus_5 = make_adder(5)
+  
+  >>> plus_3(4)
+  7
+  >>> plus_5(4)
+  9
+  ```
+
+###### But Maybe You Shouldn't
+
+Lambda functions should be used sparingly and with extraordinary care.
+
+```python
+# Harmful:
+>>> list(filter(lambda x: x % 2 == 0, range(16)))
+[0, 2, 4, 6, 8, 10, 12, 14]
+
+# Better:
+>>> [x for x in range(16) if x % 2 == 0]
+[0, 2, 4, 6, 8, 10, 12, 14]
+```
+
+##### The Power of Decorators
+
+* Python's decorators allow you to extend and modify the behavior of a callable (functions, methods, classes) **without** permanently modifying the callable itself.
+* Examples: tacking on generic functionality
+  * logging
+  * enforcing access control and authentication
+  * instrumentation and timing functions
+  * rate-limiting
+  * caching
+  * etc.
+
+###### Python Decorator Basics
+
+* A decorator is a callable that takes another callable as input and returns another callable
+
+* Simplest decorator
+
+  ```python
+  def null_decorator(func):
+      return func
+  
+  def greet():
+      return 'Hello!'
+  
+  greet = null_decorator(greet)
+  
+  >>> greet()
+  'Hello!'
+  ```
+
+* More convenient syntax
+
+  ```python
+  @null_decorator
+  def greet():
+      return 'Hello!'
+  
+  >>> greet()
+  'Hello!'
+  ```
+
+  Using the @ syntax is just syntactic sugar
+
+* Note that using the @ syntax decorates the function immediately at definition time. This makes it difficult to access the undecorated original without brittle hacks.
+
+  
 
 ## Haskell
 
@@ -1125,7 +1402,7 @@ If your format strings are user-supplied, use Template Strings to avoid security
 
 * Operators are functions that can be used in infix style
 
-* Can somtimes use function infix style
+* Can sometimes use function infix style
 
   ```haskell
   10 `div` 4 -- these are equivalent and the answer is 2
