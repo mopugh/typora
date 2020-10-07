@@ -1031,6 +1031,50 @@ End all lines with a comma for lists, dicts, and sets
 
 ###### Template Strings
 
+* Example
+
+  ```python
+  >>> from string import Template
+  >>> t = Template('Hey, $name!')
+  >>> t.substitute(name=name)
+  'Hey, Bob!'
+  ```
+
+* Template strings do not allow format specifiers 
+
+  ```python
+  >>> templ_string = 'Hey $name, there is a $error error!'
+  >>> Template(templ_string).substitute(
+  ...     name=name, error=hex(errno))
+  'Hey Bob, there is a 0xbadc0ffee error!'
+  ```
+
+* Why use templates? Possibly use for user input due to security:
+
+  ```python
+  >>> SECRET = 'this-is-a-secret'
+  >>> class Error:
+  ...     def __init__(self):
+  ...         pass
+  >>> err = Error()
+  >>> user_input = '{error.__init__.__globals__[SECRET]}'
+  
+  # Uh-oh...
+  >>> user_input.format(error=err)
+  'this-is-a-secret'
+  
+  >>> user_input = '${error.__init__.__globals__[SECRET]}'
+  >>> Template(user_input).substitute(error=err)
+  ValueError:
+  "Invalid placeholder in string: line 1, col 1"
+  ```
+
+###### Dan's Python String Formatting Rule of Thumb
+
+If your format strings are user-supplied, use Template Strings to avoid security issues. Otherwise, use Literal String Interpolation if you’re on Python 3.6+, and “New Style” String Formatting if you’re not.
+
+##### "The Zen of Python" Easter Egg
+
 
 
 ## Haskell
