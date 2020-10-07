@@ -499,7 +499,7 @@ tokyo[1]
 * `__str__` is called by `print` 
 * Can use older formatting `"(%f, %f)" % (self.x, self.y)` 
 
-#### Encapsulation and the Public Interface of a Class
+##### Encapsulation and the Public Interface of a Class
 
 * **Encapsulation** has two related meanings
   * Combining data and methods into a single thing - a class
@@ -510,7 +510,7 @@ tokyo[1]
   * Used to help write working code
   * Not security
 
-#### Inheritance and "is a" relationships
+##### Inheritance and "is a" relationships
 
 * **superclass** and **subclass** 
 
@@ -554,7 +554,7 @@ tokyo[1]
 * **DRY**: Don't repeat yourself
 * The process of removing duplication by putting common code into a superclass is called **factoring out a superclass** 
 
-#### Duck Typing
+##### Duck Typing
 
 * Python has build in (parametric) **polymorphism**, so we can pass any type of object we want to a function.
 * **Duck typing**: using objects with the appropriately defined methods
@@ -562,7 +562,7 @@ tokyo[1]
 * not every "is a" relationship needs to be expressed by inheritance
   * Example: `str` function works on any object that implements `__str__`, so `str(t)` for `Triangle t` calls `t.__str__()` which is equivalent to `Triangle.__str__(t)`
 
-#### Composition and "has a " relationships
+##### Composition and "has a " relationships
 
 * **Composition**: one class stores an instance of another class
 
@@ -844,6 +844,192 @@ End all lines with a comma for lists, dicts, and sets
   ```
 
 ##### Underscores, Dunders, and More
+
+* Five underscore patterns and naming conventions:
+  * Single leading underscore: `_var`
+  * Single trailing underscore: `var_`
+  * Double leading underscore: `__var`
+  * Double leading and trailing underscore: `__var__`
+  * Single underscore: `_` 
+
+###### Single Leading Underscore: `_var`
+
+* The underscore prefix is meant as a *hint* that the variable or method is intended for internal use
+  * Does not affect the behavior of the program
+    * Not distinction between public and private
+* Will not be imported with *wildcard import* 
+
+###### Single Trailing Underscore: `var_` 
+
+* make a variable name that is a Python keyword
+  * E.g. `class_` 
+
+###### Double Leading Underscore: `__var`
+
+* With Python class attributes (variables and methods), a double underscore prefix causes the Python interpreter to rewrite the attribute name in order to avoid naming conflicts in subclasses 
+
+  * a.k.a. *name mangling* 
+
+* Example:
+
+  ```python
+  class Test:
+      def __init__(self):
+          self.foo = 11
+          self._bar = 23
+          self.__baz = 42
+  ```
+
+  ```python
+  >>> t = Test()
+  >>> dir(t)
+  ['_Test__baz', '__class__', '__delattr__', '__dict__',
+   '__dir__', '__doc__', '__eq__', '__format__', '__ge__',
+   '__getattribute__', '__gt__', '__hash__', '__init__',
+   '__le__', '__lt__', '__module__', '__ne__', '__new__',
+   '__reduce__', '__reduce_ex__', '__repr__',
+   '__setattr__', '__sizeof__', '__str__',
+   '__subclasshook__', '__weakref__', '_bar', 'foo']
+  ```
+
+  Note: `self.__baz` is not in the list. Was converted to `_Test__baz` 
+
+  ```python
+  class ExtendedTest(Test):
+      def __init__(self):
+          super().__init__()
+          self.foo = 'overridden'
+          self._bar = 'overridden'
+          self.__baz = 'overridden'
+  ```
+
+  ```python
+  >>> t2 = ExtendedTest()
+  >>> t2.foo
+  'overridden'
+  >>> t2._bar
+  'overridden'
+  >>> t2.__baz
+  AttributeError:
+  "'ExtendedTest' object has no attribute '__baz'"
+  ```
+
+  ```python
+  >>> dir(t2)
+  ['_ExtendedTest__baz', '_Test__baz', '__class__',
+   '__delattr__', '__dict__', '__dir__', '__doc__',
+  '__eq__', '__format__', '__ge__', '__getattribute__',
+   '__gt__', '__hash__', '__init__', '__le__', '__lt__',
+   '__module__', '__ne__', '__new__', '__reduce__',
+   '__reduce_ex__', '__repr__', '__setattr__',
+   '__sizeof__', '__str__', '__subclasshook__',
+   '__weakref__', '_bar', 'foo', 'get_vars']
+  ```
+
+  Note: In `ExtendedTest`, `self.__baz` got converted to `_ExtendedTest__baz`. The original `_Test__baz` is still there:
+
+  ```python
+  >>> t2._ExtendedTest__baz
+  'overridden'
+  >>> t2._Test__baz
+  42
+  ```
+
+* Also affects method names
+
+* "dunder" means "double underscore"
+
+* *name mangling* also affects global variables
+
+###### Double Leading and Trailing Underscore: `__var__`
+
+* *name mangling* does not apply to attributes that start and end with double underscores
+* sometimes attributues that start and end with double underscores are called *magic methods* 
+
+###### Single Underscore: `_`
+
+* Per convention, a single stand-alone underscore is used as a name to indicate that a variable is temporary or insignificant 
+
+* Example:
+
+  ```python
+  for _ in range(32):
+    print('Hello, World.')
+  ```
+
+* Can use in unpacking expressions to ignore particular values
+
+  ```python
+  >>> car = ('red', 'auto', 12, 3812.4)
+  >>> color, _, _, mileage = car
+  
+  >>> color
+  'red'
+  >>> mileage
+  3812.4
+  >>> _
+  12
+  ```
+
+* Also the previous calculation in an interpreter session is stored as `_` 
+
+##### A Shocking Truth About String Formatting
+
+###### "Old Style" String Formatting
+
+* % operator
+
+  ```python
+  >>> errno = 50159747054
+  >>> name = 'Bob'
+  
+  >>> 'Hello, %s' % name
+  'Hello, Bob'
+  
+  >>> 'Hey %s, there is a 0x%x error!' % (name, errno)
+  'Hey Bob, there is a 0xbadc0ffee error!'
+  
+  >>> 'Hey %(name)s, there is a 0x%(errno)x error!' % {
+  ...     "name": name, "errno": errno }
+  'Hey Bob, there is a 0xbadc0ffee error!'
+  ```
+
+###### "New Style" String Formatting
+
+* Use the `format()` function
+
+  ```python
+  >>> 'Hello, {}'.format(name)
+  'Hello, Bob'
+  
+  >>> 'Hey {name}, there is a 0x{errno:x} error!'.format(
+  ...     name=name, errno=errno)
+  'Hey Bob, there is a 0xbadc0ffee error!'
+  ```
+
+  Note the `:x` which is a *format spec*, which is a suffix after the variable name 
+
+###### Literal String Interpolation (Python 3.6+)
+
+* *Formatted String Literals*
+
+  ```python
+  >>> f'Hello, {name}!'
+  'Hello, Bob!'
+  
+  >>> a = 5
+  >>> b = 10
+  >>> f'Five plus ten is {a + b} and not {2 * (a + b)}.'
+  
+  'Five plus ten is 15 and not 30.'
+  
+  >>> f"Hey {name}, there's a {errno:#x} error!"
+  "Hey Bob, there's a 0xbadc0ffee error!"
+  ```
+
+  Note the last example allows you to do inline arithmetic. One can embed arbitrary Python expressions. 
+
+###### Template Strings
 
 
 
