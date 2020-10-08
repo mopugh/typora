@@ -580,6 +580,137 @@ tokyo[1]
       return self._L[index[]]
   ```
 
+#### Testing
+
+* Use tests to determine two things:
+  * **Does it work?**: Does the code do what it's suppose to do?
+  * **Does it still work?**: Can one be confident that the changes one makes haven't caused other parts of the code to break?
+
+##### Writing Tests
+
+* **Test behavior, not implementation** 
+
+* Simple Case: `assert`
+
+  ```python
+  class Doubler:
+  	def __init__(self, n):
+  		self._n = 2 * n
+  
+  def n(self):
+  	return self._n
+  
+  if __name__ == '__main__':
+  	x = Doubler(5)
+  	assert(x.n() == 10)
+  	y = Doubler(-4)
+  	assert(y.n() == -8)
+  ```
+
+  * `assert` is better than print - don't have to rely on visual inspection
+  * **BAD IDEA** Deleting tests
+  * **OGAE** protocol: Oh Good, An Error!
+
+##### Unit Testing with `unittest`
+
+* Unit tests: test a specific behavior of a specific function
+
+* Python includes standard package `unittest`
+
+  * Tests will extend the `unites.TestCase` class
+  * Every test method must start with the word `test` 
+  * Tests are run by calling `unittest.main` 
+
+* Example:
+
+  ```python
+  import unittest
+  from dayoftheweek import DayOfTheWeek
+  
+  class TestDayOfTheWeek(unittest.TestCase):
+    def testinitwithabbreviation(self):
+      d = DayOfTheWeek('F')
+      self.assertEquals(d.name(), 'Friday')
+      
+      d = DayOfTheWeek('Th')
+      self.assertEquals(d.name(), 'Thursday')
+      
+  unittest.main()
+  ```
+
+##### Test-Driven Development
+
+* **Test-Driven Development (TDD)** is the idea that you can write the tests before you write the code.
+
+* Writing tests first forces two things:
+
+  * Decide how you want to be able to use some function. What should the parameters be? What should it return?
+  * Write only the code that you need. If there is code that doesn't support some desired behavior with tests, then you don't need to write it.
+
+* The TDD mantra is **Red-Green-Refactor**. 
+
+  * **Red**: The tests fail. They should as nothing has been written yet.
+  * **Green**: You get the tests to pass by changing the code.
+  * **Refactor**: You clean up the code, removing duplication. 
+
+* **Refactoring** is the process of cleaning up code, most often referring to the process of removing duplication.
+
+  * Example
+
+    ```python
+    avg1 = sum(L1) / len(L1)
+    avg2 = sum(L2) / len(L2)
+    
+    # Need to handle empty list
+    if len(L1) == 0:
+      avg1 = 0
+    else:
+      avg1 = sum(L1) / len(L1)
+      
+    if len(L2) == 0:
+      avg2 = 0
+    else:
+      avg2 = sum(L2) / len(L2)
+     
+    # Refactored code
+    def avg(L):
+      if len(L) == 0:
+        return 0
+     	else:
+        return sum(L) / len(L)
+      
+    avg1 = avg(L1)
+    avg2 = avg(L2)
+    ```
+
+##### What to Test
+
+* Ask:
+  * What should happen when I run this code?
+  * How do I want to use this code?
+* Write tests that use the code the way it ought to be used
+  * Then write tests that use the code incorrectly to test that the code fails gracefully.
+    * Does it give clear error messages
+* Test edge cases. 
+  * Try to break code.
+* Turn bugs into tests.
+  * Don't want the same error to reappear.
+* Test the public interface.
+
+##### Testing and Object-Oriented Design
+
+* Public methods of a class are the **interface** to the class
+* To start design, look at the problem and identify nouns (classes) and verbs (methods)
+  * What should happen
+    * If then language, i.e. if I call this method with these parameters, then this will happen
+    * Unit test to encode this expectation
+* **It is faster to go slow**
+  * If debugging is slow. Stop. Pitck one piece. Test it. Repeat.
+
+#### Running Time Analysis
+
+
+
 ### Python Tricks: The Book
 
 #### Patterns for Cleaner Python
@@ -1352,7 +1483,225 @@ Lambda functions should be used sparingly and with extraordinary care.
 
 * Note that using the @ syntax decorates the function immediately at definition time. This makes it difficult to access the undecorated original without brittle hacks.
 
+###### Decorators Can Modify Behavior
+
+* Example:
+
+  ```python
+  def uppercase(func):
+    def wrapper():
+      original_result = func()
+      modified_result = original_result.upper()
+      return modified_result
+    return wrapper
   
+  @uppercase
+  def greet():
+    return 'Hello'
+  
+  >>> greet()
+  'HELLO!'
+  
+  >>> greet
+  <function greet at 0x10e9f0950>
+  
+  >>> null_decorator(greet)
+  <function greet at 0x10e9f0950>
+  
+  >>> uppercase(greet)
+  <function uppercase.<locals>.wrapper at 0x76da02f28>
+  ```
+
+  * The above example defines a closure and uses it to *wrap* the input function to modify its behavior at call time
+  * The `uppercase` decortor returns a different function
+
+###### Applying Multiple Decorators to a Function
+
+* Can apply more than one decorator to a function
+
+* Example:
+
+  ```python
+  def strong(func):
+      def wrapper():
+          return '<strong>' + func() + '</strong>'
+      return wrapper
+  
+  def emphasis(func):
+      def wrapper():
+          return '<em>' + func() + '</em>'
+      return wrapper
+  
+  @strong
+  @emphasis
+  def greet():
+    return 'Hello'
+  
+  >>> greet()
+  '<strong><em>Hello!</em></strong>'
+  ```
+
+  * Ordered applied bottom to top
+    * First wrapped by emphasis then strong
+    * "decorator stacking"
+      * `decorated_greet = strong(emphasis(greet))`
+
+###### Decorating Functions that Accept Arguments
+
+* Use Pthon's `*args` and `**kwargs` features
+
+  ```python
+  def proxy(func):
+    def wrapper(*args, **kwargs):
+      return func(*args, **kwargs)
+    return wrapper
+  ```
+
+  * Uses `*` and `**` operators to collect all positional and keyword arguments and store them to variables
+  * `wrapper` closure then forwards the collected arguments to the original input function using `*` and `**` "argument unpacking" operators
+
+* Anothe Example
+
+  ```python
+  def trace(func):
+      def wrapper(*args, **kwargs):
+          print(f'TRACE: calling {func.__name__}() '
+                f'with {args}, {kwargs}')
+  
+          original_result = func(*args, **kwargs)
+  
+          print(f'TRACE: {func.__name__}() '
+                f'returned {original_result!r}')
+  
+          return original_result
+      return wrapper
+  
+  @trace
+  def say(name, line):
+      return f'{name}: {line}'
+  
+  >>> say('Jane', 'Hello, World')
+  'TRACE: calling say() with ("Jane", "Hello, World"), {}'
+  'TRACE: say() returned "Jane: Hello, World"'
+  'Jane: Hello, World'
+  ```
+
+###### How to Write "Debuggable" Decorators
+
+* Decorators replace one function with another function. 
+
+  * Decorator hides metadata with the original undecorated function (e.g. original function name, docstring, parameter list)
+
+    ```python
+    def greet():
+        """Return a friendly greeting."""
+        return 'Hello!'
+    
+    decorated_greet = uppercase(greet)
+    
+    >>> greet.__name__
+    'greet'
+    >>> greet.__doc__
+    'Return a friendly greeting.'
+    
+    >>> decorated_greet.__name__
+    'wrapper'
+    >>> decorated_greet.__doc__
+    None
+    ```
+
+* Can fix this issue by using `functools.wraps` 
+
+  * copies metadata from the undecorated function to the decorated closure
+
+  ```python
+  >>> greet.__name__
+  'greet'
+  >>> greet.__doc__
+  'Return a friendly greeting.'
+  
+  >>> decorated_greet.__name__
+  'wrapper'
+  >>> decorated_greet.__doc__
+  None
+  
+  @uppercase
+  def greet():
+      """Return a friendly greeting."""
+      return 'Hello!'
+  
+  >>> greet.__name__
+  'greet'
+  >>> greet.__doc__
+  'Return a friendly greeting.'
+  ```
+
+  * **Recommendation**: Use `functools.wraps` for all decorators. 
+
+##### Fun With `*args` and `**kwargs`
+
+* `*args` and `**kwargs` allow a function to accept optional arguments
+
+  * create flexible APIs
+
+  ```python
+  def foo(required, *args, **kwargs):
+      print(required)
+      if args:
+          print(args)
+      if kwargs:
+          print(kwargs)
+          
+  >>> foo()
+  TypeError:
+  "foo() missing 1 required positional arg: 'required'"
+  
+  >>> foo('hello')
+  hello
+  
+  >>> foo('hello', 1, 2, 3)
+  hello
+  (1, 2, 3)
+  
+  >>> foo('hello', 1, 2, 3, key1='value', key2=999)
+  hello
+  (1, 2, 3)
+  {'key1': 'value', 'key2': 999}
+  ```
+
+  * Above has one required argument: `required` 
+  * If additional arguments are provided, `args` will collect the extra positional arguments as a tuple because of the `*` prefix
+  * `kwargs` will collect extra keyword arguments as a dictionary because the parameter has a `**` prefix
+  * Both `args` and `kwargs` can be empty if no extra arguments are passed to the function.
+  * `args` and `kwargs` is a naming convention, can use other variable names
+
+###### Forwarding Optional or Keyword Arguments
+
+* when calling a function, `*` and `**` unpack the positional and keyword arguments
+
+  * As opposed to in a function definition where the arguments are collected into a tuple or dictionary
+
+  ```python
+  def trace(f):
+      @functools.wraps(f)
+      def decorated_function(*args, **kwargs):
+          print(f, args, kwargs)
+          result = f(*args, **kwargs)
+          print(result)
+      return decorated_function
+  
+  @trace
+  def greet(greeting, name):
+     return '{}, {}!'.format(greeting, name)
+  
+  >>> greet('Hello', 'Bob')
+  <function greet at 0x1031c9158> ('Hello', 'Bob') {}
+  'Hello, Bob!'
+  ```
+
+##### Function Argument Unpacking
+
+
 
 ## Haskell
 
