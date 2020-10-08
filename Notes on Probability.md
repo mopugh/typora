@@ -148,3 +148,7 @@ The sampling theorems are about counting, but when the naive definition of proba
 
   * $(x+y)^{n} = (x+y) \cdot (x+y) \cdots (x+y)$ n times. How many ways are there to choose x k times from the (x+y) terms? $n \choose k$
 
+STOPPED AT EXAMPLE 1.4.20 on page 17 (28 of pdf)
+
+---
+
