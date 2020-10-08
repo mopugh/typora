@@ -49,6 +49,48 @@
     ```
 
   * Runs in $O(mn)$ time.
+  
+    * $O(\log x)$ parity, addition and mediation operations.
+      * Can improve this bound to $O(\log \min \{x, y\})$ by swapping the arguments when $x > y$
+    * Each operation requires at most $O(\log(xy)) = O(\log \max\{x,y\})$ 
+    * Thus overall running time is $O(\log \min\{x,y\} \cdot \max \{x,y\}) = O(\log x \cdot \log y)$
+
+#### Describing Algorithms
+
+* A complete description of an algorithm consists of:
+  * **What**: A precise specification of the problem that the algorithm solves
+  * **How**: A precise description of the algorithm itself
+  * **Why**: A proof that the algorithm solves the problem it is suppose to solve
+  * **How fast**: An analysis of the running time of the algorithm
+* **Primary job as an algorithm designer is teaching other people how and why your algorithm works** 
+
+##### Specifying the Problem
+
+* Describe type and meaning of each input parameter
+* How the output depends on the input parameters
+* Do not specify details that are not necessary to use the algorithm as a black box
+
+##### Describing the Algorithm
+
+* Algorithms are not programs
+* Pseudocode + structured English is a good way to describe an algorithm
+* Should include every detail necessary to fully specify the algorithm, prove its correctness, and analyze its runnign time
+  * should exclude all other details
+
+##### Analyzing Algorithms
+
+###### Correctness
+
+* Must be correct for all possible inputs (at least in this book)
+
+###### Running Time
+
+* Rank algorithms for the same problem by running time
+* Require algorithms that always run efficiently, even in the worst case (at least in this book)
+
+### Chapter 1: Recursion
+
+
 
 ## Algorithms Illuminated Part 1: The Basics
 
@@ -232,5 +274,11 @@ $$
 
   #### Modular Arithmetic
 
-  
+## Open Data Structures (in pseudocode)
+
+### Chapter 1: Introduction
+
+* Idea: organize data within a data structure so that not every operation requires every data item to be inspected.
+
+#### Interfaces
 
