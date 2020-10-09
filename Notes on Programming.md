@@ -1701,7 +1701,173 @@ Lambda functions should be used sparingly and with extraordinary care.
 
 ##### Function Argument Unpacking
 
+* Example:
 
+  ```python
+  def print_vector(x, y, z):
+    print('<%s, %s, %s>' % (x, y, z))
+  
+  tuple_vec = (1, 0, 1)
+  list_vec = [1, 0, 1]
+  dict_vec = {'y': 0, 'z': 1, 'x': 1}
+  
+  >>> print_vector(*tuple_vec)
+  <1, 0, 1>
+  >>> print_vector(*list_vec)
+  <1, 0, 1>
+  >>> print_vector(**dict_vec)
+  <1, 0, 1>
+  ```
+
+  In the above, the `*` operator unpacked the tuple and the list into the three arguments used by `print_vector`
+
+  * This technique works for any iterable
+    * Including generators, in which case all the elemtns are consumed and passed to the function
+  * `**` operator unpacks keyword arguments from dictionaries
+    * In the above, it unpacks the `x` key to the `x` argument, etc. 
+      * If one uses a `*` operator instead, the dictonary keys would be passed to the funciton in random ordered (since dicts are unordered)
+
+##### Nothing to Return Here
+
+* Python adds an implicit `return None` statement to the end of any function, so if no return value is specified, the function returns `None` 
+
+  ```python
+  def foo1(value):
+      if value:
+          return value
+      else:
+          return None
+  
+  def foo2(value):
+      """Bare return statement implies `return None`"""
+      if value:
+          return value
+      else:
+          return
+  
+  def foo3(value):
+      """Missing return statement implies `return None`"""
+      if value:
+          return value
+  ```
+
+  * All three functions return `None` if `value` is falsy. 
+
+#### Classes & OOP
+
+##### Object Comparisons: "is" vs "=="
+
+* `==` checks for *equality*
+
+  * Evaluates to `True` if the objects referred to by the variables are equal (have the same contents)
+
+* `is` compares *identities* 
+
+  * `True` when two variables point to the same (identical) object)
+
+  ```python
+  a = [1, 2, 3]
+  b = a
+  c = list(a) # creates a copy of a
+  
+  >>> a == b
+  True
+  
+  >>> a is b # a and b point to the same object
+  True
+  
+  >>> a == c
+  True
+  
+  >>> a is c # a and c do not point to the same object
+  False
+  ```
+
+##### String Conversion (Every Class Needs a `__repr__`)
+
+* Trying to print a class without `__str__` or `__repr__` will print the class name and the `id` of the object instance
+
+  ```python
+  class Car:
+      def __init__(self, color, mileage):
+          self.color = color
+          self.mileage = mileage
+  
+      def __str__(self):
+          return f'a {self.color} car'
+  
+  >>> my_car = Car('red', 37281)
+  >>> print(my_car)
+  'a red car'
+  >>> my_car
+  <__console__.Car object at 0x109ca24e0>
+  ```
+
+  * `__str__` is a "dunder" method that gets called when you try to convert an object to a string through 
+    * `print()`
+    * str()
+    * `{}.format()`
+  * Note: In the above the last line still does not print the string
+
+###### `__str__` vs `__repr__`
+
+* Two dunder methods to control how objects are converted to strings in Python 3
+
+  * `__str__`
+  * `__repr__`
+
+* Example:
+
+  ```python
+  class Car:
+      def __init__(self, color, mileage):
+          self.color = color
+          self.mileage = mileage
+  
+      def __repr__(self):
+          return '__repr__ for Car'
+  
+      def __str__(self):
+          return '__str__ for Car'
+  
+  >>> my_car = Car('red', 37281)
+  >>> print(my_car)
+  __str__ for Car
+  >>> '{}'.format(my_car)
+  '__str__ for Car'
+  >>> my_car
+  __repr__ for Car
+  >>> str([my_car])
+  '[__repr__ for Car]'
+  ```
+
+  * Notice that containers (e.g. lists, dictionaries) use the result of `__repr__` to represent the objects they contain, even if one uses `str` on the container 
+  * For manually choosing representation, use `str` or `repr` instead of calling the dunder method directly
+
+* When to use `__str__` or `__repr__`? 
+
+  * `__str__` should be about *readability*
+
+  * `__repr__` should be about *unambiguity*, such as information needed to debug
+
+  * Example:
+
+    ```python
+    >>> import datetime
+    >>> today = datetime.date.today()
+    
+    >>> str(today)
+    '2017-02-02'
+    >>> repr(today)
+    'datetime.date(2017, 2, 2)'
+    ```
+
+    * We could copy and paste the string returned by `__repr__` and execute it as valid Python to recreate the original date object. This is a neat approach and a good goal to keep in mind while writing your own reprs.
+
+###### Why Every Class Needs a `__repr__`
+
+* If `__str__` is not implemented, Python falls back to the result of `__repr__`
+* **Tip**: Always implemented a `__repr__` method for a class
 
 ## Haskell
 
