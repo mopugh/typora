@@ -1869,6 +1869,195 @@ Lambda functions should be used sparingly and with extraordinary care.
 * If `__str__` is not implemented, Python falls back to the result of `__repr__`
 * **Tip**: Always implemented a `__repr__` method for a class
 
+### Elements of Programming Interviews in Python
+
+#### Chapter 4: Primitive Types
+
+* A type is a classification of the data that spells out possible values for that type and the operations that can be performed on it.
+  * can be user or language defined
+  * in Python everything is an object
+
+**Primitive Types Boot Camp**
+
+* Count number of bits in a positive integer
+
+  ```python
+  def count_bits(x):
+    num_bits = 0
+    while x:
+      num_bits += x & 1
+      x >>= 1
+    return num_bits
+  ```
+
+  * $O(1)$ per bit, so $O(n)$ where $n$ is the number of bits required to represent $x$ 
+
+**Know Your Primitive Types**
+
+* In Python3 integers are unbounded and limited by memory
+
+  * `sys.maxsize` determines the maximum integer value ($2^{63} - 1$ on 64-bit machines)
+  * `sys.float_info` determines bounds on floats
+
+* Bit-wise operations
+
+  | Operator | Name                 | Description                                                  |
+  | :------- | :------------------- | :----------------------------------------------------------- |
+  | &        | AND                  | Sets each bit to 1 if both bits are 1                        |
+  | \|       | OR                   | Sets each bit to 1 if one of two bits is 1                   |
+  | ^        | XOR                  | Sets each bit to 1 if only one of two bits is 1              |
+  | ~        | NOT                  | Inverts all the bits                                         |
+  | <<       | Zero fill left shift | Shift left by pushing zeros in from the right and let the leftmost bits fall off |
+  | >>       | Signed right shift   | Shift right by pushing copies of the leftmost bit in from the left, and let the rightmost bits fall off |
+
+  * Negative numbers are treated as their 2's complement value.
+
+* Key numeric methods:
+
+  * abs
+  * math.ceil
+  * math.floor
+  * min
+  * max
+  * pow
+  * math.sqrt
+
+* Convert between strings and numbers
+
+  * str() and int()
+  * str() and float()
+
+* Infinity:
+
+  * float('inf')
+  * float('-inf')
+
+* when comparing floating point numbers, consider `math.isclose`
+
+* Key random methods
+
+  * random.randrange
+  * random.randint
+  * random.random
+  * random.shuffle
+  * random.choice
+
+##### Computing the Parity of a Word
+
+*Question*: How would you compute the parity of a very large number of 64-bit words?
+
+* Brute Force
+
+  ```python
+  def parity(x):
+    result = 0
+    while x:
+      result ^= x & 1
+      x >>= 1
+    return result
+  ```
+
+  * $O(n)$
+
+* $O(k)$ where $k$ is the number of set bits (1 bits) in $x$
+
+  Idea: Do not look at all bits, but only the bits set to 1
+
+  * **TRICK**: `x & (x-1)` equls `x` with its lowest set bit erased
+    * E.g. $x = (00101100)_{2}$, then $x-1=(00101011)_{2}$ so `x & (x-1)` $= (00101100)_{2}$ `&` $(00101011)_{2} = (00101000)_{2}$
+
+  ```python
+  def parity(x):
+    result = 0
+    while x: # number of times this loops is the parity
+      result ^= 1
+      x &= x- 1
+    return result
+  ```
+
+  * $O(k)$
+
+When dealing with a large number of words, want to process multiple bits at a time and cache results.
+
+###### Caching
+
+Note that we cannot cache the parity of all 64-bit words directly since that would require $2^{64}$ bits. Instead, break the 64-bit words up into 4 16-bit words and cache the parity of all 16-bit words: $2^{16} = 65536$ is relatively small. 
+
+```python
+def parity(x):
+  MASK_SIZE = 16
+  BIT_MASK = 0xFFFF # need to get rid of leading bits after right shifts
+  return (PRECOMPUTED_PARITY[x >> (3 * MASK_SIZE)] ^
+          PRECOMPUTED_PARITY[(x >> (2 * MASK_SIZE)) & BIT_MASK] ^
+          PRECOMPUTED_PARITY[(x >> (MASK_SIZE)) & BIT_MASK] ^
+          PRECOMPUTED_PARITY[x & BIT_MASK])
+```
+
+Note we XOR the 4 words to get the final parity. This algorithm is $O(n/L)$ where $n$ is the word size and $L$ is the width of the word that is cached.
+
+###### Using XOR
+
+The parity of a number is the XOR of all its bits. XOR is associative and commutative so we can group bits however we please and perform XOR in any order on those groupings as we please. The idea is as follows on an 8-bit example: the parity of $(11010111)$ is the same as the parity of $(1101)$ XORed with $(0111)$, i.e. $(1010)$. Then we repeat, $(10)$ XORed with $(10)$, i.e. $(00)$. Finally $(0)$ XORed with $(0)$ yields 0. Not we bitshift $x$ with itself $x$, so we don't care about the most significant bits. This means at the end we mask with `0x1`. 
+
+```python
+def parity(x):
+  x ^= x >> 32
+  x ^= x >> 16
+  x ^= x >> 8
+  x ^= x >> 4
+  x ^= x >> 2
+  x ^= x >> 1
+  return x & 0x1
+```
+
+The running time of this is $O(n)$. Note this can be combined with caching by looking the parity up directly once you reach a word of size $L$. 
+
+##### Swap Bits
+
+Recall `x & (x-1)` clears the lowest set bit and in `x` and `x & ~(x-1)` extracts the lowest set bit of `x`. One can view a 64 bit word as an array of 64 bits with the least significant bit (LSB) being indexed at 0 and the most significant bit (MSB) being indexed at 63. 
+
+![image-20201012214835114](figures/programming/interview_swap_bits.png)
+
+*Quesiton*: How to swap bits at indices `i` and `j` 
+
+Note: if the values at `i` and `j` are the same, nothing needs to be done. If they differ, then since there are only two possible values (0 or 1), we just flip the bits at index `i` and `j` 
+
+```python
+def swap_bits(x, i, j):
+  # Extract the i-th and j-th bits, and see if they differ.
+  if (x >> i) & 1 != (x >> j) & 1:
+    #i-th and j-th bits differ. We will swap them by flipping their values.
+    # Select the bits to flip with bit_mask. Since x^1 = 0 when x = 1 and 1 when x = 0, we can perform the flip XOR
+    bit_mask = (1 << i) | (1 << j)
+    x ^= bitmask
+```
+
+The time complexity is $O(1)$ 
+
+##### Reverse Bits
+
+*Quesiton*: Write a program that takes a 64-bit unsigned integer and returns a 64-bit unsigned integer with the bits in reversed order.
+
+If only doing once, can use the `swap_bits` function defined above and iterate through the 32 least significant bits and swap with the 32 most significant bits. 
+
+When this has to be performed frequently, use the same idea as the caching strategy for parity checking. Break the 64-bit word into 4 16-bit words $y_{3}, y_{2}, y_{1}, y_{0}$ where $y_{3}$ are the 16 most significant bits. Then note that the reversed word has the reversed bits of $y_{3}$ as the LSB. Use a cache `A[y]` to store the reversed bits of `y`. 
+
+```python
+def reverse_bits(x):
+  MASK_SIZE = 16
+  BIT_MASK = 0xFFFF
+  return (PRECOMPUTED_REVERSE[x & BIT_MASK] << (3 * MASK_SIZE)
+          | PRECOMPUTED_REVERSE[(x >> MASK_SIZE) & BIT_MASK] << (2 * MASK_SIZE) |
+          PRECOMPUTED_REVERSE[(x >> 2 & MASK_SIZE) & BIT_MASK] << MASK_SIZE |
+          PRECOMPUTED_REVERSE[(x >> (3 * MASK_SIZE)) & BIT_MASK])
+```
+
+* $O(n/L)$ for $n$-bit integers and $L$-bit cache keys.
+
+##### Find a Closest Integer with the Same Weight
+
+
+
 ## Haskell
 
 ### Haskell Programming from First Principles
@@ -1942,5 +2131,5 @@ Lambda functions should be used sparingly and with extraordinary care.
 
 * All declarations must start at the same indentation, which is set by the first declaration
 
-# End for 9/30/20: Page 38 Augmented Assignment with Sequences
+
 
