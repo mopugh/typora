@@ -1867,7 +1867,158 @@ Lambda functions should be used sparingly and with extraordinary care.
 ###### Why Every Class Needs a `__repr__`
 
 * If `__str__` is not implemented, Python falls back to the result of `__repr__`
+
 * **Tip**: Always implemented a `__repr__` method for a class
+
+  * Car Example
+
+    ```python
+    def __repr__(self):
+      return (f'{self.__class__.__name__}('
+              f'{self.color!r}, {self.milage!})')
+    ```
+
+    Note the use of `!r` to get the representations of `self.color` and `self.milage`
+
+##### Defining Your Own Exception Classes
+
+* Bad Example;
+
+  ```python
+  def validation(name):
+    if len(name) < 10:
+      raise ValueError
+  ```
+
+  Not descriptive
+
+* Better Example:
+
+  ```python
+  class NameTooShortError(ValueError):
+    pass
+  
+  def validate(name):
+    if len(name) < 10:
+      raise NameTooShortError(name)
+  ```
+
+* It's easier to ask for forgiveness than permission (EAFP) is considered Pythonic
+
+##### Cloning Objects for Fun and Profit
+
+* Assignment statements in Python do not create copies of objects
+
+  * they only bind names to an object
+
+* For Python's built-in mutable collections (lists, dicts, sets), copies are made by calling the factory function on an existing collection
+
+  ```python
+  new_list = list(original_list)
+  new_dict = dict(original_dict)
+  new_set = set(original_set)
+  ```
+
+  **PROBLEM**: Doesn't work for custom objects and only makes **SHALLOW COPIES**, i.e. creates a new object but populated with references to the child objects found in the original. A **DEEP COPY** is recursive and creates a whole new object. 
+
+* Example
+
+  ```python
+  >>> xs = [[1,2,3], [4,5,6], [7,8,9]]
+  >>> ys = list(xs) # Make a shallow copy
+  
+  >>> xs.append(['new sublist'])
+  >>> xs
+  [[1, 2, 3], [4, 5, 6], [7, 8, 9], ['new sublist']]
+  >>> ys
+  [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+  
+  >>> xs[1][0] = 'X'
+  >>> xs
+  [[1, 2, 3], ['X', 5, 6], [7, 8, 9], ['new sublist']]
+  >>> ys
+  [[1, 2, 3], ['X', 5, 6], [7, 8, 9]]
+  ```
+
+###### Making Deep Copies
+
+Using `copy` module in the Python standard library
+
+```python
+>>> import copy
+>>> xs = [[1,2,3], [4,5,6], [7,8,9]]
+>>> zs = copy.deepcopy(xs)
+
+>>> xs[1][0] = 'X'
+>>> xs
+[[1, 2, 3], ['X', 5, 6], [7, 8, 9]]
+>>> zs
+[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+```
+
+* Note: `copy.copy` creates a shallow copy
+  * More Pythonic to use factory functions for python mutable collections
+
+###### Copying Arbitrary Objects
+
+`copy.copy` and `copy.deepcopy` can copy arbitrary objects
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return f'Point({self.x!r}, {self.y!r})'
+
+>>> a = Point(23, 42)
+>>> b = copy.copy(a)
+>>> a
+Point(23, 42)
+>>> b
+Point(23, 42)
+>>> a is b
+False
+
+class Rectangle:
+    def __init__(self, topleft, bottomright):
+        self.topleft = topleft
+        self.bottomright = bottomright
+
+    def __repr__(self):
+        return (f'Rectangle({self.topleft!r}, '
+                f'{self.bottomright!r})')
+
+rect = Rectangle(Point(0, 1), Point(5, 6))
+srect = copy.copy(rect)
+
+>>> rect
+Rectangle(Point(0, 1), Point(5, 6))
+>>> srect
+Rectangle(Point(0, 1), Point(5, 6))
+>>> rect is srect
+False
+>>> rect.topleft.x = 999
+>>> rect
+Rectangle(Point(999, 1), Point(5, 6))
+>>> srect
+Rectangle(Point(999, 1), Point(5, 6)) # Changed due to shallow copy
+>>> drect = copy.deepcopy(srect)
+>>> drect.topleft.x = 222
+>>> drect
+Rectangle(Point(222, 1), Point(5, 6))
+>>> rect
+Rectangle(Point(999, 1), Point(5, 6))
+>>> srect
+Rectangle(Point(999, 1), Point(5, 6))
+```
+
+Note because `self.x` and `self.y` are immutable, there's no difference between a shallow and deep copy of `Point`.
+
+##### Abstract Base Classes Keep Inheritance in Check
+
+
 
 ### Elements of Programming Interviews in Python
 
