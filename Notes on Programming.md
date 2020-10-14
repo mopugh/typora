@@ -2018,6 +2018,81 @@ Note because `self.x` and `self.y` are immutable, there's no difference between 
 
 ##### Abstract Base Classes Keep Inheritance in Check
 
+Abstract Base Classes (ABC) ensure that derived classes implement particular methods from the base class. 
+
+```python
+from abc import ABCMeta, abstractmethod
+
+class Base(metaclass=ABCMeta):
+    @abstractmethod
+    def foo(self):
+        pass
+
+    @abstractmethod
+    def bar(self):
+        pass
+
+class Concrete(Base):
+    def foo(self):
+        pass
+
+    # We forget to declare bar() again...
+
+assert issubclass(Concrete, Base)
+
+>>> c = Concrete()
+TypeError:
+"Can't instantiate abstract class Concrete with abstract methods bar"
+```
+
+TypeError at instantiation time. Without `abc` you'd get an error only when missing method is called. 
+
+##### What Namedtuples Are Good For
+
+Regular tuple can only access items via integer indexes. Also ad hoc since it's hard to ensure that two tuples ahve the same fields.
+
+###### Namedtuples to the Rescue
+
+* Immutable like regular tuples
+
+```python
+>>> from collections import namedtuple
+>>> Car = namedtuple('Car' , 'color mileage') 
+
+# or
+>>> Car = namedtuple('Car', [
+...     'color',
+...     'mileage',
+... ]) # passed list of field names
+
+>>> my_car = Car('red', 3812.4)
+>>> my_car.color
+'red'
+>>> my_car.mileage
+3812.4
+
+# Also access via indices
+>>> my_car[0]
+'red'
+
+# tuple unpacking
+>>> color, mileage = my_car
+>>> print(color, mileage)
+red 3812.4
+>>> print(*my_car)
+red 3812.4
+
+# Immutable
+>>> my_car.color = 'blue'
+AttributeError: "can't set attribute"
+```
+
+* `Car` is the "typename": the name of the new class
+* Factory function call `split()` on the field names
+* Can view named tuples as a memory-efficient shortcut to defining an immutable class in Python manually
+
+###### Subclassing Namedtuples
+
 
 
 ### Elements of Programming Interviews in Python
