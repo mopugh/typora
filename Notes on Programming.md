@@ -2207,6 +2207,214 @@ def reverse_bits(x):
 
 ##### Find a Closest Integer with the Same Weight
 
+The weight of a nonnegative integer $x$ is the number of bits that are set to 1 in its binary representation. 
+
+*Task*: Write a program that takes a nonnegative integer $x$ and returns a nonnegative integer $y$ such that $x$ and $y$ have the same weight and $\vert y - x \vert$ is as small as possible. Can assume that $x$ is not zero or all 1s and the integer fits in 64 bits. 
+
+* Brute Force: Try numbers $x-1, x+1, x-2, x+2, \ldots$ until you get one with the same weight as $x$. 
+
+  * Poor performance
+    * Example: $2^3=8$. Only powers of 2 have a single 1, so can try $2^{3-1}$ numbers below and above 8
+
+* Heuristic: Focus on LSB and swap the SLB with the right most bit that differs from it. 
+
+  * Does not always work
+
+* Correct answer: Suppose flip the bit at index $k_{1}$ and flip the bit at index $k_{2}$, $k_{1} > k_{2}$. The absolute value of the difference between the original number and the new number is $2^{k_{1}} - 2^{k_{2}}$. To minimize this difference, want to make $k_{1}$ as small as possible and $k_{2}$ to be as close as possible to $k_{2}$. To preserve the weight, the bits at $k_{1}$ and $k_{2}$ must be different. Thus, the smallest $k_{1}$ is the rightmost bit that's different from the LSB and $k_{2}$ must be the very next bit. 
+
+  ```python
+  def closest_int_same_weight(x):
+    NUM_UNSIGNED_BITS = 64
+    for i in range(NUM_UNSIGNED_BITS - 1):
+      if (x >> i) & 1 != (x >> (i+1)) & 1: # Stops as soon as they differ
+        x ^= (1 << i) | (1 << (i + 1)) # swap bit-i and bit (i+1)
+        return x
+      
+    # Raise error if all bits of x are 0 or 1
+    raise ValueError('All bits are 0 or 1')
+  ```
+
+  Time complexity: $O(n)$
+
+##### Compute $x \times y$ without Arithmetical Operators
+
+*Task*: Write a program that multiplies two nonnegative integers using only assignment, bitwise operators `>>`, `<<`, `|`, `&`, `~`, `^`, and equality checks and Boolean combinations thereof.
+
+* Brute Force: Add x y times (implement addition ourselves). Complexity can be as bad as $O(2^{n})$. 
+
+* Lattice Multiplication:
+
+  ```python
+  def multiply(x, y):
+    def add(a, b):
+      running_sum, carryin, k, temp_a, temp_b = 0, 0, 1, a, b
+      while temp_a or temp_b: 
+        ak, bk = a & k, b & k
+        carryout = (ak & bk) | (ak & carryin) & (bk & carryin)
+        running_sum |= ak ^ bk ^ carryin
+        carryin, k, temp_a, temp_b = (carryout << 1, k << 1, temp_a >> 1, temp_b >> 1)
+        
+      return running_sum | carryin
+    
+    running_sum = 0
+    while x: # examines each bit of x
+      if x & 1:
+        running_sum = add(running_sum, y)
+      x, y = x >> 1, y << 1
+  
+    return running_sum  
+  ```
+
+  Time complexity: $O(n^{2})$ 
+
+##### Compute x / y
+
+*Task*: Given two positive integers, compute their quotient, using only the addition, subtraction and shifting operators.
+
+* Brute-Force: Iteratively subtract y from x until what remains is less than y. The number of subtractions is the quotient $x/y$ and the remainder is the term that's less than y. Complexity is high, e.g. $y=1$ and $x=2^{31}-1$ takes $2^{31}-1$ iterations. 
+
+*  Better Approach: Try to get more work done in each iteration. Find largest $k$ such that $2^{k}y < x$, subtract $2^{k}y$ from x, and add $2^{k}$ to the quotient. Continue on the difference. This has complexity $O(n^2)$ 
+
+* Better yet: Notice that $k$ decreases at each iterations, so count backwards from last $k$, i.e. $2^{k-1}, 2^{k-2}, \ldots$ 
+
+  ```python
+  def divide(x, y):
+    result, power = 0, 32
+    y_power = y << power
+    while x >= y:
+      while y_power > x:
+        y_power >>= 1
+        power -= 1
+        
+      result += 1 << power
+      x -= y_power
+      
+    return result
+  ```
+
+  Time complexity: $O(n)$. Process 1 bit each iteration. 
+
+##### Compute $x^{y}$
+
+*Task*: Write a program that takes a double x and an integer y and returns $x^{y}$. Ignore overflow and underflow
+
+* Brute-Force: keep multiply x y times. Takes $O(2^{n})$ where $n$ is the number of bits to represent `y`. 
+
+* Doing Better. Iterated multiplication of the result, e.g. $x, x^{2}, (x^{2})^{2}=x^{4}, \ldots$. This works when $y$ is a power of 2, but more generally let us look at the binary representation of $y$ and use the face $x^{y_{0} + y_{1}} = x^{y_{0}}x^{y_{1}}$. Generally, notice if the least significant bit of $y$ is 0, then $x^{y} = (x^{y/2})^{2}$, otherwise $x^{y} = x \times (x^{y/2)})^{2}$. Recursive algorithm:
+
+  ```python
+  def power(x, y):
+    result, power = 1.0, y
+    if y < 0:
+      power, x = -power, 1.0 / x
+    while power:
+      if power & 1:
+        result *= x
+      x, power = x * x, power >> 1
+    return result
+  ```
+
+   Time Complexity: The number of multiplications is at most twice the index of y's MSB, so $O(n)$ 
+
+##### Reverse Digits
+
+*Task*: Write a program that takes an integer and returns the integer corresponding to teh digits of the input written in reverse order, e.g. the reverse of 42 is 24, reverse of -314 is -413. 
+
+* Brute-Force. Convert to a string and traverse from back to front. 
+
+* Better Approach: x mod 10 yields largest digit in reversed number. Continue with x / 10. 
+
+  ```python
+  def reverse(x):
+    result, x_remaining = 0, abs(x)
+    while x_remaining:
+      result = result * 10 + x_remaining % 10
+      x_remaining //= 10
+    result -result if x < 0 else result
+  ```
+
+  Time Complexity: $O(n)$, where $n$ is the number of digits in $k$. 
+
+##### Check if a Decimal Integer is a Palindrome
+
+*Task*: Write a program that takes an integer and determines if that integer's representation as a decimal string is a palindrome
+
+* Note if the integer is negative, it can't be a palindrom
+
+* Brute-Force: Convert to string and iterate through the string pairwise comparing digits starting from the least significant digit and most significant digit and working inwards. Takes $O(n)$ time and space. 
+
+* Can save space by just looking at LSD and MSD. There are $n = \lfloor \log_{10} x \rfloor + 1$ digits. LSD is x mod 10 and MSD is $x / 10^{n-1}$. If LSD and MSD are equal, strip those digits and continue with new number .
+
+  ```python
+  def is_palindrome_number(x):
+    if x <= 0:
+      return == 0
+    
+    num_digits = math.floor(math.log10(x)) + 1
+    msd_mask = 10**(num_digits -1)
+    for i in range(num_digits // 2):
+      if x // msd_mask != x % 10:
+        return False
+      x %= msd_mask # Remove the most significant digit of x
+      x //= 10 # Remove the least significant digit of x
+      msd_mask //= 10
+    return True
+  ```
+
+  Time Complexity: $O(n)$
+
+  Space Complexity: $O(1)$ 
+
+##### Generate Uniform Random Numbers
+
+*Task*: Generate a random integer between a and b (inclusive) given a random number generator that produces zero or one with equal probability?
+
+*Solution*: Note that it is easy to generate number in the range $[0, 2^{i}-1]$ ; concatenate the $i$ bits produced by the random number generator. Thus we want to generate numbers in the range $[0, b-a]$ and then add $a$ back. Find the the smallest number $2^i-1$ larger than $b-a$. Generate a number in the range $2^{i}-1$ and if it's less than or equal to $b-a$, accept the solution and add $a$, otherwise draw another random number. 
+
+```python
+def uniform_random(lower_bound, upper_bound):
+  number_of_outcomes = upper_bound - lower_bound + 1
+  while True:
+    result, i = 0, 0
+    while (1 << i) < number_of_outcomes:
+      # zero_one_random() is the provided random number generator.
+      result = (result << 1) | zero_one_random()
+      i += 1
+    if result < number_of_outcomes:
+      break
+  return result + lower_bound
+```
+
+Time Complexity: Number of redraws converges, each random number draw requires $O(\log(b-a+1))$, so the time complexity is $O(\log(b-a+1))$. 
+
+##### Rectangle Intersection
+
+![image-20201013213743124](figures/programming/interview_rectangles.png)
+
+*Task*: Write a program that determines if two rectangles have non-empty intersection and if so, return the rectangle formed by their intersection. 
+
+```python
+Rectangle = collections.namedtuple('Rectangle', ('x', 'y', 'width', 'height'))
+
+def intersect_rectangle(R1, R2):
+  def is_intersect(R1, R2):
+    return (R1.x <= R2.x + R2.width and R1.x + R1.width >= R2.x
+            and R1.y <= R2.y + R2.heigh and R1.y + R1.height >= R2.y)
+  
+  if not is_intersect(R1, R2):
+    return Rectangle(0, 0, -1, -1) # No intersection.
+  
+  return Rectangle(
+  	max(R1.x, R2.x),
+  	max(R1.y, R2.y),
+  	min(R1.x + R1.width, R2.x + R2.width) - max(R1.x, R2.x),
+  	min(R1.y + R1.height, R2.y + R2.height) - max(R1.y, R2.y))
+```
+
+Time Complexity: $O(1)$
+
+#### Chapter 5: Arrays
+
 
 
 ## Haskell
