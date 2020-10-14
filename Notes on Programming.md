@@ -2490,7 +2490,188 @@ Time Complexity: $O(1)$
 
 #### Chapter 5: Arrays
 
+An array is a contiguous block of memory. For an array $A$, $A[i]$ denotes the $(i+1)$th object (0 indexing). Can access an element in $O(1)$ time, but insertion and deletion is $O(n-i)$. 
 
+##### Array Boot Camp
+
+Want to take advantage of the fact we can operate effectively on both ends of the array simultaneously. 
+
+Example: Take an array of integers and reorder the elements such that all the even numbers appear before the odd numbers using $O(1)$ space. Partition the array into three subarrays: even, odd and unclassified and iteratively process numbers and swap:
+
+```python
+def even_odd(A):
+  next_even, next_odd = 0, len(A)-1
+  while next_even < next_odd:
+    if A[next_even] % 2 == 0:
+      next_even += 1
+    else:
+      A[next_even], A[next_odd] = A[next_odd], A[next_even]
+      next_odd -= 1
+```
+
+Time Complexity: $O(n)$. Space Complexity: $O(1)$ 
+
+###### Tips
+
+* Array problems often have simple brute-force solutions that use $O(n)$ space, but there are often subtler solutions that use the array itself to reduce space complexity to $O(1)$. 
+* Filling an array from the front is slow (right shifting). Write to the back if possible.
+* Instead of deleting an entry (left shifting), considering overwriting it. 
+* When dealing with integers coded by an array, consider processing the digits from the back (LSB) or reverse the array to work on LSB. 
+* Be comfortable working on subarrays
+* Easy to make off-by-1 indexing errors
+* Don't worry about preserving properties of the array (i.e. sortedness), until its time to return.
+* An array is useful when you know the distribution of elements in advance, i.e. Boolean entries to encode subsets.
+* When operating on 2D arrays, use parallel logic for rows and columns
+
+##### Know Your Array Libraries
+
+In Python, arrays are provided by the `list` type. `list` are dynamically-resized. 
+
+* Basic operations: `len(A)`, `A.append(42)`, `A.remove(2)`, `A.insert(3, 28)` 
+* Instantiate 2D array: `[[1,2,3,], [4,5,6,7], [13]]`
+* Checking presence: `a in A` ($O(n)$ time) 
+* Understand how copy works: `B = A` vs. `B = list(A)`
+  * deep copy vs. shallow copy
+* Key methods:
+  * `min(A)` and `max(A)`
+  * bisect.bisect(A, 6), bisect.bisect_left(A, 6), bisect.bisect_right(A, 6)
+  * A.reverse() (in-place) vs. reversed(A) (returns iterator)
+  * A.sort() (in-place) vs. sorted(A) (returns a copy)
+  * `del A[i]` (deletes i-th element), `del A[i:j]` (deletes slice)
+* Slicing: `A[i:j:k]`
+* List comprehension has 4 elements:
+  * an input sequence
+  * an iterator over the input sequence
+  * a logical condition over the iterator (optional)
+  * an expression that yields the elements of the derived list
+    * E.g. `[x**2 for x in range(6) if x % 2 == 0]` yields `[0, 4, 16]`
+* List comprehensions can always be written using `map()`, `filter()`, and lambdas, list comprehensions is more Pythonic
+
+##### The Dutch Flag Problem
+
+Consider partitioning an array based on a pivot such that all elements less than the pivot appear first, followed by elements equal to the pivot, followed by elements greater than the pivot. 
+
+![image-20201014065233010](figures/programming/interview_dutch_flag.png)
+
+*Task*: Write a program that takes an array `A` and an index `i` and rearranges the elements such that it forms a "dutch flag" partition.
+
+*Solution*: 
+
+* Trivial with $O(n)$ space. Create three lists: elements less than pivot, elements equal to pivot, and elements greater than pivot. Then write into `A`. Time Complexity: $O(n)$. Space Complexity: $O(n)$. 
+
+* Without using $O(n)$ space: Iterate through array moving elements less than pivot to the beginning. Repeat moving elements greater than the pivot to the end.
+
+  ```python
+  RED, WHITE, BLUE = range(3)
+  
+  
+  def dutch_flag_partition(pivot_index, A):
+    pivot = A[pivot_index]
+    # First pass: group elements small than pivot
+    for i in range(len(A)):
+      # Look for a smaller element
+      for j in range(i+1, len(A)):
+        if A[j] < pivot:
+          A[i], A[j] = A[j], A[i]
+          break
+    # Second pass: group elements larger than pivot
+    for i in reversed(range(len(A))):
+      if A[i] < pivot:
+        break
+      # Look for a larger element. Stop when we reach an element less than pivot, since first pass moved them to the start of A.
+      for j in reversed(range(i)):
+        if A[j] > pivot:
+          A[i], A[j] = A[j], A[i]
+          break
+  ```
+
+  Time Complexity: $O(n^{2})$. Space Complexity: $O(1)$. 
+
+* Better solution (no nested for loops):
+
+  ```python
+  RED, WHITE, BLUE = range(3)
+  
+  
+  def dutch_flag_partition(pivot_index, A):
+    pivot = A[pivot_index]
+    # First pass: group elements smaller than pivot.
+    smaller = 0
+    for i in range(len(A)):
+      if A[i] < pivot:
+        A[i], A[smaller] = A[smaller], A[i]
+        smaller += 1
+    # Second pass: group elements larger than pivot
+    larger = len(A)-1
+    for i in reversed(range(len(A))):
+      if A[i] < pivot:
+        break
+      elif A[i] > pivot:
+        A[i], A[larger] = A[larger], A[i]
+        larger -= 1
+  ```
+
+  Time Complexity: $O(n)$. Space Complexit: $O(1)$. 
+
+* Even better. Create four lists: bottom, middle, unclassified, top. 
+
+  ```python
+  RED, WHITE, BLUE = range(3)
+  
+  
+  def dutch_flag_partition(pivot_index, A):
+    pivot = A[pivot_index]
+    # Keep the following invariants during partitioning:
+    # bottom group: A[:smaller]
+    # middle group: A[smaller:equal]
+    # unclassified group: A[equal:larger]
+    # top group: A[larger:]
+    smaller, equal, larger = 0, 0, len(A)
+    # Keep iterating as long as there is an unclassified element
+    while equal < larger:
+      # A[equal] is the incoming unclassified element
+      if A[equal] < pivot:
+        A[smaller], A[equal] = A[equal], A[smaller]
+        smaller, equal = smaller + 1, equal + 1
+      elif A[equal] == pivot:
+        equal += 1
+      else: # A[equal] > pivot
+        larger -= 1
+        A[equal], A[larger] = A[larger], A[equal]
+  ```
+
+  Time Complexity: $O(n)$. Space Complexity: $O(1)$. 
+
+##### Increment an Arbitrary-Precision Integer
+
+*Task*: Write a program that takes an array encoding a nonnegative decimal integer and outputs an array with representing the integer + 1, e.g. `[1,2,9]` goes to `[1,3,0]`. 
+
+*Solution*: Brute-Force could convert array to integer, add 1, then convert back to integer. This won't work if the integer represented by the array exceeds the range. Instead do elementary school arithmetic.
+
+```python
+def plus_one(A):
+  A[-1] += 1
+  for i in reversed(range(1, len(A))):
+    if A[i] != 10:
+      break
+    A[i] = 0
+    A[i-1] += 1
+  if A[0] == 10:
+    # There is a carry-out, so we need one more digit to store the result.
+    # A slick way to do this is to append a 0 at the end of the array
+    # and update the first entry to 1
+    A[0] = 1
+    A.append(0)
+  return A
+```
+
+Time Complexity: $O(n)$
+
+##### Multiply Two Arbitrary-Precision Integers
+
+
+
+------
 
 ## Haskell
 
