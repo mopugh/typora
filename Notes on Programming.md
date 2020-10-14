@@ -305,6 +305,33 @@ tokyo[1]
 * Flat sequences are compact, faster and easier to use than container sequences, but must use atomic data such as numbers, characters and bytes
 * Container sequences are flexible but may surprise you when they hold mutable objects.
 
+#### Chapter 3: Dictionaries and Sets
+
+* Hash tables are the engines behind Python's high-performance dicts.
+
+##### Generic Mapping Types
+
+* Keys must be hashable
+
+  * An object is hashable if it has a hash value which never changes during its lifetime (`__hash__()`) and can be compared to other objects (`__eq__()`). Hashable objects that compare equal must have the same hash value.
+    * Atomic types are hashable (str, bytes, numeric types)
+    * Tuples are hashable if all its elements are hashable
+    * Frozen sets are hashable
+
+* Ways to build a `dict`
+
+  ```python
+  a = dict(one=1, two=2, three=3)
+  b = {'one': 1, 'two': 2, 'three': 3}
+  c = dict(zip(['one', 'two', 'three'], [1,2,3]))
+  d = dict([('two', 2), ('one', 1), ('three', 3)])
+  e = dict({'three': 3, 'one': 1, 'two': 2})
+  ```
+
+##### `dict` Comprehensions
+
+
+
 ### First Course on Data Structures in Python
 
 #### Chapter 2: Basic Python
@@ -2092,6 +2119,25 @@ AttributeError: "can't set attribute"
 * Can view named tuples as a memory-efficient shortcut to defining an immutable class in Python manually
 
 ###### Subclassing Namedtuples
+
+Can add methods to a namedtuple object.
+
+```python
+Car = namedtuple('Car', 'color mileage')
+
+class MyCarWithMethods(Car):
+    def hexcolor(self):
+        if self.color == 'red':
+            return '#ff0000'
+        else:
+            return '#000000'
+
+>>> c = MyCarWithMethods('red', 1234)
+>>> c.hexcolor()
+'#ff0000'
+```
+
+###### Built-In Helper Methods
 
 
 
