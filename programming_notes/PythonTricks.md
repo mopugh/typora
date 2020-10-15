@@ -1850,7 +1850,151 @@ ValueError: "byte must be in range(0, 256)"
 b'\x00\x02\x03*'
 ```
 
+#### Summary
 
+* Need to store arbitrary objects potentially with mixed data types: use a list or tuple depending on mutability
+* Numerical data and tight packing and performance are important: use array.array or numpy or pandas
+* Textual representation as Unicode characters: use str unless you need a "mutable string" in which case use an array of characters
+* Want a contiguous block of bytes: use bytes or byte array
 
+### Records, Structs, and Data Transfer Objects
 
+#### `dict` - Simple Data Objects
+
+Possible issue is that fields can be added and removed at any time.
+
+#### `tuple` - Immutable Groups of Objects
+
+Possible issue is you can only access data stored in a tuple through integer indices
+
+#### Writing a Custom Class - More Work, More Control
+
+```python
+class Car:
+    def __init__(self, color, mileage, automatic):
+        self.color = color
+        self.mileage = mileage
+        self.automatic = automatic
+
+>>> car1 = Car('red', 3812.4, True)
+>>> car2 = Car('blue', 40231.0, False)
+
+# Get the mileage:
+>>> car2.mileage
+40231.0
+
+# Classes are mutable:
+>>> car2.mileage = 12
+>>> car2.windshield = 'broken'
+
+# String representation is not very useful
+# (must add a manually written __repr__ method):
+>>> car1
+<Car object at 0x1081e69e8>
+```
+
+#### `collections.namedtuple` - Convenient Data Objects
+
+```python
+>>> from collections import namedtuple
+>>> Car = namedtuple('Car' , 'color mileage automatic')
+>>> car1 = Car('red', 3812.4, True)
+
+# Instances have a nice repr:
+>>> car1
+Car(color='red', mileage=3812.4, automatic=True)
+# Accessing fields:
+>>> car1.mileage
+3812.4
+
+# Fields are immtuable:
+>>> car1.mileage = 12
+AttributeError: "can't set attribute"
+>>> car1.windshield = 'broken'
+AttributeError:
+"'Car' object has no attribute 'windshield'"
+```
+
+#### `typing.NamedTuple` - Improved Namedtuples
+
+* Type annotations are not enforced without a separate type-checking tool lik mypy. 
+
+```python
+>>> from typing import NamedTuple
+
+class Car(NamedTuple):
+    color: str
+    mileage: float
+		automatic: bool
+
+>>> car1 = Car('red', 3812.4, True)
+
+# Instances have a nice repr:
+>>> car1
+Car(color='red', mileage=3812.4, automatic=True)
+
+# Accessing fields:
+>>> car1.mileage
+3812.4
+
+# Fields are immutable:
+>>> car1.mileage = 12
+AttributeError: "can't set attribute"
+>>> car1.windshield = 'broken'
+AttributeError:
+"'Car' object has no attribute 'windshield'"
+
+# Type annotations are not enforced without
+# a separate type checking tool like mypy:
+>>> Car('red', 'NOT_A_FLOAT', 99)
+Car(color='red', mileage='NOT_A_FLOAT', automatic=99)
+```
+
+#### `struct.Struct` - Serialized C Structs
+
+#### `types.SimpleNamespace` - Fancy Attribute Access
+
+### Sets and Multisets
+
+* A *set* is an unordered collection of objects that does not allow duplicates
+  * test for membership, insert, delete: $O(1)$
+  *  union, intersections: $O(n)$
+* To create an empty set: `set()` 
+
+#### `set` - Your Go-To Set
+
+* Sets are mutable and allow dynamic insertions and deletions
+* Any hashable object can be stored in a set
+
+#### `frozenset`- Immutable Sets
+
+* Immutable version of set
+  * Cannot be altered after construction. (No insertions or deletions)
+  * They are hashable and can be used as keys in a dictionary or as objects in another set. 
+
+#### `collections.Counter` - Multisets
+
+* Use if you want to keep track of how many times something is included in a set
+
+```python
+>>> from collections import Counter
+>>> inventory = Counter()
+
+>>> loot = {'sword': 1, 'bread': 3}
+>>> inventory.update(loot)
+>>> inventory
+Counter({'bread': 3, 'sword': 1})
+>>> more_loot = {'sword': 1, 'apple': 1}
+>>> inventory.update(more_loot)
+>>> inventory
+Counter({'bread': 3, 'sword': 2, 'apple': 1})
+
+>>> len(inventory)
+3  # Unique elements
+
+>>> sum(inventory.values())
+6  # Total no. of elements
+```
+
+### Stacks (LIFOs)
 
