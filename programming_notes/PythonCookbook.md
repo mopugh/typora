@@ -184,3 +184,138 @@ When N is small compared to the total length of the collection, this approach is
 
 ### Implementing a Priority Queue
 
+#### Problem
+
+You want to implement a queue that sorts items by a given priority and always returns the item with the highest priority on each pop operation.
+
+#### Solution
+
+Use `heapq` module
+
+```python
+import heapq
+
+class PriorityQueue:
+	def __init__(self):
+		self._queue = []
+  	self._index = 0
+  
+  def push(self, item, priority):
+  	heapq.heappush(self._queue, (-priority, self._index, item))
+  	self._index += 1
+  
+  def pop(self):
+  	return heapq.heappop(self._queue)[-1]
+```
+
+#### Discussion
+
+`heapq.push()` and `heapq.heappop()` insert and remove items from a list_queue in such a way that the first item in the list has the smallest priority. Here the queue consists of tuples of the form `(-priority, index, item)`. The priority is negated so we return the highest priority. The index variable orders items with the same priority level. Don't want the following problem:
+
+```python
+>>> a = (1, Item('foo'))
+>>> b = (5, Item('bar'))
+>>> a < b
+True
+>>> c = (1, Item('grok'))
+>>> a < c
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+TypeError: unorderable types: Item() < Item()
+```
+
+### Mapping Keys to Multiple Values in a Dictionary
+
+#### Problem
+
+You want to make a dictionary that maps keys to more than one value (so-called "multidict").
+
+#### Solution
+
+A dictionary maps each key to a single value. If you want a key to map to multiple values, you need to store the multiple values in another container, e.g.
+
+```python
+d = {
+	'a' : [1, 2, 3],
+	'b' : [4, 5]
+}
+e = {
+	'a' : {1, 2, 3},
+	'b' : {4, 5}
+}
+```
+
+Can use `collections.defaultdict` module to help with this.
+
+```python
+from collections import defaultdict
+
+d = defaultdict(list)
+d['a'].append(1)
+d['a'].append(2)
+
+e = defaultdict(set)
+e['a'].add(1)
+e['a'].add(2)
+```
+
+Warning: defaultdict will create entries for any key that is accessed. 
+
+#### Discussion
+
+In principle this problem is easy, but initializing the first value is messy.
+
+```python
+d = {}
+for key, value in pairs:
+	if key not in d:
+		d[key] = []
+	d[key].append(value)
+```
+
+vs
+
+```python
+d = defaultdict(list)
+for key, value in pairs:
+	d[key].append(value)
+```
+
+### Keeping Dictionaries in Order
+
+#### Problem
+
+You want to create a dictionary and you want to control the order of items when iterating or serializing.
+
+#### Solution
+
+Use `collections.OrderedDict` which preserves the insertion order of the data when iterating.
+
+```python
+from collections import OrderedDict
+
+d = OrderedDict()
+d['foo'] = 1
+d['bar'] = 2
+d['spam'] = 3
+d['grok'] = 4
+
+# Outputs "foo 1", "bar 2", "spam 3", "grok 4"
+for key in d:
+	print(key, d[key])
+```
+
+Useful for serializing or encoding into a different format.
+
+```python
+>>> import json
+>>> json.dump(d)
+'{"foo": 1, "bar": 2, "spam": 3, "grok": 4}'
+```
+
+#### Discussion
+
+`OrderedDict` uses a doubly linked list that orders the keys according to insertion ordered. `OrderedDict` is more than twice as large as a normal dictionary due to this fact. 
+
+### Calculating with Dictionaries
+
