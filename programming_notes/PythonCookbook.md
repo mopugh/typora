@@ -319,3 +319,134 @@ Useful for serializing or encoding into a different format.
 
 ### Calculating with Dictionaries
 
+#### Problem
+
+You want to perform various calculations (e.g. minimum value, maximum value, sorting, etc.) on a dictionary of data
+
+#### Solution
+
+The idea is to invert the keys and values using `zip()`
+
+```python
+prices = {
+	'ACME': 45.23,
+	'AAPL': 612.78,
+	'IBM': 205.55,
+	'HPQ': 37.20,
+	'FB': 10.75
+}
+
+min_price = min(zip(prices.values(), prices.keys()))
+# min_price is (10.75, 'FB')
+max_price = max(zip(prices.values(), prices.keys()))
+# max_price is (612.78, 'AAPL')
+prices_sorted = sorted(zip(prices.values(), prices.keys()))
+# prices_sorted is [(10.75, 'FB'), (37.2, 'HPQ'),
+# (45.23, 'ACME'), (205.55, 'IBM'),
+# (612.78, 'AAPL')]
+```
+
+Note: `zip()` creates an iterator that can only be consumed once
+
+#### Dicussion
+
+Don't want the following:
+
+```python
+min(prices) # Returns 'AAPL'
+max(prices) # Returns 'IBM'
+min(prices, key=lambda k: prices[k]) # Returns 'FB'
+max(prices, key=lambda k: prices[k]) # Returns 'AAPL'
+# Need the extra step to find the price
+min_value = prices[min(prices, key=lambda k: prices[k])]
+```
+
+### Finding Commonalities in Two Dictionaries
+
+#### Problem
+
+You have two dictionaries and want to find out what they have in common (same keys, same values, etc.)
+
+#### Solution
+
+Idea: Use set operations
+
+```python
+a = {
+	'x' : 1,
+	'y' : 2,
+	'z' : 3
+}
+b = {
+	'w' : 10,
+	'x' : 11,
+	'y' : 2
+}
+
+# Find keys in common
+a.keys() & b.keys() # { 'x', 'y' }
+# Find keys in a that are not in b
+a.keys() - b.keys() # { 'z' }
+# Find (key,value) pairs in common
+a.items() & b.items() # { ('y', 2) }
+# Make a new dictionary with certain keys removed
+c = {key:a[key] for key in a.keys() - {'z', 'w'}}
+# c is {'x': 1, 'y': 2}
+```
+
+#### Discussion
+
+`items()` and `keys()` support set operations but `values()` does not since not guaranteed to be unique. 
+
+### Removing Duplicates from a Sequence while Maintaining Order
+
+#### Problem
+
+You want to eliminate the duplicate values in a sequence, but want to preserve the order of the remaining items
+
+#### Solution
+
+If the values in the sequence are hashable, use a set and a generator:
+
+```python
+def dedupe(items):
+	seen = set()
+	for item in items:
+		if item not in seen:
+			yield item
+			seen.add(item)
+
+>>> a = [1, 5, 2, 1, 9, 1, 5, 10]
+>>> list(dedupe(a))
+[1, 5, 2, 9, 10]
+```
+
+It the values are not hashable:
+
+```python
+def dedupe(items, key=None):
+	seen = set()
+	for item in items:
+		val = item if key is None else key(item)
+		if val not in seen:
+			yield item
+			seen.add(val)
+      
+>>> a = [ {'x':1, 'y':2}, {'x':1, 'y':3}, {'x':1, 'y':2}, {'x':2, 'y':4}]
+>>> list(dedupe(a, key=lambda d: (d['x'],d['y'])))
+[{'x': 1, 'y': 2}, {'x': 1, 'y': 3}, {'x': 2, 'y': 4}]
+>>> list(dedupe(a, key=lambda d: d['x']))
+[{'x': 1, 'y': 2}, {'x': 2, 'y': 4}]
+```
+
+The purpose of the key is to specify a function that converts sequence items into a hashable type for duplicate detection. 
+
+#### Discussion
+
+Can't use `set()` directly if you want to maintain order. Using generator to be as general as possible, e.g.
+
+```python
+with open(somefile,'r') as f:
+	for line in dedupe(f):
+```
+

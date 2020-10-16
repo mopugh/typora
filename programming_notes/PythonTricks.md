@@ -1998,3 +1998,98 @@ Counter({'bread': 3, 'sword': 2, 'apple': 1})
 
 ### Stacks (LIFOs)
 
+* Stacks support fast *last-in, first-out* (LIFO) semantics for inserts and deletes. 
+  * $O(1)$
+* Stacks don't support random access
+* insert = push
+* delete = pop
+* Differs from a **queue** which is *first-in, first-out* 
+
+#### `list`- Simple, Built-In Stacks
+
+* Can use a regular list to implement a stack
+  * Dynamic list so resizing is required, but still amortized $O(1)$. 
+  * Must use `append` and `pop` to get the amortized $O(1)$ performance. 
+
+#### `collections.deque` - Fast & Robust Stacks
+
+* `deque` class implements double-ended queue that supports adding and removing elements from either end in $O(1)$ non-amortized time. 
+
+  ```python
+  >>> from collections import deque
+  >>> s = deque()
+  >>> s.append('eat')
+  >>> s.append('sleep')
+  >>> s.append('code')
+  
+  >>> s
+  deque(['eat', 'sleep', 'code'])
+  
+  >>> s.pop()
+  'code'
+  >>> s.pop()
+  'sleep'
+  >>> s.pop()
+  'eat'
+  
+  >>> s.pop()
+  IndexError: "pop from an empty deque"
+  ```
+
+#### `queue.LifoQueue` - Locking Semantics for Parallel Computing
+
+### Queues (FIFOs)
+
+* Fast *first-in, first-out* (FIFO) semantics for inserts and deletes. 
+  * insert = enqueue
+  * delete = dequeue
+
+#### `list` - Terribly Sloooow Queues
+
+Slow because inserting or deleting from the beginning is slow
+
+#### `collections.deque` - Fast & Robust Queues
+
+Since a doubly linked list, can be used as a queue.
+
+#### `queue.Queue` - Locking Semantics for Parallel Computing
+
+#### `multiprocessing.Queue` - Shared Job Queues
+
+### Priority Queues
+
+A priority queue is a data structure that manages a set of records with totally-ordered keys to provide quick access to the record with the *smallest* or *largest* key in the set. 
+
+#### `list` - Maintaining a Manually Sorted Queue
+
+Can use a sorted list, but not recommended due to slow insertion in lists. 
+
+#### `heapq` - List-Based Binary Heaps
+
+```python
+import heapq
+
+q = []
+
+heapq.heappush(q, (2, 'code'))
+heapq.heappush(q, (1, 'eat'))
+heapq.heappush(q, (3, 'sleep'))
+
+while q:
+    next_item = heapq.heappop(q)
+    print(next_item)
+
+# Result:
+#   (1, 'eat')
+#   (2, 'code')
+#   (3, 'sleep')
+```
+
+#### `queue.PriorityQueue` - Beautiful Priority Queues
+
+* Synchronized and provides locking semantics.
+
+## Looping & Iteration
+
+### Writing Pythonic Loops
+
