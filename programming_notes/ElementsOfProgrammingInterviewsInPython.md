@@ -685,3 +685,101 @@ def buy_and_sell_stock_twice(prices):
 ```
 
 Time Complexity: $O(n)$. Space Complexity: $O(n)$. 
+
+### Computing An Alaternation
+
+*Task*: Given an array A of numbers, rearrange A's elements into an array B such that B has the property $B[0] \leq B[1] \geq B[2] \leq B[3] \geq B[4] \leq \cdots$ 
+
+*Solution*: 
+
+* $O(n \log n)$ options: Sort A and then interleave beginning half with ending half. Also can sort A and then swap pairs $(A[0], A[1]), (A[2], A[3]), \ldots$. 
+
+* $O(n)$: Don't need to fully sort, can just rearrange elements around the median and then interleave. Can find the median in $O(n)$. Also not required to find median:
+
+  ```python
+  def rearrange(A):
+    for i in range(len(A)):
+      A[i:i+2] = sorted(A[i:i+2], reverse = i%2)
+  ```
+
+  Note: no need to return anything as A is modified in-place.  The idea here is swap if $A[i]$ and $A[i+1]$ when i is even and $A[i] > A[i+1]$ or i is odd and $A[i] < A[i+1]$. 
+
+### Enumerate All Primes To n
+
+*Task*: Write a program that takes an integer argument and returns all the primes between 1 and that integer. 
+
+*Solution*: 
+
+* Brute-Force: Iterate from 2 to n and test each integer if it is prime. To test if each integer is prime, try dividing it by all integers from to to $\sqrt{i}$ . This is $O(n^{3/2})$ (n iterations each of complexity $O(\sqrt{n})$ )
+
+* Sieve method: Create boolean array to represent if a number at index i is prime or not. Remove all multiples of a prime from the list. 
+
+  ```python
+  def generate_primes(n):
+    primes = []
+    is_prime = [False, False] + [True]*(n-1)
+    for p in range(2, n+1):
+      if is_prime[p]:
+        primes.append(p)
+        # Sieve p's multiples
+        for i in range(p, n+1, p):
+          is_prime[i] = False
+    return primes 
+  ```
+
+  Time Complexity: $O(n \log \log n)$. Space Complexity: $O(n)$. 
+
+### Permute The Elements Of An Array
+
+Can represent a permutation by an array such that P[i] represents the index that element P[i] gets mapped to, e.g. P = [2,0,1,3] applied to A = [a,b,c,d]  is [b, c, a, d].
+
+*Task* Given an array of n elements and a permutation P, apply P to A. 
+
+*Solution*: Given additional storage, the problem is easy as you just iterate and assign to a new array B: B[P[i]] = A[i]. To do it in place, notice that any permutation can be created by a collection of independent cyclic permutations.
+
+```python
+def apply_permutation(perm, A):
+  for i in range(len(A)):
+    # Check if the element at index i has not been moved by checking if perm[i] s nonnegative
+    next = i
+    while perm[next] >= 0:
+      A[i], A[perm[next]] = A[perm[next]], A[i]
+      temp = perm[next]
+      # sbustracts len(perm) from an entry in perm to make it negative which indicates the corresponding move has been performed
+      perm[next] -= len(perm)
+      next = temp
+  # restore perm
+  perm[:] = [a + len(perm) for a in perm]
+```
+
+Time Complexity: $O(n)$. Space Complexity: $O(1)$. 
+
+If the sign bit can't be used:
+
+```python
+def apply_permutation(perm, A):
+  def cyclic_permutation(start, perm, A):
+    i, temp = start, A[start]
+    while True:
+      next_i = perm[i]
+      next_temp = A[next_i]
+      A[next_i] = temp
+      i, temp = next_i, next_temp
+      if i == start:
+        break
+    
+  for i in range(len(A)):
+    # Traverse the cycle to see if i is the minimum element
+    j = perm[i]
+    while j != i:
+      if j < i:
+        break
+      j = perm[j]
+    else:
+      cyclic_permutation(i, perm, A)
+```
+
+This has $O(n^{2})$ however since have to traverse the cycle
+
+### Compute The Next Permutation 
+
