@@ -200,3 +200,145 @@ The sampling theorems are about counting, but when the naive definition of proba
   * Number of possibilities: ${n+k-1 \choose k}$
     * This is the *stars and bars* argument
   * Another isomorphic problem is to determine the number of solutions $(x_{1}, x_{2}, \ldots, x_{n})$ to the equation $x_{1} + x_{2} + \cdots + x_{n} = k$ where $x_{i}$ are nonnegative integers. 
+  
+* **WARNING!**: The Bose-Einstein result should *not* be used in the naive definition of probability except in special circumstances. 
+
+  * Example: A number of *ordered* samples of k people out of n with replacement is $n^k$. The ${n+k-1 \choose k}$ unordered samples are not equally likely. 
+  * Example: With $n=365$ and $k$ people, how many unordered birthday lists are there? 
+    * E.g. let $k=3$, then there are not $\frac{n^{k}}{3!}$ unordered lists, because some lists might have duplicates. It is also not ${n+k-1 \choose k}$ since the unordered lists are not equally likely. 
+
+### Story Proof
+
+A *story proof* is a proof by interpretation. 
+
+* For counting problems this often means counting the same thing in two different ways
+
+* **Example**: Choosing the complement
+
+  For any nonnegative integers $n$ and $k$ with $k \leq n$, we hav
+  $$
+  {n \choose k} = {n \choose n-k}
+  $$
+  **Story Proof**:
+
+  Consider choosing a committee of size k in a group of n people. We know there are ${n \choose k}$ possibilities. But another way to choose the committee is to specify which $n-k$ people are *not* on the committee; specifying who is on the committee determines who is *not* on the committee and vice verse. So the two sides are equal, as they are two ways of counting the same thing. $\square$
+
+* **Example**: The team captain
+
+  For any positive integers $n$ and $k$ with $k \leq n$ 
+  $$
+  n {n-1 \choose k-1} = k {n \choose k}
+  $$
+  **Story Proof**:
+
+  Consider a group of $n$ people, from which a team of $k$ will be chosen, one of whom will be the team captain. To specify a possibility, we could first choose the team captain and then the remaining $k-1$ team members; this gives the LHS. Equivalently, we could first choose the k team members and then choose one of them to be captain; this is the RHS. $\square$ 
+
+* **Example**: Vandermonde's Identity
+  $$
+  {m+n \choose k} = \sum_{j=0}^{k} {m \choose j} {n \choose k - j}
+  $$
+  **Story Proof**:
+
+  Consider a student organization consisting of m juniors and n seniors, from which a committee of size k will be chosen. There are ${m+n \choose k}$ possibilities. If there are $j$ juniors in the committee, then there must be $k-j$ seniors in the committee. The RHS sums up the cases for $j$. $\square$ 
+
+* **Example**: Partnerships
+  $$
+  \frac{(2n)!}{2^n \cdot n!} = (2n-1)(2n-3) \cdots 3 \cdot 1
+  $$
+
+* **Story Proof**: 
+
+  Want to show that both sides count the number of ways to break $2n$ people into $n$ partnerships. Take $2n$ people and give them ID numbers from $1$ to $2n$. We can form a partnership by lining people up in some order and then saying the first two are a pair, the next two are a pair, etc. This overcounts by a factor of $n! \cdot 2^n$ since the order of the pairs doesn't matter, nor does the order within each pair. Alternatively, count the number of possibilities by noting that there are $2n-1$ choice for the partner of person 1, then $2n-3$ choices for person 2 (or person 3 if person 2 was paired with person 1) and so on. $\square$ 
+
+### Non-naive definition of probability
+
+Naive definition can't handle the case where outcomes aren't equal nor the case of an infinite sample space. 
+
+**Definition**: General definition of probability
+
+A *probability space* consists of a sample space $S$ and a *probability function* $P$ which takes an event $A \subseteq S$ as input and returns $P(A)$, a real number between $0$ and $1$, as output. The function must satisfy the following axioms:
+
+1. $P(\empty) = 0$, $P(S) = 1$
+
+2. If $A_{1}, A_{2}, \ldots$ are disjoint events ($A_{i} \cap A_{j} = \empty \textrm{ for } i \neq j$), then
+   $$
+   P \left ( \bigcup_{j=1}^{\infty} A_{j} \right ) = \sum_{j=1}^{\infty} P(A_{j})
+   $$
+
+Note these axioms tell us what is a valid probability function, but does not say how to interpret probability.
+
+* The *frequentist* view is that probability represents the long-run frequency over a large number of repetitions of an experiment. 
+  * E.g. the probability of a coin being heads
+
+* The *Bayesian* view of probability is that it represents a degree of belief about an event in question
+
+  * Can assign probabilities to hypotheses such as "candidate A will win the election" even if it is not possible to repeat the experiment. 
+
+* **Theorem**: Properties of probability
+
+  For any two events $A$ and $B$
+
+  1. $P(A^c) = 1 - P(A)$
+  2. If $A \subseteq B$, then $P(A) \leq P(B)$
+  3. $P(A \cup B) = P(A) + P(B) - P(A \cap B)$
+
+  **Proof**: 
+
+  1. Since $A$ and $A^c$ are disjoint and their union is $S$, the second axiom gives
+
+     $P(S) = P(A \cup A^c) = P(A) + P(A^c)$
+
+     But $P(S) = 1$ by the first axiom, so $P(A) + P(A^c) = 1$
+
+  2. If $A \subseteq B$, then $B$ can be written as the union of $A$ and $B \cap A^c$. $A$ and $B \cap A^c$ are disjoint, we can apply the second axiom: $P(B) = P(A \cup (B \cap A^c)) = P(A) + P(B \cap A^c)$. Probability is nonnegative, so $P(B \cap A^c) \geq 0$, so $P(B) \geq P(A)$. 
+
+  3. We can rewrite $A \cup B$ as $A \cup (B \cap A^c)$ which are disjoint events. Then by the second axiom
+     $$
+     P(A \cup B) = P(A \cup (B \cap A^c)) = P(A) + P(B \cap A^c)
+     $$
+     So it suffices to show that $P(B \cap A^c) = P(B) - P(A \cap B)$. Since $A \cap B$ and $B \cap A^c$ are disjoint and their union is $B$, another application of the second axiom gives
+     $$
+     P(A \cap B) + P(B \cap A^c) = P(B).
+     $$
+     So $P(B \cap A^c) = P(B) - P(A \cap B)$, as desired. $\blacksquare$
+
+* **Theorem**: Inclusion-exclusion
+
+  For any events $A_{1}, \ldots, A_{n}$ 
+  $$
+  P \left ( \bigcup_{i=1}^n A_{i} \right ) = \sum_{i} P(A_{i}) - \sum_{i < j} P(A_{i} \cap A_{j}) + \sum_{i < j < k} P(A_{i} \cap A_{j} \cap A_{k}) - \ldots + (-1)^{n+1} P(A_{1} \cap \cdots \cap A_{n})
+  $$
+  **Proof**
+
+  Can do proof by induction, but a shorter proof presented in Chapter 4. 
+
+* **Example**: de Montmort's matching problem
+
+  You have a well-shuffled deck of $n$ cards labeled 1 through $n$. You win if any card has the same label as the position in the deck, e.g. if the 7th card is in position 7.
+
+  *Solution*:
+
+  Let $A_{i}$ be the event that the $i$th card in the deck has the number $i$ on it. Then we are interested in the probability of $A_{1} \cup \cdots \cup A_{n}$. We will use the inclusion-exclusion principle. First, $P(A_{i}) = \frac{1}{n}$ by symmetry; card $i$ is equally likely to be in any position. Second, 
+  $$
+  P(A_{i} \cap A_{j}) = \frac{(n-2)!}{n!} = \frac{1}{n(n-1)}
+  $$
+  for $i \neq j$ since we need cards $i$ and $j$ to be in positions $i$ and $j$ and allow the remaining $n-2$ cards to be in any order. Similarly,
+  $$
+  P(A_{i} \cap A_{j} \cap A_{k}) = \frac{1}{n(n-1)(n-2)}
+  $$
+  and the pattern continues. Now note there are $n$ terms involving one event, ${n \choose 2}$ terms involving 2 events, ${n \choose 3}$ terms involving 3 events, etc. By symmetry, all of the previous probabilities are equal, so
+  $$
+  \begin{aligned}
+  P \left ( \bigcup_{i=1}^{n} A_{i} \right) &= \frac{n}{n} - \frac{{n \choose 2}}{n(n-1)} + \frac{{n \choose 3}}{n(n-1)(n-2)} - \cdots +  (-1)^{n+1} \cdot \frac{1}{n!} \\
+  &= 1 - \frac{1}{2!} + \frac{1}{3!} - \cdots + (-1)^{n+1} \cdot \frac{1}{n!}
+  \end{aligned}
+  $$
+  Recall the Taylor series for $1/e$
+  $$
+  e^{-1} = 1 - \frac{1}{1!} + \frac{1}{2!} - \frac{1}{3!} + \cdots
+  $$
+  Thus for large $n$, the probability of winning is close to $1 - 1/e \approx 0.63$. Note it is interesting that the probability does not converge to 0 or 1. The probability increases of their being a match since there are more card, but each match is less likely, and they offset to give a probability close to $1 - 1/e$. $\square$
+
+### Recap
+
+ 
