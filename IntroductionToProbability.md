@@ -58,7 +58,7 @@ Calculating naive probabilities requires computing $\vert A \vert$ and $\vert S 
 
 <img src="figures/Screen Shot 2020-10-08 at 6.11.34 AM.png" alt="Screen Shot 2020-10-08 at 6.11.34 AM" style="zoom:50%;" />
 
-![ice_cream_multiplication_rule](C:\Users\Matt\Documents\Typora\figures\probability\ice_cream_multiplication_rule.PNG)
+![ice_cream_multiplication_rule](.\figures\probability\ice_cream_multiplication_rule.PNG)
 
 * Order of flavor and cone doesn't matter
 * Doesn't matter if same flavors are available on each cone
