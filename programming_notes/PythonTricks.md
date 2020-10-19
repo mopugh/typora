@@ -2093,3 +2093,241 @@ while q:
 
 ### Writing Pythonic Loops
 
+What is "unpythonic" about this:
+
+```python
+my_items = ['a', 'b', 'c']
+
+i = 0
+while i < len(my_items):
+    print(my_items[i])
+    i += 1
+```
+
+* Manually keeping track of the index `i` 
+* Uses `len()` 
+
+In Python can iterate directly over the items in a container or sequence:
+
+```python
+for item in my_items:
+  print(item)
+```
+
+* Doesn't keep track of size or index
+
+If you need the index, use `enumerate`
+
+```python
+for i, item in enumerate(my_items):
+  print(f'{i}: {item}')
+```
+
+Can iterate over keys and values in a dictionary:
+
+```python
+>>> emails = {
+...     'Bob': 'bob@example.com',
+...     'Alice': 'alice@example.com',
+... }
+
+>>> for name, email in emails.items():
+...     print(f'{name} -> {email}')
+
+# 'Bob -> bob@example.com'
+# 'Alice -> alice@example.com'
+```
+
+If you need to control the step seize, use `range` with the parameters to control the start index `a`, end index `n` and step size `s`
+
+```python
+for i in range(a, n, s):
+  # ...
+```
+
+### Comprehending Compreshensions
+
+Example list comprehension:
+
+```python
+squares = [x * x for x in range(10)]
+# [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+```
+
+Template:
+
+```python
+values = [expression for item in collection]
+
+# Equivalent to
+values = []
+for item in collection:
+  values.append(expression)
+```
+
+List comprehensions can filter based on a condition
+
+```python
+even_squares = [x * x for x in range(10)
+                if x % 2 == 0]
+# [0, 4, 16, 36, 64]
+
+# Equivalent to
+even_squares = []
+for x in range(10):
+  if x % 2 == 0:
+    even_squares.append(x * x)
+    
+# Template
+values = [expression
+          for item in collection
+          if condition]
+
+# For loop
+values = []
+for item in collection:
+  if condition:
+    values.append(expression)
+```
+
+Can also have set comprehensions:
+
+```python
+{x * x for x in range(-9, 10)}
+# set([64, 1, 36, 0, 49, 9, 16, 81, 25, 4])
+```
+
+And dictionary comprehensions:
+
+```python
+{x: x * x for x in range(5)}
+# {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
+```
+
+Be careful that code doesn't become too difficult to read
+
+### List Slicing Tricks and Sushi Operator
+
+Slicing example with `[start:stop:step]` pattern:
+
+```python
+>>> lst = [1, 2, 3, 4, 5]
+>>> lst
+[1, 2, 3, 4, 5]
+
+#   lst[start:end:step]
+>>> lst[1:3:1]
+[2, 3]
+
+>>> lst[::2]
+[1, 3, 5]
+```
+
+Note upper bound is exclusive. Python Tricks calls `:` the sushi operator. 
+
+* Can reverse list with `[::-1]` 
+
+  ```python
+  >>> numbers[::-1]
+  [5, 4, 3, 2, 1]
+  ```
+
+  * stick with `list.reverse()` or `reversed()`
+
+* Use `list.clear()` to delete objects in a list but maintain list object
+
+  * Useful if other objects point to it
+
+* Can replace elements of a list without creating a new object
+
+  ```python
+  >>> original_lst = lst
+  >>> lst[:] = [7, 8, 9]
+  >>> lst
+  [7, 8, 9]
+  >>> original_lst
+  [7, 8, 9]
+  >>> original_lst is lst
+  True
+  ```
+
+### Beautiful Iterators
+
+Objects that support the `__iter__` and `__next__` dunder methods automatically work with `for` loops
+
+#### Iterating Forever
+
+```python
+repeater = Repeater('Hello')
+for item in repeater: # Repeat 'Hello' forever
+    print(item)
+
+class Repeater:
+    def __init__(self, value):
+        self.value = value
+
+    def __iter__(self):
+        return RepeaterIterator(self) # Helper class
+
+# Don't need to separate out helper class, see below
+class RepeaterIterator:
+    def __init__(self, source):
+        self.source = source
+
+    def __next__(self):
+        return self.source.value
+```
+
+* Link `RepeaterIterator` to `Repeater` in the source object in `__init__`
+* `RepeaterIterator.__next__` reaches back to the source
+
+#### How do `for-in` loops work in Python?
+
+The previous `for-in` loop is equivalent to:
+
+```python
+repeater = Repeater('Hello')
+iterator = repeater.__iter__()
+while True:
+    item = iterator.__next__()
+    print(item)
+```
+
+* If we want an infinite number of elements, it's not possible to use a list; an iterator is required.
+
+* iterators provide an interface that allows you to process every element of a container while being completely isolated from the container's internal structure.
+
+* Python has build in functions `iter` and `next` that invoke the dunder methods
+
+  ```python
+  >>> repeater = Repeater('Hello')
+  >>> iterator = iter(repeater)
+  >>> next(iterator)
+  'Hello'
+  >>> next(iterator)
+  'Hello'
+  >>> next(iterator)
+  'Hello'
+  ...
+  ```
+
+  * Better to use built-ins rather than directly accessing the dunder methods
+
+#### A Simple Iterator Class
+
+Combine helper class from previous version
+
+```python
+class Repeater:
+    def __init__(self, value):
+        self.value = value
+
+    def __iter__(self):
+			return self
+
+    def __next__(self):
+        return self.value
+```
+
+#### Who Wants to Iterate Forever
+
