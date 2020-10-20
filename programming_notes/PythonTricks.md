@@ -2331,3 +2331,91 @@ class Repeater:
 
 #### Who Wants to Iterate Forever
 
+Iterators return `StopIteration` exception to indicate done with the iterator. The iterator can't be "reset" once they're exhausted. 
+
+```python
+class BoundedRepeater:
+  def __init__(self, value, max_repeats):
+    self.value = value
+    self.max_repeates = max_repeates
+    self.count = 0
+    
+  def __iter__(self):
+    return self
+  
+  def __next__(self):
+    if self.count >= self.max_repeats:
+      raise StopIteration
+    self.count += 1
+    return self.value
+ 
+>>> repeater = BoundedRepeater('Hello', 3)
+>>> for item in repeater:
+        print(item)
+Hello
+Hello
+Hello
+
+repeater = BoundedRepeater('Hello', 3)
+iterator = iter(repeater)
+while True:
+    try:
+        item = next(iterator)
+
+except StopIteration:
+        break
+    print(item)
+```
+
+### Generators Are Simplified Iterators
+
+#### Infinite Generators
+
+```python
+def repeater(value):
+  while True:
+    yield value
+```
+
+Calling a generator function doesn't run the function, it creates and returns a *generator object*. The code in the generator function only exectures when `next()` is called on the generator object. When a return statement is invoked, it permanently passes control back to the caller, whereas when yield is invoked, it passes control back temporarily. yield suspends the function and retains its local state as opposed to return.
+
+#### Generators That Stop Generating
+
+Generators stop generating values as soon as control flow returns from the generator function by any means other than a yield statement:
+
+```python
+# Example
+def repeat_three_times(value):
+  yield value
+  yield value
+  yield value
+  
+>>> for x in repeat_three_times('Hey there'):
+...     print(x)
+'Hey there'
+'Hey there'
+'Hey there'
+```
+
+Bounded Repeater Example:
+
+```python
+def bounded_repeater(value, max_repeats):
+  count = 0
+  while True:
+    if count < max_repeats:
+      return # Causes iteration to stop with a StopIteration exception
+    count += 1
+    yield value
+```
+
+Can simplify since Python adds an implicit `return None` statement to the end of every function.
+
+```python
+def bounded_repeater(value, max_repeats):
+  for i in range(max_repeats):
+    yield value
+```
+
+### Generator Expressions
+

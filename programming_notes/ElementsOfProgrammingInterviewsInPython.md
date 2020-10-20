@@ -733,7 +733,7 @@ Time Complexity: $O(n)$. Space Complexity: $O(n)$.
 
 Can represent a permutation by an array such that P[i] represents the index that element P[i] gets mapped to, e.g. P = [2,0,1,3] applied to A = [a,b,c,d]  is [b, c, a, d].
 
-*Task* Given an array of n elements and a permutation P, apply P to A. 
+*Task*: Given an array of n elements and a permutation P, apply P to A. 
 
 *Solution*: Given additional storage, the problem is easy as you just iterate and assign to a new array B: B[P[i]] = A[i]. To do it in place, notice that any permutation can be created by a collection of independent cyclic permutations.
 
@@ -782,4 +782,90 @@ def apply_permutation(perm, A):
 This has $O(n^{2})$ however since have to traverse the cycle
 
 ### Compute The Next Permutation 
+
+There are $n!$ permutations of n elements. The permutations can be totally ordered using the *dictionary ordering*: permutation p appears before permutation q if the first place where p and q differ, p at that index is less than q at that index. 
+
+* Example: [2,0,1] < [2,1,0]. [0,1,2] is the smallest permutation and [2,1,0] is the largest.
+
+*Task*: Write a program that takes as input a permutation and returns the next permutation under the dictionary ordering (and if it is the last permutation, return the empty array.
+
+* Example: Input: [1,0,3,2]. Output [1,2,0,3].
+
+*Solution*: 
+
+* Brute-Force: Enumerate all permutations of length n and sort them and return the next permutation. Not feasible: number of permutations is enormous.
+* Better Solution: Use [6,2,1,5,4,3,0] as example. 
+  1. Find the longest decreasing suffix (looking from the right): [5,4,3,0]
+  2. Need to increase index e immediately before the longest decreasing suffix, in this case 1. Since we can only swap elements (each number occurs only once), find the smallest value larger than e in the longest decreasing suffix, in this case 3. This yields [6,2,3,5,4,1,0]
+  3. Need to sort the new suffix [5,4,1,0] to make it as small as possible. Note that this suffix is still decreasing, so reversing it sorts it: [0,1,4,5]. Final permutation is [6,2,3,,0,1,4,5] which is the next permutation
+* Generally, here is the procedure:
+  1. Find k such that $p[k] < p[k+1]$ and entries after k appear in decreasing order
+  2. Find the smallest $p[l]$ such that $p[l] > p[k]$ (such an $l$ must exist since $p[k] < p[k+1]$)
+  3. Swap $p[l]$ and $p[k]$ (note the sequence after position k remains in decreasing order)
+  4. Reverse the sequence after position k
+
+```python
+def next_permutation(perm):
+  ### Find the first entry from the right that is smaller than the enetry immediately after it.
+  inversion_point = len(perm)-2
+  while (inversion_point >= 0 and perm[inversion_point] >= perm[inversion_point + 1]):
+    inversion_point -= 1
+  if inversion_point == -1:
+    return [] # perm is the last permutation
+  
+  # swap the smallest entry after index inversion point that is great than perm[inversion_point]
+  for i in reversed(range(inversion_point+1, len(perm))):
+    if perm[i] > perm[inversion_point]:
+      perm[inversion_point], perm[i] = perm[i], perm[inversion_point]
+      break
+      
+  ## Entries in perm must appear in decreasing order after inversion_point
+  perm[inversion_point + 1:] = reversed(perm[inversion_point+1:])
+  return perm
+```
+
+Time Complexity: $O(n)$. Space Complexity: $O(1)$.
+
+### Sample Offline Data
+
+*Task*: Given an array of distinct elements and size, return a subset of given size. All subsets should be equally likely. Return the result in input array itself
+
+*Solution*: Let the input array A have length n and the desired subset size be k. The idea is to generate a subset of size k-1, and then randomly select another element from the rest to add to the subset. 
+
+```python
+def random_sampling(k, A):
+  for i in range(k):
+    # generate random index in [i, len(A) - 1]
+    r = random.randin(i, len(A) - 1)
+    A[i], A[r] = A[r], A[i]
+```
+
+Time Complexity: $O(k)$. Space Complexity: $O(1)$ additional space. Note if $k > n/2$ can select $n -k$ elements and remove them rather than run k times (since n-k < k)
+
+### Sample Online Data
+
+*Task*: Design a program that takes as input a size $k$, reads packets, continuously maintaining a uniform random subset of size $k$ of the read packets
+
+*Solution*: Idea: Do not need to keep running `random_sampling` from the previous problem. Instead, after each new packet arrives, with probability $k/(n+1)$, the new packet should be in the subset. If it should be, choose an element of the current subset randomly and replace it with the new packet. This maintains a random subset. 
+
+```python
+# Assumption: there are at least k elements in the stream
+def online_random_sample(it, k):
+  # Store the first k elements
+  sampling_results = list(itertools.islice(it, k))
+  
+  # Have read the first k elements.
+  num_seen_so_far = k
+  for x in it:
+    num_seen_so_far += 1
+    # Generate a random number in [0, num_seen_so_far - 1], and if this number is in [0, k-1], we replace that element from the sample with x.
+    idx_to_replace = random.randrange(num_seen_so_Far)
+    if idx_to_replace < k:
+      sampling_results[idx_to_replace] = x
+  return sampling_results
+```
+
+Time Complexity: $O(n)$ where n is the length of the stream. Space Complexity: $O(k)$. 
+
+### Compute a Random Permutation
 
