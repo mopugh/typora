@@ -904,6 +904,15 @@ Start with empty H. Perform $k$ iterations of the following: Choose a random int
 Example: Suppose $n=100$ and $k=4$. First random sample: 28. Then update H to $(0, 28), (28, 0)$  meaning $A[0] = 28$ and $A[28] = 0$, for all other $i$, $A[i] = i$. Second iteration, random sample: 42. Update H: $(0,28), (28,0), (1,42), (42,1)$. Third iteration, 28 again. Update H: $(0,28),(28,2), (1,42), (42, 1), (2, 0)$.  Last Iteration, suppose random number is 64. Update H $(0,28), (28, 2), (1, 42), (42, 1), (2, 0), (3, 64), (64, 3)$. The random subset of 4 elements corresponding to indices 0,1,2,3 is $[28, 42, 0, 64]$.
 
 ```python
-
+def random_subset(n, k):
+  changed_elements = {}
+  for i in range(k):
+    # Generate a random index between i and n - 1, inclusive
+    rand_idx = random.randrange(i, n)
+    rand_idx_mapped = changed_elements.get(rand_idx, rand_idx)
+    i_mapped = changed_elements.get(i, i)
+    changed_elements[rand_idx] = i_mapped
+    changed_elements[i] = rand_idx_mapped
+  return [changed_elements[i] for i in range(k)]
 ```
 
