@@ -2419,3 +2419,271 @@ def bounded_repeater(value, max_repeats):
 
 ### Generator Expressions
 
+Example:
+
+```python
+# Generator expression - Notice ()
+>>> iterator = ('Hello' for i in range(3))
+>>> for x in iterator:
+...     print(x)
+'Hello'
+'Hello'
+'Hello'
+
+# Recall generator function
+def bounded_repeater(value, max_repeats):
+  for i in range(max_repeats):
+    yield value
+    
+iterator = bounded_repeater('Hello', 3)
+```
+
+Note: Once generator expression has been consumed, it can't be restarted or reused. Generator function allows easy recreation.
+
+#### Generator Expressions vs List Comprehensions
+
+```python
+>>> listcomp = ['Hello' for i in range(3)]
+>>> genexpr = ('Hello' for i in range(3))
+
+>>> listcomp
+['Hello', 'Hello', 'Hello']
+>>> genexpr
+<generator object <genexpr> at 0x1036c3200>
+# Need to call next
+>>> next(genexpr)
+'Hello'
+>>> next(genexpr)
+'Hello'
+>>> next(genexpr)
+'Hello'
+>>> next(genexpr)
+# Or call list
+>>> list(genexpr)
+['Hello', 'Hello', 'Hello']
+```
+
+generator expression pattern:
+
+```python
+# generator expression
+genexpr = (expression for item in collection if condition)
+# corresponding generator function
+def generator():
+  for item in collection:
+    if condition:
+	    yield expression
+```
+
+### In-Line Generator Expressions
+
+Examples:
+
+```python
+for x in ('Bom dia' for i in range(3))
+
+# don't need () if single argument to a function
+sum((x * 2 for x in range(10))) # 90
+# vs.
+sum(x * 2 for x in range(10)) # 90
+```
+
+#### Too Much of a Good Thing...
+
+```python
+(expr for x in xs if cond1
+      for y in ys if cond2
+      ...
+      for z in zs if condN)
+
+# translates to
+for x in xs:
+    if cond1:
+       for y in ys:
+            if cond2:
+                ...
+                    for z in zs:
+                        if condN:
+                             yield expr # HARD TO READ!
+```
+
+#### Iterator Chains
+
+* View generators and generator expressions as syntactic sugar for writing iterators in Python.
+* View generators as producing a *stream of values* 
+* Create "data pipeline"
+
+```python
+def integers():
+  for i in range(1, 9):
+    yield i
+    
+def squared(seq):
+  for i in seq:
+    yield i * i
+    
+def negated(seq):
+  for i in seq:
+    yield -i
+    
+>>> chain = negated(squared(integers()))
+>>> list(chain)
+[-1, -4, -9, -16, -25, -36, -49, -64]
+
+# Can condense
+integers = range(8)
+squared = (i * i for i in integers)
+negated = (-i for i in squared)
+```
+
+## Dictionary Tricks
+
+### Dictionary Default Values
+
+* Dictionaries have a `get()` method to look up a key while providing a fallback value.
+  * If you try to access a key that doesn't exist, get a `KeyError`
+
+```python
+def greeting(userid):
+  return 'Hi %s!' % name_for_userid.get(userid, 'there')
+```
+
+* `get()` checks if the key exists. If it does, the value for the key is returned, otherwise the default parameter is returned.
+* Avoid explicit key in dict check
+
+### Sorting Dictionaries for Fun and Profit
+
+* Python dictionaries don't have an inherent order (changed with Python 3.6 and 3.7)
+
+### Emulating Switch/Case Statements With Dicts
+
+* Python doesn't have switch/case statements, so sometimes require long if..elif..else chains
+
+* Idea: Store functions in a dictionary 
+
+  ```python
+  func_dict = {
+    'cond_a': handle_a,
+    'cond_b': handle_b,
+  }
+  
+  # need to handle else case and missing key
+  func_dict.get(cond, handle_default)()
+  ```
+
+Example:
+
+```python
+#if/else
+>>> def dispatch_if(operator, x, y):
+...    if operator == 'add':
+...        return x + y
+...    elif operator == 'sub':
+...        return x - y
+...    elif operator == 'mul':
+...        return x * y
+...    elif operator == 'div':
+...        return x / y
+
+# Dictionary
+>>> def dispatch_dict(operator, x, y):
+...     return {
+...         'add': lambda: x + y, # Closures
+...         'sub': lambda: x - y,
+...         'mul': lambda: x * y,
+...         'div': lambda: x / y,
+...     }.get(operator, lambda: None)()
+
+# In reality we'd want to precompute this dictionary and not create it everytime
+```
+
+### The Craziest Dict Expression in the West
+
+Consider:
+
+```python
+{True: 'yes', 1: 'no', 1.0: 'maybe'}
+
+>>> {True: 'yes', 1: 'no', 1.0: 'maybe'}
+{True: 'maybe'} # ???
+```
+
+### So Many Ways to Merge Dictionaries
+
+```python
+zs = {**xs, **ys} # After Python 3.5, RHS has priority 
+```
+
+### Dictionary Pretty-Printing
+
+Consider:
+
+```python
+>>> import json
+>>> json.dumps(mapping, indent=4, sort_keys=True)
+
+>>> import pprint
+>>> pprint.pprint(mapping)
+```
+
+## Python Productivity Techniques
+
+### Exploring Python Modules and Objects
+
+Use of `dir()` function
+
+```python
+>>> import datetime
+>>> dir(datetime)
+['MAXYEAR', 'MINYEAR', '__builtins__', '__cached__',
+'__doc__', '__file__', '__loader__', '__name__',
+'__package__', '__spec__', '_divide_and_round',
+'date', 'datetime', 'datetime_CAPI', 'time',
+'timedelta', 'timezone', 'tzinfo']
+
+>>> dir(datetime.date)
+['__add__', '__class__', ..., 'day', 'fromordinal',
+'isocalendar', 'isoformat', 'isoweekday', 'max',
+'min', 'month', 'replace', 'resolution', 'strftime',
+'timetuple', 'today', 'toordinal', 'weekday', 'year']
+```
+
+Call `help()` function
+
+### Isolating Project Dependencies With Virtualenv
+
+#### Virtual Environments to the Rescue
+
+A *virtual environment* is an isolated Python environment.
+
+* Create virtualenv: `python3 -m venv ./venv`
+* Activate virtualenv: `source ./venv/bin/activate` 
+* Deactivate virtualenv: `deactivate`
+
+Virtual environments keep your project dependencies separated. They help you avoid version conflicts between packages and different versions of the Python runtime.
+
+### Peeking Behind the Bytecode Curtain
+
+Bytecode is an intermediate language for the Python virtual machine that's used as a performance optimization.
+
+* Bytecode is cached on disk as `.pyc` or `.pyo` to save time the second time the file is run
+
+Each function has a `__code__` attribute
+
+Disassembler:
+
+```python
+def greet(name):
+    return 'Hello, ' + name + '!'
+
+>>> import dis
+>>> dis.dis(greet)
+  2           0 LOAD_CONST           1 ('Hello, ')
+							2 LOAD_FAST            0 (name)
+              4 BINARY_ADD
+              6 LOAD_CONST           2 ('!')
+              8 BINARY_ADD
+             10 RETURN_VALUE
+
+```
+
