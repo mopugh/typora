@@ -869,3 +869,41 @@ Time Complexity: $O(n)$ where n is the length of the stream. Space Complexity: $
 
 ### Compute a Random Permutation
 
+*Task*: Design an algorithm to create a uniformly random permutation on $[0, 1, \ldots, n-1]$ given a random number generator that returns integers in the set $[0, 1, \ldots, n-1]$ 
+
+Note that iterating through and swapping elements with a random element does not create uniform permutations. Example: n=3, in which case there are $3! = 6$ permutations, but $3^3=27$ ways to swap and 27 is not divisible by 6.
+
+*Solution*:
+
+* Brute-Force: Select indices at random to add to the permutation, and resample if the index has already been selected. Can store in a hash table. Couple Collector's Problem for run time: $O(n \log n)$ 
+
+* Better Solution: Use solution for a random sampling with $k = n$. 
+
+  ```python
+  def compute_random_permutation(n):
+    permutation = list(range(n))
+    random_sampling(n, permutation)
+    return permutation
+  ```
+
+  Time Complexity: $O(n)$. No additional storage beyond permutation array.
+
+### Compute a Random Subset
+
+The set $[0,1,\ldots,n-1]$ has ${n \choose k}$ subsets of size k.
+
+*Task*: Design an algorithm that returns any subset of size $k$ with equal probability
+
+*Solution*: Idea: Use a hash table to keep track of values picked by the randomization. 
+
+* If $i$ is in H, then its value in H is the value stored at A[i]
+* If $i$ is not in H, then this implicitly implies A[i] = i.
+
+Start with empty H. Perform $k$ iterations of the following: Choose a random integer $r$ in $[0, n-1-i]$ where $i$ is the current iteration, starting at 0. There are four possibilities corresponding to whether the two entries in $A$ that are being swapped are already present in $H$ or not. The esired result is $A[0,k-1]$
+
+Example: Suppose $n=100$ and $k=4$. First random sample: 28. Then update H to $(0, 28), (28, 0)$  meaning $A[0] = 28$ and $A[28] = 0$, for all other $i$, $A[i] = i$. Second iteration, random sample: 42. Update H: $(0,28), (28,0), (1,42), (42,1)$. Third iteration, 28 again. Update H: $(0,28),(28,2), (1,42), (42, 1), (2, 0)$.  Last Iteration, suppose random number is 64. Update H $(0,28), (28, 2), (1, 42), (42, 1), (2, 0), (3, 64), (64, 3)$. The random subset of 4 elements corresponding to indices 0,1,2,3 is $[28, 42, 0, 64]$.
+
+```python
+
+```
+
