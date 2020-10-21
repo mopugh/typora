@@ -916,3 +916,81 @@ def random_subset(n, k):
   return [changed_elements[i] for i in range(k)]
 ```
 
+Time Complexity: $O(k)$. Space Complexity: $O(k)$ 
+
+### Generate Nonuniform Random Numbers
+
+*Task*: Given $n$ numbers and probabilities $p_{0}, p_{1}, \ldots, p_{n-1}$ and a uniform random number generator, generate a random number according to the distribution.
+
+*Solution*: Want to partition [0,1] such that the $i^{th}$ interval is proportional to $p_{i}$. The partition to use is the CDF. Have to find what interval the uniform random number lands in, which can take $O(n)$ time, but the partition is ordered, so we can use binary search to get $O(\log n)$ time. 
+
+```python
+def nonuniform_random_number_generation(values, probabilities):
+  prefix_sum_of_probabilities = list(itertools.accumulate(probabilities))
+  interval_idx = bisect.bisect(prefix_sum_of_probabilities, random.random())
+  return values[interval_idx]
+```
+
+### Multidimensional Arrays
+
+A 2D array is an array whose entries are themselves arrays. This can be generalized to $k$ dimensional arrays.
+
+### The Sudoku Checker Problem
+
+*Task*: Check whether a $9 \times 9$ 2D array representing a partially completed Sudoku is valid. 
+
+![image-20201020154653605](./figures/image-20201020154653605.png)
+
+*Solution*: Need to check 9 row constraints, 9 column constraints, and 9 sub-grid constraints.
+
+```python
+def is_valid_sudoku(partial_assignment):
+  # Return True if subarray
+  # partial_assignment[start_row:end_row][start_col:end_col] contains
+  # any duplicates in {1, 2, ..., len(partial_assignment)}.
+  # otherwise return False
+  def has_duplicate(block):
+    block = list(filter(lambda x: x != 0, block))
+    return len(block) != len(set(block))
+  
+  n = len(partial_assignment)
+  # Check row and column constraints
+  if any(
+  	has_duplicate([partial_assignment[i][j] for j in range(n)]
+                 or has_duplicate([partial_assignment[j][i] for j in range(n)]) 
+                 for i in range(n)):
+    return False
+    
+  # Check region constraints
+    region_size = int(math.sqrt(n))
+    return all(not has_duplicate([
+      partial_assignment[a][b]
+      for a in range(region_size * I, region_size * (I+1))
+      for b in range(region_size * J, region_size * (J+1))
+    ]) for I in range(region_size) for j in range(region_size))
+  )
+
+
+# Pythonic solution that exploits the power of list comprehension
+def is_valid_sudoku_pythonic(partial_assignment):
+  region_size = int(math.sqrt(len(partial_assignment)))
+  return max(
+  	collections.Counter(k
+                       for i, row in enumerate(partial_assignment)
+                       for j, c in enumerate(row)
+                       if c != 0
+                       for k in ((i, str(c)), (str(c), j),
+                                (i / region_size, j / region_size,
+                                str(c)))). values(),
+    default=0) <= 1
+```
+
+Time Complexity: $O(n^{2})$. Space Complexity: $O(n)$. 
+
+### Compute the Spiral Ordering of a 2D Array
+
+*Task*: Write a program that takes an $n \times n$ array and returns the spiral ordering of the array.
+
+![image-20201020164300341](figures/image-20201020164300341.png)
+
+*Solution*: 
