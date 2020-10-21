@@ -564,3 +564,34 @@ Look for upper bounds on the running time.
 
 ### Big-O
 
+**Definition**: Given (nondecreasing) functions $f$ and $g$, we say $f(n) = O(g(n))$ if there exists constants $c$ and $n_{0}$ such that for all $n > n_{0}$ we have $f(n) \leq c g(n)$. 
+
+### The most important feature of big-O usage
+
+1. The big-O *hides constant factors*. Any terms that does not depend on the size of the input is considered a constant and will be suppressed in the big-O.
+2. The big-O tells us about what will eventually be true *when the input is sufficiently large*. 
+
+In the definition, the constant $c$ is the constant that stands in for all other constant factors and allows us to suppress lower order terms. The constant $n_{0}$ is the threshold after which the inequality is true.
+
+### Practical Use of the Big-O and Common Functions
+
+* **Constant Functions**: $O(1)$
+* **Logarithmic Functions**: $O(\log n)$
+* **Linear Functions**: $O(n)$
+* **n Log n**: $O(n \log n)$ 
+* **Quadratic Functions**: $O(n^2)$
+* **Polynomial Functions**: $O(n^k)$
+* **Exponential Functions**: $O(2^n)$
+* **Factorial Functions**: $O(n!)$ 
+
+### Bases for Logarithms
+
+* $\log_{a}(n) = O(\log_{b}(n))$ where a and b are any two constants
+
+  * **Proof**: Let $c = 1/\log_{b}(a)$ and $n_{0} = 0$, then
+    $$
+    \log_{a}(n) = \frac{\log_{b}(n)}{\log_{b}(a)} \leq c \log_{b}(n) \textrm{ for all } n > n_{0}
+    $$
+
+## Stacks and Queues
+

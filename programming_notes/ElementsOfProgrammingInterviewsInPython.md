@@ -993,4 +993,98 @@ Time Complexity: $O(n^{2})$. Space Complexity: $O(n)$.
 
 ![image-20201020164300341](figures/image-20201020164300341.png)
 
+*Solution*: First thoughts may be difficult because of non-uniformities: tranverse n columns of first row, then n-1 rows of last column, then n-1 columns of last row, then n-2 rows of first column, etc. A more uniform approach is to add the first n-1 elements of the first row, then the first n-1 elements of the last column, then the last n-1 elements of the last row in reverse order, then the last n-1 elements of the first column in reverse order. After this, one has left an $(n-2) \times (n-2)$ 2D array to traverse in spiral order. Leads to iterative algorithm. Note corner case if n is odd, when we reach the center.
+
+```python
+def matrix_in_spiral_order(square_matrix):
+  def matrix_layer_in_clockwise(offset):
+    if offset == len(square_matrix) - offset - 1:
+      # square_matrix has odd dimension and we are at the center
+      spiral_ordering.append(square_matrix[offset][offset])
+      return
+    
+    spiral_ordering.extend(square_matrix[offset][offset:-1 - offset])
+    spiral_ordering.extend(
+    	list(zip(*square_matrix))[-1 - offset][offset:-1 - offset])
+    spiral_ordering.extend(
+    	square_matrix[-1 - offset][-1 - offset:offset:-1])
+    spiral_ordering.extend(
+    	list(zip(*square_matrix))[offset][-1 - offset:offset:-1])
+    
+  spiral_ordering = []
+  for offset in range((len(square_matrix)+1) // 2):
+    matrix_layer_in_clockwise(offset)
+  return spiral_ordering
+```
+
+Time Complexity: $O(n^2)$ 
+
+### Rotate a 2D Array
+
+![image-20201021110839898](figures/image-20201021110839898.png)
+
+*Task*: Write a function that takes as input an $n \times n$ 2D array and rotates the array by 90 degrees clockwise.
+
 *Solution*: 
+
+* *Brute-force* : Notice the $i^{th}$ row becomes the $i^{th}$ column. Can create a new array and copy them over and then copy back over to the original array (need to modify the original array per specification)
+
+* Can we do it in place? In the example above, note we can move 1 to 4, 4 to 16, 16, to 13, and 13 to 1. We can continue this process.
+
+  ```python
+  def rotate_matrix(square_matrix):
+    matrix_size = len(square_matrix) - 1
+    for i in range(len(square_matrix) // 2):
+      for j in range(i, matrix_size - i):
+        # perform a 4-way exchange. 
+        # Note A[~i] for i in range [0, len(A) - 1] is A[-(i+1)]
+        (square_matrix[i][j], square_matrix[~j][i], 
+         square_matrix[~i][~j], square_matrix[j][~i]) = 
+        		(square_matrix[~j][i],
+             square_matrix[~i][~j],
+             square_matrix[j][~i], square_matrix[i][j])
+  ```
+
+  Time Complexity: $O(n^2)$. Space Complexity: $O(1)$
+
+* Use class that modifies on reads 
+
+  ```python
+  class RotatedMatrix:
+    def __init__(self, square_matrix)
+    	self._square_matrix = square_matrix
+    
+    def read_entry(self, i, j):
+      # Note that A[~i] for i in [0, len(A) - 1] is A[~(i+1)]
+      return self._square_matrix[~j][i]
+    
+    def write_entry(self, i, j, v):
+      self._square_matrix[~j][i] = v
+  ```
+
+### Compute Rows in Pascal's Triangle
+
+![image-20201021111853538](figures/image-20201021111853538.png)
+
+*Task*: Write a program that takes as input a nonnegative integer n and returns the first n rows of Pascal's Triangle
+
+*Solution*: 
+
+* Brute-force: Try to solve it using memory that looks like Pascal's triangle
+
+* Better approach: Keep arrays left-aligned. If the $j^{th}$ entry in the $i^{th}$ row is $j = 0$ or $j= i$, then the entry is 1, otherwise its the sum of the $(j-1)^{th}$ and $j^{th}$ entries from the previous row $i-1$. 
+
+  ```python
+  def generate_pascal_triangle(n):
+    result = [[1] * (i+1) for i in range(n)]
+    for i in range(n)
+     for j in range(1, i):
+      # sets this entry to the sum of the two above adjacent entries
+      results[i][j] = results[i - 1][j - 1] + result[i - 1][j]
+    return result
+  ```
+
+  Time Complexity: $O(n^2)$. Space Complexity: $O(n^2)$ 
+
+## Strings 
+
