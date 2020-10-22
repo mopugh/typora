@@ -593,5 +593,361 @@ In the definition, the constant $c$ is the constant that stands in for all other
     \log_{a}(n) = \frac{\log_{b}(n)}{\log_{b}(a)} \leq c \log_{b}(n) \textrm{ for all } n > n_{0}
     $$
 
-## Stacks and Queues
+## Chapter 6: Stacks and Queues
+
+### Abstract Data Types
+
+An **abstract data type** (ADT) answers two main questins:
+
+1. What is the data to be stored or represented?
+2. What can we do with the data?
+
+The answer to these questions describe the **behavior** or **semantics** of the data structure.
+
+* provide list of names of the methods
+* the input the methods take
+* the expected output of the methods
+
+A **data structure** is an implementation of an ADT. (a.k.a. a **concrete data structure**). An ADT **does not** give hints or prescriptions on how the data structure is implemented.
+
+* **The ADT should be independent of all concerns about its implementation.**
+
+### The Stack ADT
+
+* **push**: add a new item to the stack
+* **pop**: remove and return the next item in the Last In First Out (LIFO) ordering
+* **peek**: return the next item in the LIFO ordering
+* **size**: returns the number of items in the stack
+* **isempty**: return `True` if the stack has no items and return `False` otherwise
+
+#### List implementation of stack
+
+```python
+class ListStack:
+  def __init__(self):
+    self._L = []
+    
+  def push(self, item):
+    self._L.append(item)
+    
+  def pop(self):
+    return self._L.pop()
+  
+  def peek(self):
+    return self._L[-1]
+  
+  def __len__(self):
+    return len(self._L)
+  
+  def isempty(self):
+    return len(self) == 0
+```
+
+This implementation uses the **Wrapper Pattern** since it uses a list. Note it is cheap to add and remove from the end, but expensive to add and remove from the beginning of a list since all the elements in memory have to be moved.
+
+### The Queue ADT
+
+* **enqueue**: add a new item to the queue
+* **dequeue**: remove and return the next item in the First In First Out (FIFO) ordering
+* **peek**: return (without removing) the next item in the queue in FIFO order
+* **__len__**: return the number of items in the queue
+* **isempty**: return True if the queue has no items and return False otherwise
+
+#### List implementation of queue
+
+Recall we do not want to add and remove from the front of a list as this is expensive.
+
+```python
+class ListQueueFakeDelete:
+  def __init__(self):
+    self._L = []
+    self._head = 0
+    
+  # Choosing to append to the end
+  def enqueue(self, item):
+    self._L.append(item)
+    
+  def peek(self):
+    return self._L[self._head]
+  
+  def dequeue(self):
+    item = self.peek()
+    self._head += 1
+    return item
+  
+  def __len__(self):
+    return len(self._L) - self._head
+  
+  def isempty(self):
+    return len(self) == 0
+```
+
+The above implementation never gets rid of old values. Idea is to resize if half the array gets empty.
+
+```python
+class ListQueue(ListQueueFakeDelete):
+  def dequeue(self):
+    item = self._L[self._head]
+    self._head += 1
+    if self._head > len(self._L) // 2:
+      self._L = self._L[self._head:]
+      self._head = 0
+    return item
+```
+
+"on average" the cost per item is constant since the resizing operations happens infrequently enough.
+
+#### Dealing with errors
+
+```python
+from ds2.stack import ListStack
+
+class AnotherStack(ListStack):
+  def pop(self):
+    try:
+      return self._L.pop()
+    except IndexError:
+      raise RuntimeError("pop from empty stack")
+```
+
+## Chapter 7: Deques and Linked Lists
+
+A **deque** (pronounced "deck") is a doubly-ended queue. Acts as both a stack and a queue.
+
+### The Deque ADT
+
+* **addfirst(item)**: add `item` to the front of the deque
+* **addlast(item)**: add `item` to the end of the deque
+* **removefirst(item)**: remove and return the first item in the deque
+* **removelast(item)**: remove and return the last item in the deque
+* **len**: return the number of items in the deque
+
+#### List Deque
+
+```python
+class ListDeque:
+  def __init__(self):
+    self._L = []
+    
+  def addfirst(self, item):
+    self._L.insert(0, item)
+    
+  def addlast(self, item):
+    self._L.append(item)
+    
+  def removefirst(self):
+    return self._L.pop(0)
+  
+  def removelast(self):
+    return self._L.pop()
+  
+  def __len__(self):
+    return len(self._L)
+```
+
+In this implementation `addfirst` and `removefirst` are $O(n)$ operations.
+
+### Linked Lists
+
+The idea is to store individual items in objects called **nodes**. 
+
+Look at nouns to define types and verbs to define methods:
+
+```python
+class ListNode:
+  def __init__(self, data, link = None):
+    self.data = data
+    self.link = link
+```
+
+Idea: want to abstract the nodes (i.e. the user doesn't know they exist)
+
+```python
+class LinkedList:
+  def __init__(self):
+    self._head = None
+    
+  def addfirst(self, item):
+    self._head = ListNode(item, self._head)
+    
+  def removefirst(self):
+    item = self._head.data
+    self._head = self._head.link
+    return item
+```
+
+### Implementing a Queue with a LinkedList
+
+```python
+class LinkedList:
+  def __init__(self):
+    self._head = None
+    self._tail = None # keep track of tail so we can add directly to the end
+    self._length = 0
+  
+  def addfirst(self, item):
+    self._head = ListNode(item, self._head)
+    if self._tail is None: self._tail = self._head
+    self._length += 1
+      
+  def addlast(self, item):
+    if self._head is None:
+      self.addfirst(item)
+    else:
+      self._tail.link = ListNode(item)
+      self._tail = self._tail.link
+      self._length += 1
+      
+  def removefirst(self):
+    item = self._head.data
+    self._head = self._head.link
+    if self._head is None: self._tail = None
+    self._length -= 1
+    return item
+  
+  def removelast(self):
+    if self._head is self._tail:
+      return self.removefirst()
+    else:
+      currentnode = self._head
+      while currentnode.link is not self._tail:
+        currentnode = currentnode.link
+      item = self._tail.data
+      self._tail = currentnode
+      self._tail.link = None
+      self._length -= 1
+      return item
+    
+  def __len__(self):
+    return self._length
+    
+# Implement queue with the above linked list
+class LinkedQueue:
+  def __init__(self):
+    self._L = LinkedList()
+    
+  def enqueue(self, item):
+    self._L.addlast(item)
+    
+  def dequeue(self):
+    return self._L.removefirst()
+  
+  def peek(self):
+    item = self._L.removefirst()
+    self._L.addfirst(item)
+    return item
+  
+  def __len__(self): # delegate length to linked list
+    return len(self._L)
+  
+  def isempty(self):
+    return len(self) == 0
+```
+
+Above implementation still requires traversal to remove the last element (this will require doubly linked list).
+
+### The Main Lessons
+
+* Use the public interface as described in an ADT to test your class
+* You can use inheritance to share functionality between classes
+* Inheritance means **"is a"** 
+
+### Design Patterns: The Wrapper Pattern
+
+* **Composition**: the class stored an object of another class, and then **delegate** most of the operations to the other class. 
+  * This is an example of a **Wrapper Pattern**
+  * Adds a **layer of abstraction**
+* **Design Patterns** are a way of organizing classes to solve common programming problems.
+* Take-aways:
+  * Use design patterns where appropriate to organize your code and improve readability
+  * The Wrapper Pattern gives a way to provide an alternative interface to (a subset of) the methods in another class
+  * Composition means **"has a"** 
+
+## Chapter 8: Doubly-Linked Lists
+
+* Idea: store links in each node pointing forward and backwards to enable traversing the list in both directions.
+* Invariant: `b == a.link` iff `a == b.prev` for any two nodes `a` and `b` 
+  * To help ensure this invariant, we set `self.prev.link = self` and `self.link.prev = self` unless `prev` or `link` are `None`
+
+```python
+class ListNode:
+  def __init__(self, data, prev = None, link = None):
+    self.data = data
+    self.prev = prev
+    self.link = link
+    if prev is not None:
+      self.prev.link = self
+    if link is not None:
+      self.link.prev = self
+```
+
+Consider more general problem of adding a node between two other nodes for more refactoring:
+
+```python
+class DoublyLinkedList:
+  def __init__(self):
+    self._head = None
+    self._tail = None
+    self._length = 0
+    
+  def __len__(self):
+    return self._length
+  
+  def _addbetween(self, item, before, after):
+    node = ListNode(item, before, after)
+    if after is self._head:
+      self._head = node
+    if before is self._tail:
+      self._tail = node
+    self._length += 1
+    
+  def addfirst(self, item):
+    self._addbetween(item, None, self._head)
+    
+  def addlast(self, item):
+    self._addbetween(item, self._tail, None)
+    
+  def _remove(self, node):
+    before, after = node.prev, node.link
+    if node is self._head:
+      self_head = after
+    else:
+      before.link = after
+    if node is self._tail:
+      self._tail = before
+    else:
+      after.prev = before
+    self._length -= 1
+    return node.data
+  
+  def removefirst(self):
+    return self._remove(self._head)
+  
+  def removelast(self):
+    return self._remove(self._tail)
+```
+
+### Concatenating Doubly Linked Lists
+
+For lists, concatenating two lists takes time proportional to the length of the newly created list and doesn't modify the original two lists. If you're allowed to modify the list, then concatenation can be achieved by pointing the tail of the first list to the head of the second list:
+
+```python
+def __iadd__(self, other):
+  if other._head is not None:
+    if self._head is None:
+      self._head = other._head
+    else:
+      self._tail.link = other._head
+      other._head.prev = self._tail
+    self._tail = other._tail
+    self._length = self._length + other._length
+    
+  	# Clean up the other list
+  	other.__init__()
+  return self
+```
+
+With concatenation of doubly linked list, the second list is emptied. It does this so that we don't have multiple doubly-linked lists with the same `ListNode`s. This would be a problem if we tried to edit just one of the lists, because the change would be reflected in the other list as well.
+
+## Chapter 9: Recursion
 
