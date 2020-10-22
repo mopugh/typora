@@ -1086,5 +1086,111 @@ Time Complexity: $O(n^2)$
 
   Time Complexity: $O(n^2)$. Space Complexity: $O(n^2)$ 
 
-## Strings 
+## Chapter 6: Strings 
+
+Strings can be viewed as a special type of array: an array of strings. Treat them as separate from arrays since there are a set of operations on strings, i.e. comparison, copying, joining, splitting, matching, etc., that are not done on general arrays. 
+
+### Strings boot camp
+
+* A palindrome is a string that is the same forward and backwards.
+
+  * Rather than create a new string for the reverse, just travel the string in reverse
+
+    ```python
+    def is_palindrome(s):
+      # Note that s[~i] for i in [0, len(s) - 1] is s[-(i+1)]
+      return all(s[i] == s[~i] for i in range(len(s) // 2))
+    ```
+
+    Time Complexity: $O(n)$. Space Complexity: $O(1)$
+
+### Know your string libraries
+
+* Key operators
+  * Indexing: s[3]
+  * length: len(s)
+  * concatenation: s + t
+  * slicing: s[2:4]
+  * membership: s in t
+  * s.strip()
+  * s.startswith(prefix)
+  * s.endswith(suffix)
+  * ''.split(',')
+  * 3 * '01'
+  * ','.join(('alpha','beta'))
+  * s.tolower()
+  * 'Name {name}, Rank {rank}'.format(name='alpha', rank=1)
+* strings are immutable
+  * s = s[1:] or s += '123' create new arrays and then assign them back to s
+  * appending characters $n$ times is $O(n^2)$
+
+![image-20201022061349915](./figures/image-20201022061349915.png)
+
+### Interconvert Strings and Integers
+
+*Task*: Write functions to convert to and from string representations of integers (including negative integers), e.g. '123' to 123. For this task do not use `int` 
+
+*Solution*:
+
+```python
+def int_to_string(x):
+  is_negative = False
+  if x < 0:
+    x, is_negative = -x, True
+    
+  s = []
+  while True:
+    s.append(chr(ord('0') + x % 10))
+    x //= 10
+    if x == 0:
+      break
+      
+  # Adds the negative sign back if is_negative
+  return ('-' if is negative else '') + ''.join(reversed(s))
+
+
+def string_to_int(s):
+  return functools.reduce(
+  	lambda running_sum, c: running_sum * 10 + string.digits.index(c),
+    s[s[0] == '-'], 0) * (-1 if s[0] == '-' else 1)
+```
+
+### Base Conversion
+
+*Task*: Input: a string, integers $2 \leq b_{1}, b_{2} \leq 16$. Use hex representation: 10 = 'A', ..., 15 = 'F'. Output is the string representing the input integer in base $b_{2}$. 
+
+*Solution*: Note that we can convert the input string in base $b_{1}$ to an integer and then convert the integer into a string in base $b_{2}$. 
+
+```python
+def convert_base(num_as_string, b1, b2):
+  def construct_from_base(num_as_int, base):
+    return ('' if num_as_int == 0 else
+            construct_from_base(num_as_int // base, base) + 
+            string.hexdigits[num_as_int % base].upper())
+  
+  is_negative = num_as_string[0] == '-'
+  num_as_int = functools.reduce(
+  	lambda x, c: x * b1 + string.hexdigits.index(c.lower()),
+    num_as_string[is_negative:], 0)
+  return ('-' if is_negative else '') + ('0' if num_as_int == 0 else 
+                                         construct_from_base(num_as_int, b2))
+```
+
+Time Complexity: $O(n(1+\log_{b_{2}}b_{1}))$ where n is the length of s. Peform n multiply and adds to get from x to s, and then $log_{{b_{2}}}x$ multiply and adds to get to the result. x is upper-bounded by $b_{1}^{n}=n\log_{b_{2}}b_{1}$
+
+### Compute the spreadsheet column encoding
+
+*Task*: Implement a function that converts a spreadsheet column id to the corresponding integer, with 'A' = 1, 'D' = 4, 'AA' = 72, 'ZZ' = 702, etc.
+
+*Solution*: Problem is basically converting from a string representing base-26 to an integer: 'ZZ' = $26^{1} * 26 + 26^{0} * 26 = 702$. 
+
+```python
+def ss_decode_col_id(col):
+  return functools.reduce(
+    lambda result, c: result * 26 + ord(c) - ord('A') + 1, col, 0)
+```
+
+Time Complexity: $O(n)$
+
+### Replace and remove
 
