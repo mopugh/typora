@@ -951,3 +951,104 @@ With concatenation of doubly linked list, the second list is emptied. It does th
 
 ## Chapter 9: Recursion
 
+* At its simplest, one can think of **recursion** as: *when a function calls itself*.
+  * Think of self-calls as black boxes.
+
+### Recursion and Induction
+
+There is a strong connection between induction and recursion. 
+
+Example: sum of first k natural numbers is $\frac{k(k+1)}{2}$:
+
+​	Base Case: $f(0) = 0 = \frac{0*(0+1)}{2}$
+
+​	Induction Step: Assume it holds for k-1
+$$
+f(k) = f(k-1) + k = \frac{(k-1)(k-1+1)}{2} + k = \frac{(k-1)k + 2k}{2} = \frac{k(k+1)}{2}
+$$
+
+
+### Some Basics
+
+1. Have a base case. 
+2. Recursive calls should move towards the base case.
+
+### The Function Call Stack
+
+Interesting example:
+
+```python
+A = [2]
+B = [2]
+A.append(A)
+B.append(B)
+A == B
+```
+
+This leads to a `RecursionError`. Second element of A points back to itself and the same with B. 
+
+### The Fibonacci Sequence
+
+```python
+# Slow recursive version
+def fib(k):
+  if k in [0, 1] return k
+	return fib(k-1) + fib(k-2)
+
+# Loop version
+def fibloop(k):
+  a, b = 0, 1
+  for i in range(k):
+    a, b, = b, a + b
+  return a
+```
+
+### Euclid's Algorithm
+
+```python
+def gcd(a, b):
+  if a == b:
+    return a
+  if a > b:
+    a, b = b, a
+  return gcd(a, b - a)
+```
+
+**Deep idea**: division is iterated subtraction, multiplication is iterated addition, exponentiation is iterated multiplication, logarithms are iterated divisions.
+
+```python
+def gcd2(a, b):
+  if a > b:
+    a, b = b, a
+  if a == 0:
+    return b
+  return gcd(a, b % a)
+```
+
+## Chapter 10: Dynamic Programming
+
+**Dynamic programming** refers to an approach to writing algorithms in which a problem is solved using solutions to the same problem on smaller instances. 
+
+* Common to arrive at a dynamic programming algorithm by starting with a recursive algorithm that is inefficient because it makes repeated recursive calls to a function with the exact same parameters, wasting time. 
+
+Example: Making change. Provided a list of coin amounts, provide change using the fewest coins.
+
+### A Greedy Algorithm
+
+```python
+def greedyMC(coinvalueList, change):
+  coinvalueList.sort()
+  coinvalueList.reverse()
+  numcoins = 0
+  for c in coinvalueList:
+    # Add in as many cons as possible from the next largest value
+    numcoins += change // c
+    # update the amount of change left to return
+    change = change % c
+  return numcoins
+```
+
+The greedy algorithm does not work!
+
+### A Recursive Algorithm
+
