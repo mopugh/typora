@@ -30,3 +30,17 @@
 
 ### Special Sets
 
+* **Definition**: The **set of all integers** is denoted $\mathbb{Z}$. Intuitively, it is the set $\{\ldots, -2, -1, 0, 1, 2, \ldots\}$ 
+* **Definition**: The **set of all natural numbers**, denoted $\mathbb{N}$, is the set $\mathbb{N} = \{0, 1, 2, 3, \ldots\}$
+  * Represent answers to questions of the form "how many"?
+* **Definition**: The **set of positive natural numbers** $\mathbb{N}^{+}$ is the set $\mathbb{N}^{+} = \{1, 2, 3,\ldots\}$
+* Think of **real numbers** representing arbitrary measurements. 
+  * The real numbers are denoted $\mathbb{R}$
+* **Definition**: A **finite set** is a set containing only finitely many elements. An **infinite set** is a set containing infinitely many elements. 
+
+### Set-Builder Notation
+
+#### Filtering Sets
+
+
+

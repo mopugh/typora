@@ -1052,3 +1052,208 @@ The greedy algorithm does not work!
 
 ### A Recursive Algorithm
 
+```python
+def recMC(coinValueList, change):
+  minCoins = change
+  if change in coinValueList:
+    return 1
+  else:
+    for i in [c for c in coinValueList if c <= change]:
+      numCoins = 1 + recMC(coinValueList, change-i)
+      if numCoins < minCoins:
+        minCoins = numCoins
+  return minCoins
+```
+
+This algorithm works but is very slow. Makes many of the same recursive calls. Could try to **memoize** solutions from previous recursive calls.
+
+### A Memoized Version
+
+```python
+def memoMC(coinValueList, change, knownResults):
+  minCoins = change
+  if change in coinValueList:
+    knownResults[change] = 1
+    return 1
+  elif change in knownResults:
+    return knownResults[change]
+  else:
+    for i in [c for c in coinValueList if c <= change]:
+      numCoins = 1 + memoMC(coinValueList, change-i, knownResults)
+      if numCoins < minCoins:
+        minCoins = numCoins
+        knownResults[change] = minCoins
+  return minCoins
+```
+
+### A Dynamic Programming Algorithm
+
+```python
+def dpMakeChange(coinValueList, change):
+  # Create a list to store the answers to the subproblems
+  minCoins = [None] * (change + 1)
+  
+  # For each value from 0 to change, compute the min number of coins needed.
+  for cents in range(change + 1):
+    # Assume at first that all 1's are used
+    minCoins[cents] = cents
+    # Check if any coin leads to a better solution to our current best
+    for c in coinValueList:
+      if cents >= c:
+        minCoins[cents] = min(minCoins[cents], minCoins[cents - c] + 1)
+```
+
+* The memoized recursive version works from the top down
+* The dynamic programming version works from the bottom up
+
+### Another Example
+
+* **Look for smaller problems to solve**
+  * If those smaller problems are instances of the same problem, recursion or dynamic programming may be appropriate
+
+#### Longest Common Subsequence (LCS)
+
+Want to find the longest common subsequence in two strings.
+
+* If `X[-1] == Y[-1]` then the last character is in the LCS
+* Otherwise, at least one of `X[-1]` or `Y[-1]` is not in the LCS.
+  * `LCS(X,Y)` is the longer of `LCS(X, Y[:-1])` or `LCS(X[:-1], Y)` 
+
+##### Recursive Solution
+
+```python
+def reclcs(X, Y):
+  if X == "" or Y == "":
+    return ""
+  if X[-1] == Y[-1]:
+    return reclcs(X[:-1], Y[:-1]) + X[-1]
+  else:
+    return max([reclcs(X[:-1], Y), reclcs(X, Y[:-1])], key = len)
+```
+
+The recursive algorithm is slow!
+
+##### Dynamic Programming Solution
+
+```python
+def lcs(X, Y):
+  t = {}
+  for i in range(len(X)+1): t[(i,0)] = ""
+  for j in range(len(Y)+1): t[(0,j)] = ""
+  
+  for i, x in enumerate(X):
+    for j, y in enumerate(Y):
+      if x == y:
+        t[(i+1,j+1)] = t[(i,j)] + x
+      else:
+        t[(i+1, j+1)] = max([t[(i,j+1)], t[(i+1,j)]], key = len)
+  return t[(len(X), len(Y))]
+```
+
+Time Complexity: $O(kn^2)$ where $k$ is the length of the output (due to concatenation).
+
+Can get to $O(n^2)$ but would require a different way to store the solutions to the subproblems (i.e. not concatenating lists)
+
+## Binary Search
+
+Determine if an item in a sorted list. Recursively search half of list that could contain the element.
+
+```python
+def bs(L, item):
+  if len(L) == 0: return False
+  median = len(L) // 2
+  if item = L[median]:
+    return True
+  elif item < L[median]:
+    return bs(L[:median], item)
+  else:
+    return bs(L[median+1:], item)
+```
+
+This implementation is $O(n)$ due to slicing (which copies)
+
+```python
+def bs(L, item, left = 0, right = None):
+  if right is None: right = len(L)
+  if right - left == 0: return False
+  if right - left == 1: return L[left] == item
+  median = (right + left) // 2
+  if item < L[median]:
+    return bs(L, item, left, median)
+  else:
+    return bs(L, item, median, right)
+```
+
+Time Complexity: $O(\log n)$. 
+
+The tree of functions calls is a single chain: this is called **linear recursion**
+
+The function directly returns the result of the recursive function call: this is **tail recursion**
+
+Tail recursion can always be replaced by a loop:
+
+```python
+def bs(L, item):
+  left, right = 0, len(L)
+  while right - left > 1:
+    median = (right + left) // 2
+    if item < L[median]:
+      right = median
+    else:
+      left = median
+  return right > left and L[left] == item
+```
+
+### The Ordered List ADT
+
+* `add(item)`: adds `item` to the list.
+* `remove(item)`: removes the first occurence of `item` from the list. Raise a `ValueError` if the `item` is not present.
+* `__getitem__(index)`: returns the item with the given index in teh sorted list. This is also known as **selection**.
+* `__contains__(item)`: returns true if there is an item of the list equal to `item`.
+* `__iter__`: returns an iterator over the ordered list that yields the items in sorted order.
+* `__len__`: returns the length of the ordered list.
+
+```python
+class OrderedListSimple:
+  def __init__(self):
+    self._L = []
+    
+  def add(self, item):
+    self._L.append(item)
+    self._L.sort()
+    
+  def remove(self, item):
+    self._L.remove(item)
+    
+  def __getitem__(self, index):
+    return self._L[index]
+  
+  def __contains__(self, item):
+    return item in self._L
+  
+  def __len__(self):
+    return len(self._L)
+  
+  def __iter__(self):
+    return iter(self._L)
+```
+
+This is an example of the wrapper pattern. This `__contains__` implementation does not take advantage of the fact the internal list is sorted. 
+
+```python
+class OrderedList(OrderedListSimple):
+  def __contains__(self, item):
+    left, right = 0, len(self._L)
+    while right - left > 1:
+      median = (right + left) // 2
+      if item < self._L[median]:
+        right = median
+      else:
+        left = median
+    return right > left and self._L[left] == item
+```
+
+ Use binary search to replace the `__contains__` method. Could try to do the same for `add` method but it takes $O(n)$ to insert into the list. 
+
+## Sorting
+
