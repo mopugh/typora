@@ -1257,3 +1257,141 @@ class OrderedList(OrderedListSimple):
 
 ## Sorting
 
+### The Quadratic-Time Sorting Algorithms
+
+#### Easier Question
+
+Question: Given a list `L`, determine if `L` is sorted or not.
+
+```python
+def issorted(L):
+  for i in range(len(L) - 1):
+    if L[i] >L[i+1]:
+      return False
+  return True
+```
+
+This works because ordering relations are **transitive**: if `a < b` and `b < c`, then `a < c`. 
+
+* E.g. if `a < b < c < a`, then what is the correct sorted order? (Doesn't make sense)
+
+#### Bubblesort
+
+Idea: Fix elements that are out of order
+
+```python
+def dumbersort(L):
+  for i in range(len(L) - 1):
+    if L[i] > L[i+1]:
+      L[i], L[i+1] = L[i+1], L[i]
+      
+def dumbsort(L):
+  while(not issorted(L)):
+    dumbersort(L)
+```
+
+Notice that the first call to `dumbersort` puts the largest item in the last index, the second call puts the second largest element in the second to last index, etc. This is an **invariant**: something that is true every time we reach a certain point in the algorithm. In this case, after the $i$th call to `dumbersort`, the last `i` items are in their final, sorted locations. Refactor:
+
+```python
+def bubblesort(L):
+  for iteration in range(len(L) - 1):
+    for i in range(len(L) - 1):
+      if L[i] > L[i+1]:
+        L[i], L[i+1] = L[i+1], L[i]
+```
+
+Time Complexity: $O(n^2)$ 
+
+#### Selectionsort
+
+```python
+def selectionsort(L):
+  n = len(L):
+    for i in range(n-1):
+      max_index = 0
+      for index in range(n-i):
+        if L[index] > L[max_index]:
+          max_index = index
+      L[n-i-1], L[max_index] = L[max_index], L[n-i-1]
+```
+
+#### Insertionsort
+
+Invariant: After `i` iterations, the last `i` elements in the list are in sorted order. (Note difference between previous invariant)
+
+```python
+def insertionsort(L):
+  n = len(L)
+  for i in range(n):
+    for j in range(n-i-1, n-1):
+      if L[j] > L[j+1]:
+        L[j], L[j+1] = L[j+1], L[j]
+```
+
+### Sorting in Python
+
+* `sort()`: sorts the list in place
+
+* `sorted()`: returns a new list that is sorted
+
+* Sorting uses `__lt__` (less than) method to compare elements.
+
+  * Can pass a key to `sort` and `sorted` that produces ordering based on `x < y` if `key(x) < key(y)` 
+
+* Example:
+
+  ```python
+  strings = "here are Some sample strings to be sorted".split()
+  
+  def mykey(x):
+  	return -len(x), x.upper()
+  
+  print(sorted(strings, key=mykey))
+  ['strings', 'sample', 'sorted', 'here', 'Some', 'are', 'be', 'to']
+  ```
+
+## Chapter 13: Sorting with Divide and Conquer
+
+**Divide and Conquer** is a paradigm for algorithm design
+
+* **Divide** the problem into 2 or more pieces
+* **Conquer** solves each piece
+* **Combine** the solutions to the sub-problems
+
+### Mergesort
+
+```python
+def mergesort(L):
+  # Base case
+  if len(L) < 2:
+    return
+  
+  # Divide
+  mid = len(L) // 2
+  A = L[:mid]
+  B = L[mid:]
+  
+  # Conquer
+  mergesort(A)
+  mergesort(B)
+  
+  # Combine
+  merge(A, B, L)
+  
+def merge(A, B, L):
+  i = 0 # index into A
+  j = 0 # index into B
+  while i < len(A) and j < len(B):
+    if A[i] < B[j]:
+      L[i+j] = A[i]
+      i += 1
+    else:
+      L[i+j] = B[j]
+      j += 1
+  # add any remaining elements once one list is empty
+  L[i+j:] = A[i:] + B[j:]
+```
+
+#### An Analysis
+
+The `merge` function takes $O(n)$, and there are $\log_{2} n$ levels of recursion, so the algorithm is $O(n \log n)$. 

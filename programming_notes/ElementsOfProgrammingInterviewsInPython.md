@@ -1194,3 +1194,124 @@ Time Complexity: $O(n)$
 
 ### Replace and remove
 
+*Task*: Write a program that takes an array of characters and removes each 'b' and replaces each 'a' with two 'd's.
+
+*Solution*: 
+
+* Trivial solution: create a second array, skip 'b's, copy all other characters and replace 'b's with two 'd's. This takes $O(n)$ time and $O(n)$ space. 
+
+* In-place solution: Go through array and remove all b's. Compute final number of valid characters. Replace each 'a' with two 'd's iterating backwards. 
+
+  ```python
+  def replace_and_remove(size, s):
+    # Forward iteration: remove 'b's and count the number of 'a's
+    write_idx, a_count = 0, 0
+    for i in range(size):
+      if s[i] != 'b':
+        s[write_idx] = s[i]
+        write_idx += 1
+      if s[i] == 'a':
+        a_count += a
+  
+    # Backward iteration: replace 'a's with 'dd's starting from the end
+    cur_idx = write_idx - 1
+    write_idx += a_count - a
+    final_size = write_idx + 1
+    while cur_idx >= 0:
+      if s[cur_idx] == 'a':
+        s[write_idx - 1:write_idx + 1] = 'dd'
+        write_idx -= 2
+      else:
+        s[write_idx] = s[cur_idx]
+        write_idx -= 1
+      cur_idx -= 1
+    return final_size
+  ```
+
+  Time Complexity: $O(n)$ (one forward pass, one backward pass). No additional space is allocated.
+
+### Test Palindromicity
+
+A palindrom is a string which when all non-alphanumeric characters are removed, reads the same forwards and backwards ignoring case.
+
+*Task*: Implement a function which takes a string and returns `true` if the string is a palindrome.
+
+*Solution*: Go backward and forwards at the same time comparing characters.
+
+```python
+def is_palindrome(s):
+  # i moves forward, j moves backward
+  i, j = 0, len(s) - 1
+  while i < j:
+    # i and j both skip non-alphanumeric characters
+    while not s[i].isalnum() and i < j:
+      i += 1
+    while not s[j].isalnum() and i < j:
+      j -= 1
+    if s[i].lower() != s[j].lower():
+      return False
+    i, j = i + 1, j - 1
+  return True
+```
+
+Time Complexity: $O(n)$
+
+### Reverse All The Words In A Sentence
+
+*Task*: Implement a function for reverseing the words in a string s.
+
+*Solution*: The idea is to reverse the string and then go through and reverse the characters in each word.
+
+```python
+# Assume s is a string encoded as bytearray
+def reverse_words(s):
+  # First, reverse the whole string
+  s.reverse()
+  
+  def reverse_range(s, start, end):
+    while start < end:
+      s[start], s[end] = s[end], s[start]
+      start, end = start + 1, end - 1
+  
+  start = 0
+  while True:
+    end = s.find(b' ', start)
+    if end < 0:
+      break
+    # Reverses each word in the string
+    reverse_range(s, start, end - 1)
+    start = end + 1
+  # Reverses the last word
+  reverse_range(s, start, len(s) - 1)
+```
+
+### Compute All Mnemonics For a Phone Number
+
+![image-20201026064738052](figures/image-20201026064738052.png)
+
+*Task*: Write a program which takes as input a phone number, specified as a string of digits, and returns all possible character sequences that correspond to the phone number. 
+
+*Solution*: 
+
+```python
+# The mapping from digit to corresponding characters
+MAPPING = ('0', '1', 'ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQRS', 'TUV', 'WXYZ')
+
+def phone_mnemonic(phone_number):
+  def phone_mnemonic_helper(digit):
+    if digit == len(phone_number):
+      # All digits are processed, so add partial_mnemonic to mnemonics
+      # Add a copy since subsequent calls modify partial_mnemonic
+      mnemonics.append(''.join(partial_mnemonic))
+    else:
+      # Try all possible characters for this digit.
+      for c in MAPPING[int(phone_number[digit])]:
+        partial_mnemonic[digit] = c
+        phone_mnemonic_helper(digit + 1)
+  
+  mnemonics, partial_mnemonics = [], [0] * len(phone_number)
+  phone_mnemonic_helper(0)
+  return mnemonics
+```
+
+Time Complexity: $O(n4^n)$ 
