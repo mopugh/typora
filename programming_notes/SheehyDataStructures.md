@@ -1395,3 +1395,239 @@ def merge(A, B, L):
 #### An Analysis
 
 The `merge` function takes $O(n)$, and there are $\log_{2} n$ levels of recursion, so the algorithm is $O(n \log n)$. 
+
+#### Merging Iterators
+
+* In Python, if you find yourself working with a lot of indices, we are perhaps doing something wrong
+* An object is **iterable** in Python if it has a method called `__iter__` that returns an iterator. 
+* An object is an **iterator** if it has an `__iter__` method and a `__next__` method. 
+  * They are called *from the outside* as `iter(my_iterable)` and `next(my_iterator)` 
+
+```python
+def SimpleIterator:
+  def __init__(self):
+    self._count = 0
+    
+  def __iter__(self):
+    return self
+  
+  def __next__(self):
+    if self._count < 10:
+      self._count += 1
+      return self._count
+    else:
+      raise StopIteration
+
+# Example: pring 1 to 10
+iterator1 = SimpleIterator()
+for x in iterator1:
+  print(x)
+```
+
+* In Python, you try to get the next item in an iterator and raise `StopIteration` if there isn't one
+
+  * This is an example of *Easier To Ask For Forgiveness Than Permission* (EAFP) approach
+
+* How can we see the next (possible) item in an iterator?
+
+  ```python
+  def BufferedIterator:
+    def __init__(self, i):
+      self._i = iter(i)
+      self._hasnext = True
+      self._buffer = None
+      self._advance()
+      
+    def peek(self):
+      return self._buffer
+    
+    def hasnext(self):
+      return self._hasnext
+    
+    def _advance(self):
+      try: 
+        self._buffer = next(self._i)
+      except StopIteration:
+        self._buffer = None
+        self._hasnext = False
+        
+    def __iter__(self):
+      return self
+    
+    def __next__(self):
+      if self.has_next():
+        output = self.peek()
+        self._advance()
+        return output
+      else:
+        raise StopIteration
+  ```
+
+  Use iterators to implement `merge`
+
+  ```python
+  def merge(A, B):
+    a = BufferedIterator(A)
+    b = BufferedIterator(B)
+    while a.hasnext() or b.hasnext():
+      if not a.hasnext() or (b.hasnext() and b.peek() < a.peek()):
+        yield next(b)
+      else:
+        yield next(a)
+  ```
+
+  The above is a generator, which is an iterator.
+
+  ```python
+  def mergesort(L):
+    if len(L) > 1:
+      m = len(L) // 2
+      A, B = L[:m], L[m:]
+      mergesort(A)
+      mergesort(B)
+      L[:] = merge(A,B)
+  ```
+
+  ### Quicksort
+
+  The above `mergesort` code does a lot of slicing, which makes copies. Want an **in-place** algorithm. 
+
+  Idea for `quicksort`: make the combine step as easy as possible. 
+
+  ```python
+  def quicksort(L, left = 0, right = None): # In-place
+    if right is None:
+      right = len(L)
+      
+    if right - left > 1:
+      # Divide!
+      mid = partition(L, left, right)
+      
+      # Conquer!
+      quicksort(L, left, mid)
+      quicksort(L, mid+1, right)
+      
+      # Combine
+      # Nothing to do!
+      
+  def partition(L, left, right):
+    pivot = right - 1
+    i = left			# index in the left half
+    j = pivot - 1 # index in the right half
+    
+    while i < j:
+      # Move i to point to an element >= L[pivot]
+      while L[i] < L[pivot]:
+        i = i + 1
+        
+      # Move j to point to an element < L[pivot]
+      while i < j and L[j] >= L[pivot]:
+        j = j - 1
+        
+      # Swap elements i and j if i < j
+      if i < j:
+        L[i], L[j] = L[j], L[i]
+    
+    # Put the pivot in place.
+    if L[pivot] <= L[i]:
+      L[pivot], L[i] = L[i], L[pivot]
+      pivot = i
+    
+    # Return the index of the pivot
+    return pivot
+  ```
+
+  Second implementation using a random pivot. Random does not mean arbitrary (use random number generator)
+
+  ```python
+  from random import randrange
+  
+  def quicksort(L):
+    _quicksort(L, 0, len(L))
+    
+  def _quicksort(L, left, right):
+    if right - left > 1:
+      mid = partition(L, left, right)
+      _quicksort(L, left, mid)
+      _quicksort(L, mid+1, right)
+      
+  def partition(L, left, right):
+    pivot = randrange(left, right)
+    L[pivot], L[right-1] = L[right-1], L[pivot]
+    i, j, pivot = left, right - 2, right - 1
+    while i < j:
+      while L[i] < L[pivot]:
+        i += 1
+      while i < j and L[j] >= L[pivot]:
+        j -= 1
+      if i < j:
+        L[i], L[j] = L[j], L[i]
+    if L[pivot] <= L[i]:
+      L[pivot], L[i] = L[i], L[pivot]
+      pivot = i
+    return pivot
+  ```
+
+  ## Chapter 14: Selection
+
+  * Consider the following problem: Given a list of numbers, find the median element.
+
+  * Naive implementation: sort first and take middle element
+
+    ```python
+    def median(L):
+      L.sort()
+      return L[len(L) // 2]
+    ```
+
+  * Can we do better? What about a linear time algorithm?
+
+  * **To solve a problem with recursion, sometimes it's easier to solve a harder problem.** 
+
+  * Solve **the selection problem**: Given a list of numbers and a number $k$, find the $k^{th}$ smallest number in the list. 
+
+  #### The `quickselect` algorithm
+
+  The idea is to use the divide-and-conquer approach from `quicksort`, but only search in the half that has the element (like binary search). 
+
+  ```python
+  from ds2.sorting.quicksort import partition
+  
+  def quickselect(L, k):
+    return _quickselect(L, k, 0, len(L))
+  
+  def _quickselect(L, k, left, right):
+    pivot = partition(L, left, right)
+    if k <= pivot:
+      return _quickselect(L, k, left, pivot)
+    elif k == pivot + 1:
+      return L[pivot]
+    else:
+      return _quickselect(L, k, pivot+1, right)
+  ```
+
+  #### Analysis
+
+  `quickselect` is a **randomized algorithm** since it picks the pivot randomly. In the worst case, it is quadratic, e.g. if we want the largest element and all the pivots land on the smallest element. Need to analyze **expected running time**. 
+
+  Given a list of $n$ numbers, the pivot is *good* if it lands in the range of indices from $n/4$ to $3n/4$. So choosing randomly, there is a 50% chance of a good pivot. 
+
+  With each recursive call, the list gets small. Let $n_{i}$ be the size of the list on the $i^{th}$ recursive call, so $n = n_{0} > n_{1} > \cdots n_{k}$, where $k$ is the (unknown) number of recursive calls. There is a $1/2$ chance of a good pivot at any step, so the expected value of $n_{i}$ can be bounded as:
+  $$
+  E[n_{i}] \leq (1/2) \left ( \frac{3E[n_{i-1}]}{4} \right ) + (1/2) (E[n_{i-1}]) = \left ( \frac{7}{8} \right ) E[n_{i-1}]
+  $$
+  The above combines two bounds which hold half the time: first the good pivot where $n_{i} \leq 3n_{i-1}/4$ and the second, bad pivot case, where at least $n_{i} \leq n_{i-i}$. The actual expectation will be smaller, but this upper bound suffices.
+
+  Repeating the above equation:
+  $$
+  E[n_{i}] \leq \left ( \frac{7}{8} \right )n_{i-1} \leq \left ( \frac{7}{8} \right)^2 n_{i-1} \leq \cdots \leq \left ( \frac{7}{8} \right )^i n
+  $$
+  Each recursive call takes linear time, so the total running time will be
+  $$
+  T(n) = \sum_{i}^{k} O(n_{i}) = O \left ( \sum_{i=0}^{k} n_{i} \right )
+  $$
+  Use the **linearity of expectation**:
+  $$
+  E[T(n)] = O \left ( \sum_{i}^{k} E[n_{i}] \right ) \leq O \left ( \sum_{i}^{k} \left ( \frac{7}{8} \right )^i n \right ) = O(n)
+  $$
+  
