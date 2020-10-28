@@ -1,5 +1,42 @@
 # Study Path
 
+## Path 10/28/20
+
+### Deep Learing
+
+- [ ] NYU Deep Learning Course
+- [ ] Deep Learning with PyTorch
+- [ ] Deep Learning with Python
+- [ ] Grooking Deep Learning
+- [ ] TensorFlow 2.0 in Action
+
+#### Additional
+
+- [ ] Deep Learning (book)
+- [ ] On how to approach deep learning problems
+- [ ] dl2.ai
+
+### Math
+
+- [ ] The art of proof
+- [ ] Introduction to math for CS
+- [ ] Lean
+- [ ] math for machine learning
+
+### Python
+
+1. Sheehy
+2. Algorithms (Roughgarden)
+3. Elements of Programming Interview
+
+### Papers
+
+- [ ] Attention is all you need
+- [ ] Duvenaud Learning to Search
+- [ ] YOLO
+- [ ] Graph NN
+- [ ] Learned Index Structures
+
 ## Revised Path
 
 ## Algorithms and Data Structures

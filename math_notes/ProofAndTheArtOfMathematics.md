@@ -55,3 +55,13 @@ The previous proof that $\sqrt{2}$ is irrational depended on $p/q$ being in lowe
 
 ### Lowest Terms
 
+A fraction $p/q$ is in lowest terms if $p$ and $q$ are *relatively prime*, i.e. that they have no common factor, a number $k > 1$ that divides both. 
+
+* $3/6 = 1/2$ . Notice that two representation mean the same thing. Distinguish between the value of a number and the expression of the number. Distinguish between the description of a number and the number itself. 
+
+**Lemma**: Every fraction can be put in lowest terms. 
+
+**Proof**: Consider any fraction $p/q$, where $p$ and $q$ are integers and $q \neq 0$. Let $p'$ be the smallest nonnegative integer for which there is an integer $q'$ with $\frac{p}{q} = \frac{p'}{q'}$. $p'$ and $q'$ are relatively prime since if they had a common factor, we could divide it out and make an instance of the fraction $\frac{p}{q}$ with a smaller numerator. But $p'$ was chosen to be smallest, and so there is no such common factor. Therefore $\frac{p'}{q'}$ is in lowest terms. $\square$
+
+The previous proof depends on the least number principle: if there is a natural number with a certain property, then there is a smallest such number with that property. In other words, every nonempty set of natural numbers has a least element. 
+
