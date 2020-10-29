@@ -23,6 +23,10 @@
 - [ ] Lean
 - [ ] math for machine learning
 
+#### Additional
+
+- [ ] Category Theory
+
 ### Python
 
 1. Sheehy
@@ -36,6 +40,7 @@
 - [ ] YOLO
 - [ ] Graph NN
 - [ ] Learned Index Structures
+- [ ] Bootstrap Your Own Latent (BYOL)
 
 ## Revised Path
 
