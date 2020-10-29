@@ -42,5 +42,41 @@
 
 #### Filtering Sets
 
+Want to be able to define sets by gathering together all the objects that share some common property. 
 
+* Example: (even numbers) $\{n \vert n \in \mathbb{N} \textrm{ and n is even}\}$
+  * read as "the set of all n, where n is a natural number and n is even"
+
+Generally: $\{variable \vert \textrm{conditions on that variable}\}$. The variable name does not matter.
+
+**Definition**: A **predicate** is a statement about some object x that is either true of false.
+
+* Example: "x < 0" is a predicate that is true if x is less than zero and false otherwise. 
+* It is not required that the predicate be checkable by a computer program. 
+
+Formally, the definition of set-builder notation:
+
+**Definition**: The set $\{x \vert \mathbf{P}(x) \}$ is the set of all $x$ such that $\mathbf{P}(x)$ is true.
+
+*Note*: Set-builder notation can lead to *paradoxical sets* 
+
+#### Transforming Sets
+
+Sometimes easy to consider how an element of a set would be generated rather than describe some property shared by the elements of the set. 
+
+* $\{n \vert \textrm{ there is some } m \in \mathbb{N} \textrm{ such that } n = m^2\}$ vs. $\{n^2 \vert n \in \mathbb{N}\}$ 
+
+In the latter case, we transform the elements of one set to get the elements of the desired set. 
+
+### Relations on Sets
+
+#### Set Equality
+
+**Definition**: If A and B are sets, then $A = B$ precisely when they have teh same elements as one another. This definition is sometimes called the **axiom of extensionality**. 
+
+*Note*: The manner in which two sets are described has no bearing on whether or not they are equal. All that matters is what the two sets contain.
+
+This is why the empty set is unique: any two sets that have no elements must be equal to each other since they have the same elements (namely, no elements).
+
+#### Subsets and Supersets
 

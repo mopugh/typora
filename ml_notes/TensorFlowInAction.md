@@ -20,3 +20,50 @@
 
 ### CPU vs GPU
 
+* CPUs can execute complex sequences of instructions very fast at a small scale (e.g. 8 cores in parallel)
+* GPUs are good at executing basic instructions, typically slower than CPUs, but runs at a much larger scale (e.g. thousands of cores in parallel)
+
+### When and when not to use TensorFlow?
+
+#### When to use TensorFlow?
+
+* Prototyping deep learning models
+* Implementing models (including non-deep learning) that can run faster on optimized hardware
+* Productionized Models / Seriving on cloud
+* Monitoring models during training
+* Creating heavy-duty data pipelines
+
+#### When not to use TensorFlow?
+
+* Implementing traditional machine learning models. Instead consider:
+  * scikit-learn
+  * xgboost
+  * rapids.ai
+* Manipulating and analyzing small-scale structured data
+  * If the data can fit in memory, use Pandas or Numpy
+* Creating complex natural language processing (NLP) pipelines
+
+### What will this book teach you?
+
+* TensorFlow fundamentals
+* Deep learning algorithms
+* Monitoring and optimization
+
+### Who is this book for?
+
+* Important question is **not** "how do I use TensorFlow to solve my problem?" but "how do I use TensorFlow effectively to solve my problem?"
+* Effective solution:
+  * minimizing lines of code without sacrificing readability
+  * using latest and greatest features
+  * utilizing optimization whenever possible
+    * avoid loops
+    * use vectorization
+* This book: "enabling the reader to write effective TensorFlow solutions"
+
+### Summary
+
+* TensorFlow is an end-to-end machine learning framework that provides an ecosystem facilitating model prototyping, model building, model monitoring and model serving and more.
+
+## Chapter 2: TensorFlow 2
+
+ 

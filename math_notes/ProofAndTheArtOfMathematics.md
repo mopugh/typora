@@ -65,3 +65,43 @@ A fraction $p/q$ is in lowest terms if $p$ and $q$ are *relatively prime*, i.e. 
 
 The previous proof depends on the least number principle: if there is a natural number with a certain property, then there is a smallest such number with that property. In other words, every nonempty set of natural numbers has a least element. 
 
+### Generalizations to other roots
+
+Generalize to $\sqrt[n]{2}$ or $\sqrt{n}$.
+
+**Theorem**: The number $\sqrt[3]{2}$ is irrational.
+
+**Proof**: Similar to the proof of $\sqrt{2}$ being irrational. Suppose $\sqrt[3]{2} = p/q$ is in lowest terms. Cubing both sides yields $2q^3=p^3$, so p is even since and odd number cubed is odd. Thus $p = 2k$ for some $k$, and thus $2q^3 = (2k)^3 = 8k^3$, which gives $q^3 = 4k^3$ and therefore $q$ is even. This contradicts the assumption that $p/q$ is in lowest terms. $\square$ 
+
+**Theorem**: The number $\sqrt{3}$ is irrational. 
+
+**Proof**: Suppose that $\sqrt{3} = p/q$ in lowest terms. So $3q^2 = p^2$. So $p^2$ is a multipe of 3 which imples that $p$ is a multiple of 3 since otherwise it would not arise in the prime factorization of $p^2$. So $p=3k$ for some integer $k$. Therefore $3q^2 = p^2 = (3k)^2 = 9k^2$, and $q^2 = 3k^2$. Thus $q^2$ is a multiple of 3 and so $q$ is a multiple of 3. This contradicts the assumption that $p/q$ is in lowest terms. $\square$
+
+This proof requires the existence and uniqueness of prime factorizations.
+
+**Corollary**: The number $\sqrt{18}$ is irrational. 
+
+**Proof**: Notice that $\sqrt{18} = \sqrt{2 \cdot 9} = 3 \sqrt{2}$. If $3 \sqrt{2} = p/q$ where rational, then $\sqrt{2} = p/(3q)$ and so $\sqrt{2}$ would be rational, which it is not. So $\sqrt{18}$ cannot be rational. $\square$ 
+
+**Alternative direct proof**: Assume toward contradiction that $\sqrt{18}$ is rational. So $\sqrt{18} = p/q$ for some integers p an dq, and we may assume that $p/q$ is in lowest terms. Square both sides and simplifying, $18q^2 = p^2$ so $p^2$ is even. So $p = 2k$ for some integer $k$; consequently $18q^2 = p^2 = (2k)^2 = 4k^2$ and so $9q^2 = 2k^2$. So $9q^2$ is even, but since 9 is odd, it must be that $q^2$ is even and hence also that $q$ is even. So both $p$ and $q$ are even, contrary to our assumption taht $p/q$ was in lowest terms. So $\sqrt{18}$ cannot be rational. $\square$
+
+Generalization: $\sqrt[k]{n}$ is irrational unless $n$ is itself a perfect integer $k$th power, meaning that $n = r^k$ for some integer $r$. This is equivalent to saying that all the exponents in the prime factorization of $n$ are multiples of $k$. 
+
+### Mathematical Habits
+
+* State claims explicitly
+  * distinguish between similar but inequivalent statements
+* Know exactly what you are trying to prove
+* Insist on proof
+  * Be prepared to prove essentially every mathematical statement you make
+* Try proof by contradiction
+  * When trying to prove a statement, imagine what it would be like if the statement were false. 
+* Try to prove a stronger result
+  * One overcomes a distracting hypothesis by simply discarding it.
+* Generalizing
+  * After proving a statement, seek to prove a more general result. 
+    * Weaken the hypothesis
+    * Strengthen the conclusion
+    * Apply the idea of the argument in another similar-enough circumstance
+    * Unify our understanding of diverse situations
+    * Seek the essence of a phenomenon
