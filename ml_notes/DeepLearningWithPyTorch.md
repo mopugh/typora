@@ -43,3 +43,31 @@ Three main libraries currently:
 
 #### An overview of how PyTorch supports deep learning projects
 
+* At it's core, PyTorch provides *tensors* (i.e. multidimensional arrays) and operations on them that can be used on the CPU or GPU as well as keeping track of operations on tensors and being able to compute the derivative. 
+* Core PyTorch module: `torch.nn`
+* To train a model:
+  * need source of training data
+  * an optimizer to adapt the model to the training data
+  * a way to get the model and data to the hardware that will be performing the calculations
+* The bridge between custom data and PyTorch tensor is the `Dataset` class in `torch.utils.data` 
+  * Since the data varies from problem to problem, will need to write the data sourcing ourselves.
+* Want to batch data for parallel computation:
+  * `DataLoader` class
+* Compare output of model to input data and compute loss using loss functions
+  * Found in `torch.nn` 
+* `torch.optim` provides optimizers to adjust the model parameters.
+
+### Summary
+
+* Deep learning models automatically learn to associate inputs and desired outputs from examples
+* Libraries like PyTorch allow you to build and train neural network models efficiently
+* PyTorch defaults to immediate execution for operations
+
+## Chapter 2: Pretrained networks
+
+* Using off-the-shelf models can be a quick way to jump-start a deep learning project.
+
+### A pretrained network that recognizes the subject of an image
+
+
+
