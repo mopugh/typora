@@ -34,4 +34,4 @@ Alternate days doing:
 
 - PyTorch/TensorFlow $\rightarrow$ Introduction to Mathematics (Stanford)
 - Probabilistic Graphical Models/ ML? $\rightarrow$ Generative Models (Cunningham, Duvenaud, Stanford?)
-- Analysis
+- Analysis?
