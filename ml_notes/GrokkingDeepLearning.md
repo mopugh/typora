@@ -68,7 +68,7 @@
 * Oversimplified: counting-based methods
 * Number of parameters is based on the data (instead of predefined).
 
-## Chapter 3: Introduction to neural prediction
+## Chapter 3: Introduction to neural prediction - forward propagation
 
 ### Step 1: Predict
 
@@ -233,11 +233,11 @@ print(pred)
 ```python
 def dot(a,b):
     vector_sum(elementwise_multiplication(a,b))
-    
+
 def vect_mat_mul(vect, matrix):
     # assume matrix is a list of lists
     assert(len(vect) == len(matrix))
-    
+
     output = [dot(vect, row) for row in matrix]
     return output
 
@@ -300,3 +300,15 @@ def neural_network(input, weights):
   ```
 
 ### A quick primer on NumPy
+
+* General rule of thumb for anything elementwise (e.g. +,-,*,/) is that either two variables must have the **same** number of columns, or one of the variables has only one column.
+
+* Golden rule for `dot`: for `x.dot(y)`, the number of columns of `x` must equal the number of rows of `y` 
+
+### Summary
+
+* To predict, neural networks perform repeated weighted sums of the input
+  
+  * forward propagation
+
+## Chapter 4: Introduction to neural learning - gradient descent
