@@ -312,3 +312,47 @@ def neural_network(input, weights):
   * forward propagation
 
 ## Chapter 4: Introduction to neural learning - gradient descent
+
+* Question: How do you set the weight values of the network to predict accurately?
+
+### Compare
+
+* Comparing gives a measurement of how wrong the prediction was
+
+* Error is always positive
+
+### Learn
+
+* Learning tells each weight how it can change to reduce the error
+
+* Learning is about *error attribution* 
+  
+  * The art of figuring out how each weight played its part in creating error (the blame game)
+
+### Compare: Does the network make good predictions?
+
+```python
+knob_weight = 0.5
+input = 0.5
+goal_pred = 0.8
+
+pred = knob_weight * input
+
+error = (pred - goal_pred) ** 2
+```
+
+* `goal_pred` is the target
+
+* squaring the error keeps the error positive and makes big error bigger (>1) and small errors smaller (<1)
+
+### Why measure error?
+
+* Measuring error simplifies the problem
+
+* Different ways of measuring error prioritize error differently
+  
+  * i.e. L2 norm vs. L1 norm
+
+* Want positive error so cancellation doesn't occur when averaging
+  
+  * i.e. don't want -100 and 100 to cancel out

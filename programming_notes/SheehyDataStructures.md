@@ -21,7 +21,7 @@
 * Store information in **variables**
 
 * In Python a variable is created by an **assignment** statement
-
+  
   * `variable name = some_value`
   * The equal sign is doing something (assignment) rather than describing something (equality)
   * RHS of equal sign is evaluated first
@@ -33,11 +33,11 @@
 * The name of a variable, by itself, is treated as an expression that evaluates to whatever object it is mapped to.
 
 * Every object has a **type**
-
+  
   * types often determine what you can do with the variable
 
 * **Atomic types**
-
+  
   * integers
   * floats
   * booleans
@@ -45,14 +45,14 @@
 * Can inspect the type of a variable using `type()` 
 
 * Objects have three things:
-
+  
   * **identity**
   * **type**
   * **value**
   * There's a difference between a variable and the object the variable represents
 
 * Can use the `is` keyword to see if two objects are the same
-
+  
   ```python
   x = [1, 2, 3]
   y = x
@@ -68,7 +68,7 @@
 * You cannot change the type of an object
 
 * You can reassign a variable to point to a different object
-
+  
   ```python
   x = 2
   print('x =', x) # x = 2
@@ -81,7 +81,7 @@
   ```
 
 * A **string** is a sequence of characters.
-
+  
   * There is no character class
   * Strings are immutable
 
@@ -206,9 +206,9 @@
 ### Inheritance and "is a" relationships
 
 * **superclass** and **subclass** 
-
+  
   * Common attributes in superclass
-
+  
   ```python
   class Polygon:
     def __init__(self, sides, points):
@@ -216,24 +216,24 @@
       self._points = list(points)
         if len(self._points) != self._sides:
         raise ValueError("Wrong number of points.")
-        
+  
     def sides(self):
-    	return self._sides
-    
+        return self._sides
+  
   class Triangle(Polygon):
-  	def __init__(self, points):
-  		Polygon.__init__(self, 3, points)
+      def __init__(self, points):
+          Polygon.__init__(self, 3, points)
   
     def __str__(self):
-  		return "I'm a triangle."
+          return "I'm a triangle."
   
   class Square(Polygon):
-  	def __init__(self, points):
-  		Polygon.__init__(self, 4, points)
-  	def __str__(self):
-  		return "I'm so square."
+      def __init__(self, points):
+          Polygon.__init__(self, 4, points)
+      def __str__(self):
+          return "I'm so square."
   ```
-
+  
   * In the above, `Polygon` is the superclass and `Square` and `Triangle` are the subclasses
 
 * If a method is called and it is not defined in the class, it looks in the superclass.
@@ -261,15 +261,15 @@
 * **Composition**: one class stores an instance of another class
 
 * **Composition means "has a"** 
-
+  
   ```python
   class MyLimitedList:
     def __init__(self):
       self._L = []
-      
+  
     def append(self, item):
       self._L.append(item)
-    
+  
     def __getitem__(self, index):
       return self._L[index[]]
   ```
@@ -285,22 +285,22 @@
 * **Test behavior, not implementation** 
 
 * Simple Case: `assert`
-
+  
   ```python
   class Doubler:
-  	def __init__(self, n):
-  		self._n = 2 * n
+      def __init__(self, n):
+          self._n = 2 * n
   
   def n(self):
-  	return self._n
+      return self._n
   
   if __name__ == '__main__':
-  	x = Doubler(5)
-  	assert(x.n() == 10)
-  	y = Doubler(-4)
-  	assert(y.n() == -8)
+      x = Doubler(5)
+      assert(x.n() == 10)
+      y = Doubler(-4)
+      assert(y.n() == -8)
   ```
-
+  
   * `assert` is better than print - don't have to rely on visual inspection
   * **BAD IDEA** Deleting tests
   * **OGAE** protocol: Oh Good, An Error!
@@ -310,13 +310,13 @@
 * Unit tests: test a specific behavior of a specific function
 
 * Python includes standard package `unittest`
-
+  
   * Tests will extend the `unites.TestCase` class
   * Every test method must start with the word `test` 
   * Tests are run by calling `unittest.main` 
 
 * Example:
-
+  
   ```python
   import unittest
   from dayoftheweek import DayOfTheWeek
@@ -325,10 +325,10 @@
     def testinitwithabbreviation(self):
       d = DayOfTheWeek('F')
       self.assertEquals(d.name(), 'Friday')
-      
+  
       d = DayOfTheWeek('Th')
       self.assertEquals(d.name(), 'Thursday')
-      
+  
   unittest.main()
   ```
 
@@ -337,20 +337,20 @@
 * **Test-Driven Development (TDD)** is the idea that you can write the tests before you write the code.
 
 * Writing tests first forces two things:
-
+  
   * Decide how you want to be able to use some function. What should the parameters be? What should it return?
   * Write only the code that you need. If there is code that doesn't support some desired behavior with tests, then you don't need to write it.
 
 * The TDD mantra is **Red-Green-Refactor**. 
-
+  
   * **Red**: The tests fail. They should as nothing has been written yet.
   * **Green**: You get the tests to pass by changing the code.
   * **Refactor**: You clean up the code, removing duplication. 
 
 * **Refactoring** is the process of cleaning up code, most often referring to the process of removing duplication.
-
+  
   * Example
-
+    
     ```python
     avg1 = sum(L1) / len(L1)
     avg2 = sum(L2) / len(L2)
@@ -360,19 +360,19 @@
       avg1 = 0
     else:
       avg1 = sum(L1) / len(L1)
-      
+    
     if len(L2) == 0:
       avg2 = 0
     else:
       avg2 = sum(L2) / len(L2)
-     
+    
     # Refactored code
     def avg(L):
       if len(L) == 0:
         return 0
-     	else:
+         else:
         return sum(L) / len(L)
-      
+    
     avg1 = avg(L1)
     avg2 = avg(L2)
     ```
@@ -417,12 +417,12 @@
 # First implementation
 # O(n^2)
 def duplicates1(L):
-	n = len(L)
-	for i in range(n):
-		for j in range(n):
-			if i != j and L[i] == L[j]:
-				return True
-	return False
+    n = len(L)
+    for i in range(n):
+        for j in range(n):
+            if i != j and L[i] == L[j]:
+                return True
+    return False
 
 assert(duplicates1([1,2,6,3,4,5,6,7,8]))
 assert(not duplicates1([1,2,3,4]))
@@ -587,8 +587,9 @@ In the definition, the constant $c$ is the constant that stands in for all other
 ### Bases for Logarithms
 
 * $\log_{a}(n) = O(\log_{b}(n))$ where a and b are any two constants
-
+  
   * **Proof**: Let $c = 1/\log_{b}(a)$ and $n_{0} = 0$, then
+    
     $$
     \log_{a}(n) = \frac{\log_{b}(n)}{\log_{b}(a)} \leq c \log_{b}(n) \textrm{ for all } n > n_{0}
     $$
@@ -626,19 +627,19 @@ A **data structure** is an implementation of an ADT. (a.k.a. a **concrete data s
 class ListStack:
   def __init__(self):
     self._L = []
-    
+
   def push(self, item):
     self._L.append(item)
-    
+
   def pop(self):
     return self._L.pop()
-  
+
   def peek(self):
     return self._L[-1]
-  
+
   def __len__(self):
     return len(self._L)
-  
+
   def isempty(self):
     return len(self) == 0
 ```
@@ -662,22 +663,22 @@ class ListQueueFakeDelete:
   def __init__(self):
     self._L = []
     self._head = 0
-    
+
   # Choosing to append to the end
   def enqueue(self, item):
     self._L.append(item)
-    
+
   def peek(self):
     return self._L[self._head]
-  
+
   def dequeue(self):
     item = self.peek()
     self._head += 1
     return item
-  
+
   def __len__(self):
     return len(self._L) - self._head
-  
+
   def isempty(self):
     return len(self) == 0
 ```
@@ -728,19 +729,19 @@ A **deque** (pronounced "deck") is a doubly-ended queue. Acts as both a stack an
 class ListDeque:
   def __init__(self):
     self._L = []
-    
+
   def addfirst(self, item):
     self._L.insert(0, item)
-    
+
   def addlast(self, item):
     self._L.append(item)
-    
+
   def removefirst(self):
     return self._L.pop(0)
-  
+
   def removelast(self):
     return self._L.pop()
-  
+
   def __len__(self):
     return len(self._L)
 ```
@@ -766,10 +767,10 @@ Idea: want to abstract the nodes (i.e. the user doesn't know they exist)
 class LinkedList:
   def __init__(self):
     self._head = None
-    
+
   def addfirst(self, item):
     self._head = ListNode(item, self._head)
-    
+
   def removefirst(self):
     item = self._head.data
     self._head = self._head.link
@@ -784,12 +785,12 @@ class LinkedList:
     self._head = None
     self._tail = None # keep track of tail so we can add directly to the end
     self._length = 0
-  
+
   def addfirst(self, item):
     self._head = ListNode(item, self._head)
     if self._tail is None: self._tail = self._head
     self._length += 1
-      
+
   def addlast(self, item):
     if self._head is None:
       self.addfirst(item)
@@ -797,14 +798,14 @@ class LinkedList:
       self._tail.link = ListNode(item)
       self._tail = self._tail.link
       self._length += 1
-      
+
   def removefirst(self):
     item = self._head.data
     self._head = self._head.link
     if self._head is None: self._tail = None
     self._length -= 1
     return item
-  
+
   def removelast(self):
     if self._head is self._tail:
       return self.removefirst()
@@ -817,29 +818,29 @@ class LinkedList:
       self._tail.link = None
       self._length -= 1
       return item
-    
+
   def __len__(self):
     return self._length
-    
+
 # Implement queue with the above linked list
 class LinkedQueue:
   def __init__(self):
     self._L = LinkedList()
-    
+
   def enqueue(self, item):
     self._L.addlast(item)
-    
+
   def dequeue(self):
     return self._L.removefirst()
-  
+
   def peek(self):
     item = self._L.removefirst()
     self._L.addfirst(item)
     return item
-  
+
   def __len__(self): # delegate length to linked list
     return len(self._L)
-  
+
   def isempty(self):
     return len(self) == 0
 ```
@@ -889,10 +890,10 @@ class DoublyLinkedList:
     self._head = None
     self._tail = None
     self._length = 0
-    
+
   def __len__(self):
     return self._length
-  
+
   def _addbetween(self, item, before, after):
     node = ListNode(item, before, after)
     if after is self._head:
@@ -900,13 +901,13 @@ class DoublyLinkedList:
     if before is self._tail:
       self._tail = node
     self._length += 1
-    
+
   def addfirst(self, item):
     self._addbetween(item, None, self._head)
-    
+
   def addlast(self, item):
     self._addbetween(item, self._tail, None)
-    
+
   def _remove(self, node):
     before, after = node.prev, node.link
     if node is self._head:
@@ -919,10 +920,10 @@ class DoublyLinkedList:
       after.prev = before
     self._length -= 1
     return node.data
-  
+
   def removefirst(self):
     return self._remove(self._head)
-  
+
   def removelast(self):
     return self._remove(self._tail)
 ```
@@ -941,9 +942,9 @@ def __iadd__(self, other):
       other._head.prev = self._tail
     self._tail = other._tail
     self._length = self._length + other._length
-    
-  	# Clean up the other list
-  	other.__init__()
+
+      # Clean up the other list
+      other.__init__()
   return self
 ```
 
@@ -960,13 +961,12 @@ There is a strong connection between induction and recursion.
 
 Example: sum of first k natural numbers is $\frac{k(k+1)}{2}$:
 
-​	Base Case: $f(0) = 0 = \frac{0*(0+1)}{2}$
+​    Base Case: $f(0) = 0 = \frac{0*(0+1)}{2}$
 
-​	Induction Step: Assume it holds for k-1
+​    Induction Step: Assume it holds for k-1
 $$
 f(k) = f(k-1) + k = \frac{(k-1)(k-1+1)}{2} + k = \frac{(k-1)k + 2k}{2} = \frac{k(k+1)}{2}
 $$
-
 
 ### Some Basics
 
@@ -993,7 +993,7 @@ This leads to a `RecursionError`. Second element of A points back to itself and 
 # Slow recursive version
 def fib(k):
   if k in [0, 1] return k
-	return fib(k-1) + fib(k-2)
+    return fib(k-1) + fib(k-2)
 
 # Loop version
 def fibloop(k):
@@ -1092,7 +1092,7 @@ def memoMC(coinValueList, change, knownResults):
 def dpMakeChange(coinValueList, change):
   # Create a list to store the answers to the subproblems
   minCoins = [None] * (change + 1)
-  
+
   # For each value from 0 to change, compute the min number of coins needed.
   for cents in range(change + 1):
     # Assume at first that all 1's are used
@@ -1140,7 +1140,7 @@ def lcs(X, Y):
   t = {}
   for i in range(len(X)+1): t[(i,0)] = ""
   for j in range(len(Y)+1): t[(0,j)] = ""
-  
+
   for i, x in enumerate(X):
     for j, y in enumerate(Y):
       if x == y:
@@ -1217,23 +1217,23 @@ def bs(L, item):
 class OrderedListSimple:
   def __init__(self):
     self._L = []
-    
+
   def add(self, item):
     self._L.append(item)
     self._L.sort()
-    
+
   def remove(self, item):
     self._L.remove(item)
-    
+
   def __getitem__(self, index):
     return self._L[index]
-  
+
   def __contains__(self, item):
     return item in self._L
-  
+
   def __len__(self):
     return len(self._L)
-  
+
   def __iter__(self):
     return iter(self._L)
 ```
@@ -1284,7 +1284,7 @@ def dumbersort(L):
   for i in range(len(L) - 1):
     if L[i] > L[i+1]:
       L[i], L[i+1] = L[i+1], L[i]
-      
+
 def dumbsort(L):
   while(not issorted(L)):
     dumbersort(L)
@@ -1335,16 +1335,16 @@ def insertionsort(L):
 * `sorted()`: returns a new list that is sorted
 
 * Sorting uses `__lt__` (less than) method to compare elements.
-
+  
   * Can pass a key to `sort` and `sorted` that produces ordering based on `x < y` if `key(x) < key(y)` 
 
 * Example:
-
+  
   ```python
   strings = "here are Some sample strings to be sorted".split()
   
   def mykey(x):
-  	return -len(x), x.upper()
+      return -len(x), x.upper()
   
   print(sorted(strings, key=mykey))
   ['strings', 'sample', 'sorted', 'here', 'Some', 'are', 'be', 'to']
@@ -1365,19 +1365,19 @@ def mergesort(L):
   # Base case
   if len(L) < 2:
     return
-  
+
   # Divide
   mid = len(L) // 2
   A = L[:mid]
   B = L[mid:]
-  
+
   # Conquer
   mergesort(A)
   mergesort(B)
-  
+
   # Combine
   merge(A, B, L)
-  
+
 def merge(A, B, L):
   i = 0 # index into A
   j = 0 # index into B
@@ -1407,10 +1407,10 @@ The `merge` function takes $O(n)$, and there are $\log_{2} n$ levels of recursio
 def SimpleIterator:
   def __init__(self):
     self._count = 0
-    
+
   def __iter__(self):
     return self
-  
+
   def __next__(self):
     if self._count < 10:
       self._count += 1
@@ -1425,11 +1425,11 @@ for x in iterator1:
 ```
 
 * In Python, you try to get the next item in an iterator and raise `StopIteration` if there isn't one
-
+  
   * This is an example of *Easier To Ask For Forgiveness Than Permission* (EAFP) approach
 
 * How can we see the next (possible) item in an iterator?
-
+  
   ```python
   def BufferedIterator:
     def __init__(self, i):
@@ -1437,23 +1437,23 @@ for x in iterator1:
       self._hasnext = True
       self._buffer = None
       self._advance()
-      
+  
     def peek(self):
       return self._buffer
-    
+  
     def hasnext(self):
       return self._hasnext
-    
+  
     def _advance(self):
       try: 
         self._buffer = next(self._i)
       except StopIteration:
         self._buffer = None
         self._hasnext = False
-        
+  
     def __iter__(self):
       return self
-    
+  
     def __next__(self):
       if self.has_next():
         output = self.peek()
@@ -1462,9 +1462,9 @@ for x in iterator1:
       else:
         raise StopIteration
   ```
-
+  
   Use iterators to implement `merge`
-
+  
   ```python
   def merge(A, B):
     a = BufferedIterator(A)
@@ -1475,9 +1475,9 @@ for x in iterator1:
       else:
         yield next(a)
   ```
-
+  
   The above is a generator, which is an iterator.
-
+  
   ```python
   def mergesort(L):
     if len(L) > 1:
@@ -1487,70 +1487,70 @@ for x in iterator1:
       mergesort(B)
       L[:] = merge(A,B)
   ```
-
+  
   ### Quicksort
-
+  
   The above `mergesort` code does a lot of slicing, which makes copies. Want an **in-place** algorithm. 
-
+  
   Idea for `quicksort`: make the combine step as easy as possible. 
-
+  
   ```python
   def quicksort(L, left = 0, right = None): # In-place
     if right is None:
       right = len(L)
-      
+  
     if right - left > 1:
       # Divide!
       mid = partition(L, left, right)
-      
+  
       # Conquer!
       quicksort(L, left, mid)
       quicksort(L, mid+1, right)
-      
+  
       # Combine
       # Nothing to do!
-      
+  
   def partition(L, left, right):
     pivot = right - 1
-    i = left			# index in the left half
+    i = left            # index in the left half
     j = pivot - 1 # index in the right half
-    
+  
     while i < j:
       # Move i to point to an element >= L[pivot]
       while L[i] < L[pivot]:
         i = i + 1
-        
+  
       # Move j to point to an element < L[pivot]
       while i < j and L[j] >= L[pivot]:
         j = j - 1
-        
+  
       # Swap elements i and j if i < j
       if i < j:
         L[i], L[j] = L[j], L[i]
-    
+  
     # Put the pivot in place.
     if L[pivot] <= L[i]:
       L[pivot], L[i] = L[i], L[pivot]
       pivot = i
-    
+  
     # Return the index of the pivot
     return pivot
   ```
-
+  
   Second implementation using a random pivot. Random does not mean arbitrary (use random number generator)
-
+  
   ```python
   from random import randrange
   
   def quicksort(L):
     _quicksort(L, 0, len(L))
-    
+  
   def _quicksort(L, left, right):
     if right - left > 1:
       mid = partition(L, left, right)
       _quicksort(L, left, mid)
       _quicksort(L, mid+1, right)
-      
+  
   def partition(L, left, right):
     pivot = randrange(left, right)
     L[pivot], L[right-1] = L[right-1], L[pivot]
@@ -1567,29 +1567,29 @@ for x in iterator1:
       pivot = i
     return pivot
   ```
-
+  
   ## Chapter 14: Selection
-
+  
   * Consider the following problem: Given a list of numbers, find the median element.
-
+  
   * Naive implementation: sort first and take middle element
-
+    
     ```python
     def median(L):
       L.sort()
       return L[len(L) // 2]
     ```
-
+  
   * Can we do better? What about a linear time algorithm?
-
+  
   * **To solve a problem with recursion, sometimes it's easier to solve a harder problem.** 
-
+  
   * Solve **the selection problem**: Given a list of numbers and a number $k$, find the $k^{th}$ smallest number in the list. 
-
-  #### The `quickselect` algorithm
-
+  
+  ### The `quickselect` algorithm
+  
   The idea is to use the divide-and-conquer approach from `quicksort`, but only search in the half that has the element (like binary search). 
-
+  
   ```python
   from ds2.sorting.quicksort import partition
   
@@ -1605,29 +1605,259 @@ for x in iterator1:
     else:
       return _quickselect(L, k, pivot+1, right)
   ```
-
-  #### Analysis
-
+  
+  ### Analysis
+  
   `quickselect` is a **randomized algorithm** since it picks the pivot randomly. In the worst case, it is quadratic, e.g. if we want the largest element and all the pivots land on the smallest element. Need to analyze **expected running time**. 
-
+  
   Given a list of $n$ numbers, the pivot is *good* if it lands in the range of indices from $n/4$ to $3n/4$. So choosing randomly, there is a 50% chance of a good pivot. 
-
+  
   With each recursive call, the list gets small. Let $n_{i}$ be the size of the list on the $i^{th}$ recursive call, so $n = n_{0} > n_{1} > \cdots n_{k}$, where $k$ is the (unknown) number of recursive calls. There is a $1/2$ chance of a good pivot at any step, so the expected value of $n_{i}$ can be bounded as:
+  
   $$
   E[n_{i}] \leq (1/2) \left ( \frac{3E[n_{i-1}]}{4} \right ) + (1/2) (E[n_{i-1}]) = \left ( \frac{7}{8} \right ) E[n_{i-1}]
   $$
+  
   The above combines two bounds which hold half the time: first the good pivot where $n_{i} \leq 3n_{i-1}/4$ and the second, bad pivot case, where at least $n_{i} \leq n_{i-i}$. The actual expectation will be smaller, but this upper bound suffices.
-
+  
   Repeating the above equation:
+  
   $$
   E[n_{i}] \leq \left ( \frac{7}{8} \right )n_{i-1} \leq \left ( \frac{7}{8} \right)^2 n_{i-1} \leq \cdots \leq \left ( \frac{7}{8} \right )^i n
   $$
+  
   Each recursive call takes linear time, so the total running time will be
+  
   $$
   T(n) = \sum_{i}^{k} O(n_{i}) = O \left ( \sum_{i=0}^{k} n_{i} \right )
   $$
+  
   Use the **linearity of expectation**:
+  
   $$
   E[T(n)] = O \left ( \sum_{i}^{k} E[n_{i}] \right ) \leq O \left ( \sum_{i}^{k} \left ( \frac{7}{8} \right )^i n \right ) = O(n)
   $$
+
+### One last time without recursion
+
+`quickselect` is an example of linear recursion and is also **tail recursive** because the recursive call is the last operation prior to returning. Thus it's possible to elminate the recursion and replace it with a loop:
+
+```python
+from d2.sorting.quicksort import partition
+
+def quickselect(L, k):
+    left, right = 0, len(L)
+    while left < right:
+        pivot = partition(L, left, right)
+        if k <= pivot:
+            right = pivot
+        elif k == pivot + 1:
+            return L[pivot]
+        else:
+            left = pivot + 1
+    return L[left]
+```
+
+### Divide-and-Conquer Recap
+
+There are three main classes of divide-and-conquer algorithms and analyses:
+
+* binary search-like: 
   
+  * each step takes constant time
+  
+  * makes a single cursive call on a list that is a constant times smaller
+  
+  * total running time is proportional to the depth of the recursion: $p(\log n)$
+
+* sorting-like:
+  
+  * running time is linear + time to make recursive calls on shorter lists whose total length is $O(n)$
+  
+  * As long as the depth is $O(\log n)$, the total running time is $O(n \log n)$
+
+* quickselect-like:
+  
+  * Running time is linear + cost of recursive calls
+  
+  * Like binary search, there is only one recursive call
+  
+  * Total running time is $O(n)$
+
+### A Note on Derandomization
+
+* An algorithm that does not use randomness is called **deterministic**. 
+
+## Chapter 15: Mappings and Hash Tables
+
+* A mapping is an association between two sets of things
+
+* key-value pairs map a value to a key
+  
+  * keys must be unique
+  
+  * only one value associated with a given key
+
+* `dict` is the built-in Python mapping data type
+
+### The Mapping ADT
+
+* `get(k)`: return the value associated with the key `k`. Raise a `KeyError` if the given key is not present.
+
+* `put(k, v)`: add the key-value pair `(k, v)` to the mapping
+
+These are generally implemented as `__getitem__` and `__setitem__`
+
+### A minimal implementation
+
+A (bad) list implementation
+
+```python
+class Entry:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+    def __str__(self):
+        return str(self.key) + " : " + str(self.value)
+
+def mapput(L, key, value):
+    for e in L:
+        if e.key == key:
+            e.value = value
+            return
+    L.append(Entry(key, value))
+
+def mapget(L, key):
+    for e in L:
+        if e.key == key:
+            return e.value
+    raise KeyError
+```
+
+A (still bad) list implementation with a class to encapsulate the list
+
+```python
+class Entry:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+    def __str__(self):
+        return str(self.key) + " : " + str(self.value)
+
+
+class ListMappingSimple:
+    def __init__(self):
+        self._entries = []
+
+    def put(self, key, value):
+        for e in self._entries:
+            if e.key == key:
+                e.value = value
+                return
+        self._entries.append(Entry(key, value))
+
+    def get(self, key):
+        for e in self._entries:
+            if e.key == key:
+                return e.value
+        raise KeyError
+```
+
+### The Extended Mapping ADT
+
+* Standard iterator is to iterator on keys
+  
+  * Also want iterators on values and (key, value) pairs
+    
+    ```python
+    # standard
+    for k in d:
+        print(k)
+    
+    # iterate on values
+    for v in d.values():
+        print(v)
+    
+    # iteratore on (key, value) pairs
+    for k, v in d.items():
+        print(k, v) 
+    ```
+- `get(k)`: return the value associated with the key `k`. Raise a `KeyError` if the given key is not present.
+
+- `put(k, v)`: add the key-value pair `(k, v)` to the mapping
+
+- `remove(k)`: remove the entry with key `k` if it exists
+
+- `__len__`: return the number of keys in the dictionary
+
+- `__contains__(k)`: return true if the mapping contains a pair with key `k`
+
+- `__iter__`: return an iterator over the keys in the dictionary
+
+- `values`: return an iterator over the values of the dictionary
+
+- `items`: return an iterator over the key-value pairs (as tuples)
+
+- `__str__`: return a string representation of the mapping
+
+Recall `dict` is a **non-sequential collection** (i.e. ordering does not matter). 
+
+The extended ADT list implementation
+
+```python
+class ListMapping:
+    def __init__(self):
+        self._entries = []
+
+    def put(self, key, value):
+        for e in self._entries:
+            if e.key == key:
+                e.value = value
+                return
+        self._entries.append(Entry(key, value))
+
+    def get(self, key):
+        for e in self._entries:
+            if e.key == key:
+                return e.value
+        raise KeyError
+
+    def _entry(self, key):
+        for e in self._entries:
+            if e.key == key:
+                return e
+        return None
+
+    def remove(self, key):
+        e = self._entry(key)
+        if e is not None:
+            self._entries.remove(e)
+
+    def __str__(self):
+        return "{" + ", ".join(str(e) for e in self._entries) + "}"
+
+    def __len__(self):
+        return len(self._entries)
+
+    def __contains__(self, key):
+        if self._entry(key) is None:
+            return False
+        else:
+            return True
+
+    def __iter__(self):
+        return (e.key for e in self._entries)
+
+    def values(self):
+        return (e.value for e in self._entries)
+
+    def items(self):
+        return ((e.key, e.value) for e in self._entries)
+
+    __getitem__ = get
+    __setitem__ = put
+```
+
+### It's Too Slow!
