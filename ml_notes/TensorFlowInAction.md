@@ -550,3 +550,196 @@ model.fit([x, x_pca], y, batch_size=64, epochs=10)
 
 #### The Sub-Classing API
 
+* Motivating example: rather than use non-linear activations of the form `h=a(xW + b)`, try `h = a([xW+b]b_mul)` where `b_mul` is a multiplicative bias
+
+  ```python
+  from tensorflow.keras import layers
+  
+  class MulBiasDense(layers.Layer):
+      
+      # Defines various hyperparameters
+      def __init__(self, units=32, input_dim=32, activation=None):
+          super(MulBiasDense, self).__init__()
+          self.units = units
+          self.activation = activation
+          
+      # Defines parameters as tf.Variable objects    
+      def build(self, input_shape):
+          self.w = self.add_weight(shape=(input_shape[-1], self.units),
+                                  initializer='glorot_uniform',
+                                  trainable=True)
+          self.b = self.add_weight(shape=(self.units,),
+                                  initializer='glorot_uniform',
+                                  trainable=True)
+          self.b_mul = self.add_weight(shape=(self.units,),
+                                      initializer='glorot_uniform',
+                                      trainable=True)
+      
+      # Defines computation for the layer
+      def call(self, inputs):
+          out = (tf.matmul(inputs, self.w) + self.b) * self.b_mul
+          return layers.Activation(self.activation)(out)
+  ```
+
+* No existing Keras layer, so need to build our own
+
+* sub-classing comes from the software engineering concept of *inheritance*. 
+
+  * super-class provides general functionality for a type of object (e.g. `layer`)
+  * sub-class (or inherit) from the super-class to create a more specific layer to achieve desired functionality
+
+* When sub-classing a `layer`, there are three important functions to override from the `Layer` base class:
+
+  * `__init__()`: initializes the layer with any parameters it accepts
+  * `build()`: this is where the parameters of the model will be created
+  * `call()`: This funciton defines the computations that need to happen during the forward pass 
+  * May also consider:
+    * `compute_output_shape()`: Determines the output shape of the layer
+    * `get_config()`: used to save model to disk
+
+  ```python
+  from tensorflow.keras.layers import Input, Dense, Concatenate
+  from tensorflow.keras.models import Model
+  import tensorflow.keras.backend as K
+  import tensorflow as tf
+  
+  K.clear_session()
+  
+  inp = Input(shape=(4,))
+  out = MulBiasDense(units=32, activation='relu')(inp)
+  out = MulBiasDense(units=16, activation='relu')(out)
+  out = Dense(3, activation='softmax')(out)
+  
+  model = Model(inputs=inp, outputs=out)
+  model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+  ```
+
+  ![image-20201102064207317](figures/image-20201102064207317.png)
+
+* Exercise: IF you have a fully connected network with a single input layer and two output layers, which API is best?
+  * Answer: Functional API
+
+### Retrieving data for TensorFlow/Keras models
+
+* Three popular methods for data retrieval:
+  * `tf.data` API
+  * Keras data generators
+  * `tensorflow-datasets`
+
+#### `tf.data` API
+
+![image-20201102064751064](figures/image-20201102064751064.png)
+
+* Example: flower dataset
+
+  ```python
+  import os
+  import tensorflow as tf
+  
+  data_dir = os.path.join('flower_color_images','flower_images','flower_images') + os.path.sep
+  csv_ds = tf.data.experimental.CsvDataset(
+      os.path.join(data_dir,'flower_labels.csv'), record_defaults=("", -1), header=True
+  )
+  
+  fname_ds = csv_ds.map(lambda a,b: a)
+  label_ds = csv_ds.map(lambda a,b: b)
+  
+  def get_image(file_path):
+      
+      # loading the image from disk as a byte string
+      img = tf.io.read_file(data_dir + file_path)
+      # conver the compressed string to a 3D uint8 tensor
+      img = tf.image.decode_png(img, channels=3)
+      # use 'convert_image_dtype' to convert to floats in the range [0,1]
+      img = tf.image.convert_image_dtype(img, tf.float32)
+      # resize the image to the desired size
+      return tf.image.resize(img, [64, 64])
+  
+  # to get image tensors from file names
+  image_ds = fname_ds.map(get_image)
+  
+  # convert labels to one-hot encoded vectors
+  label_ds = label_ds.map(lambda x: tf.one_hot(x, depth=10))
+  
+  # Need to keep labels with images
+  data_ds = tf.data.Dataset.zip((image_ds, label_ds))
+  
+  # shuffle the dataset
+  data_ds = data_ds.shuffle(buffer_size=20)
+  
+  # batch data
+  # e.g. a batch of 5 produces [5,64,64,3] tensor
+  data_ds = data_ds.batch(5)
+  ```
+
+* the above resulting dataset behaves like a normal python iterator
+
+* can use the iterator directly with `fit`
+
+  * `model.fit(data_ds, epochs=10)`
+
+* Exercise: remove invalid data (e.g. `-1`) from dataset using lambdas
+
+  * Answer: `label_ds.map(lambda x: x if x != -1)` or `labels_ds.filter(lambda x: x != -1)` using `tf.Dataset.filter()` method
+
+#### Keras DataGenerators
+
+* Another approach is to use the data generators provided in Keras:
+  * `tf.keras.preprocessing.image.ImageDataGenerator`
+  * `tf.keras.preprocessing.sequence.TimeSeriesDataGenerator` 
+
+* Not as flexible as the `tf.data` API
+
+  ```python
+  rom tensorflow.keras.preprocessing.image import ImageDataGenerator
+  import os
+  import pandas as pd
+  
+  data_dir = os.path.join('flower_color_images','flower_images','flower_images')
+  
+  img_gen = ImageDataGenerator(
+      samplewise_center=True, rotation_range=30,
+      brightness_range=(-0.2,0.2))
+  
+  labels_df = pd.read_csv(os.path.join(data_dir, 'flower_labels.csv'), header=0)
+  
+  gen_iter = img_gen.flow_from_dataframe(
+      dataframe=labels_df, directory=data_dir,
+      x_col='file', y_col='label',
+      class_mode='raw', batch_size=2, target_size=(64,64))
+  ```
+
+#### `tensorflow-datasets` package
+
+* `tensorflow-datasets` is a separate package from TensorFlow
+
+* Provides many common datasets
+
+  ```python
+  import tensorflow_datasets as tfds
+  
+  # list datasets
+  tfds.list_builders()
+  
+  # download CIFAR10 dataset
+  data, info = tfds.load('cifar10', with_info=True)
+  
+  # data is a dictionary with keys `train` and `test`
+  # want to batch
+  train_ds = data['train'].batch(16)
+  
+  # train_ds is a dictionary with keys 'image' and 'label'
+  # need to have it in a tuple format with one-hot encoded labels
+  def format_data(x):
+    return (x['image'], tf.one_hot(x['label'], depth=10))
+  
+  train_ds = train_ds.map(format_data)
+  ```
+
+* Exercise: import `caltech101` dataset
+  * Answer: `data, info = tfds.load('caltech101', with_info=True)`
+
+## Chapter 4: Dipping toes in Deep Learning
+
+
+
