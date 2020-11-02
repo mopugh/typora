@@ -316,8 +316,237 @@
 
   ```python
   a = tf.constant(np.array([[0.5, 0.2, 0.7],[0.2, 0.3, 0.4], [0.9, 0.1, 0.1]]), dtype='float32')
-  col_mean = tf.reduce_mean(a, axis=1)
+  col_mean = tf.reduce_mean(a, axis=0)
   ```
 
 ### Neural network related computations in TensorFlow
+
+#### Matrix Multiplication
+
+* `tf.matmul()` performs matrix multiplication
+
+* If using `tf.matmul(a,b)` on two tensors, the dimensions of `a` and `b` must be identical except for the the last two axes. 
+
+  * E.g. `a` has size `[3,5,7]` and `b` has size `[3,7,8]`. The result is `[3,5,8]`
+  * E.g. a `[512,512,3]` image and `[3,1]` weight vector to turn to gray scale leads to `[512,512,1]` image
+
+* Use `tf.squeeze()` to remove any dimensions that are of size one.
+
+  ```python
+  # Image example
+  from PIL import Image
+  import tensorflow as tf
+  import numpy as np
+  
+  x_rgb = np.array(Image.open('lena.jpg')).astype('float32')
+  x_rgb = tf.constant(x_rgb)
+  
+  grays = tf.constant([[0.3], [0.59], [0.11]]) # note need it to be [3,1] and not [3]
+  
+  x = tf.matmul(x_rgb, grays)
+  x = tf.squeeze(x)
+  ```
+
+![image-20201101163306022](figures/image-20201101163306022.png)
+
+#### Convolution operation
+
+![image-20201101163411279](figures/image-20201101163411279.png)
+
+* `tf.nn.convolution()` to perform convolutions
+
+  ```python
+  # assume x is a numpy of the lenna image of shape [512,512]
+  y = tf.constant(x) # convert to tf.Tensor
+  filter = tf.Variable(np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]])).astype('float32') # convolution filter
+  y_reshaped = tf.reshape(y, [1,512,512,1])
+  filter_reshaped = tf.reshape(filter, [3,3,1,1])
+  y_conv = tf.nn.convolution(y_reshaped, filter_reshaped)
+  ```
+
+  * Need input and filter to have same **rank** (the number of dimensions). Also called a convolution kernel.
+    * Note the difference between the use of **rank** of a matrix
+  * For 2D convolutions, need both the input and the kernel to have rank 4
+    * For the input, need to add a dimension at the beginning representing the batch size, and a dimension at the end representing the channels (e.g. RGB)
+      * In the above example want `[1,512,512,1]`
+        * use `tf.reshape(x, [1,512,512,1])` in this case
+    * For the kernel, add two dimensions on the end representing incoming channels and outgoing channels respectively
+      * In the above example want `[3,3,1,1]`
+        * use `tf.reshape(x, [3,3,1,1])` in this case
+
+#### Pooling operation
+
+* Pooling (or sub-sampling) is commonly used in convolutional neural networks to reduce the size of the output so less parameters can be used to learn from the data.
+
+  ![image-20201101200825705](figures/image-20201101200825705.png)
+
+* There are no parameters in the pooling kernel.
+* `tf.nn.max_pool()` for max pooling
+  * E.g. `z_max = tf.nn.max_pool(y_conv, (1,2,2,1), strides=(1,2,2,1), padding='VALID')`
+* `tf.nn.avg_pool()` for average pooling 
+  * E.g. `z_avg = tf.avg_pool(y_conv, (1,2,2,1), strides=(1,2,2,1), padding='VALID')`
+* Need to pass window dimensions: `[batch, height, width, channels]`
+
+## Chapter 3: Keras & Data Retrieval in TensorFlow 2
+
+* Keras is a sub-library of TensorFlow that provides a high-level API. 
+
+### Keras model building APIs
+
+* Can import Keras using `import tensorflow.keras`
+
+* Keras has three main APIs:
+
+  * Sequential API
+  * Functional API
+  * Sub-classing API
+
+  ![image-20201101202155502](figures/image-20201101202155502.png)
+
+#### Introducing the dataset
+
+Looking at the Iris dataset
+
+```python
+import requests
+import pandas as pd
+import tensorflow as tf
+
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
+r = requests.get(url)
+
+# writing data to file
+with open('iris.data', 'wb') as f:
+    f.write(r.content)
+
+iris_df = pd.read_csv('iris.data', header=None)
+
+iris_df.columns = ['sepal_length', 'sepal_width', 'petal_width', 'petal_length', 'label']
+
+# look at beginning of table
+# iris_df.head() 
+
+iris_df['label'] = iris_df['label'].map({'Iris-setosa':0, 'Iris-versicolor':1, 'Iris-virginica':2})
+
+iris_df = iris_df.sample(frac=1.0, random_state=4321)
+x = iris_df[['sepal_length', 'sepal_width', 'petal_width', 'petal_length']]
+x = x - x.mean(axis=0)
+y = tf.one_hot(iris_df['label'], depth=3)
+```
+
+* Shuffling is important
+  * want each batch to have a good mix of classes
+* one-hot encoded the output
+  * 0 -> [1, 0, 0]
+  * 1 -> [0, 1, 0]
+  * 2 -> [0, 0, 1]
+
+#### The Sequential API
+
+* Example:
+
+  * input layer with 4 features 
+  * a 32 node hidden layer
+  * a 16 node hidden layer
+  * a 3 node output layer
+
+* The number of nodes in each layer is a hyperparameter 
+
+  * Consider using hyperparameter optimization
+
+  ```python
+  # Import necessary modules and classes
+  from tensorflow.keras.layers import Dense
+  from tensorflow.keras.models import Sequential
+  import tensorflow.keras.backend as K
+  
+  K.clear_session() # clear the TensorFlow computational graph before creating the model
+  # Defining the model with the Sequential API
+  model = Sequential([
+      Dense(32, activation='relu', input_shape=(4,)),
+      Dense(15, activation='relu'),
+      Dense(3, activation='softmax')
+  ])
+  ```
+
+* Create sequential model using `Sequential` object and passing a sequence of layers, i.e. `Dense`
+
+* A layer encapsulates typical reuseable computations
+
+* The `Dense` layer computes `h = activation(xW + b)` where the output is `h` and input is `x`. Important parameters
+
+  * number of hidden units
+  * non-linear activation
+
+* In the first layer, pass `input_shape` which determines the shapes of the subsequent layers
+
+  * In the above, saying that the input will be of shape `[None, 4]` 
+    * Although only specified 4, Keras automatically adds an unspecified dimension, i.e. `None` 
+    * The added dimension represents the batch dimension of the input
+      * Having it as `None` leaves it unspecified so that one can pass an arbitrary number of examples
+    * 4 represents the feature dimension
+
+* `relu` non-linearity: $y = \max(0,x)$
+
+* `softmax` non-linearity: $y_{i} = \frac{x_{i}}{\sum x_{j}}$ (so it returns a vector the same length as the input)
+
+  * Can interpret as a probability distribution
+
+* After model specification, need model compilation
+
+  ```python
+  model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+  ```
+
+  * loss function
+  * optimizer
+  * metric
+
+* Inspect model with `model.summary()`
+
+* Train model with `fit()` function
+
+  ```python
+  model.fit(x, y, batch_size=64, epochs=25)
+  ```
+
+  * `fit` main arguments are
+    * `x`: Data features
+    * `y`: Data labels (one-hot encoded)
+    * `batch_size` (optional): number of data points in a single batch
+    * `epochs` (optional): number of times repeating the datasets during model training
+
+##### Reproducibility in machine learning
+
+* Consider setting random seed to be able to reproduce results
+
+#### The Functional API
+
+```python
+from tensorflow.keras.layers import Input, Dense, Concatenate
+from tensorflow.keras.models import Model
+
+inp1 = Input(shape=(4,))
+inp2 = Input(shape=(2,))
+
+out1 = Dense(16, activation='relu')(inp1)
+out2 = Dense(16, activation='relu')(inp2)
+
+out = Concatenate(axis=1)([out1, out2])
+out = Dense(16, activation='relu')(out)
+out = Dense(3, activation='softmax')(out)
+
+model = Model(inputs=[inp1, inp2], outputs=out)
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+model.fit([x, x_pca], y, batch_size=64, epochs=10)
+```
+
+* In the functional API, need to explicitly have `Input` layer. 
+* `Concatenate` along `axis=1` since `axis=0` is the batch axis
+* Need to create a `Model` object that specifies the inputs and outputs
+* Can use `tf.keras.utils.plot_model(model)` to plot model
+  * `to_file` argument to save to file
+  * `show_shapes` argument to include sizes
+
+#### The Sub-Classing API
 
