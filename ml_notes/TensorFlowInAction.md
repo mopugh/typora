@@ -741,5 +741,117 @@ model.fit([x, x_pca], y, batch_size=64, epochs=10)
 
 ## Chapter 4: Dipping toes in Deep Learning
 
+### Fully connected networks
 
+* Example: autoencoder for image restoration
+
+> Hyperparameter optimization trends:
+>
+> * optimizing a subset of hyper parameters to limit the exploration space (e.g. type of activation instead of number of hidden units)
+> * Using robust optimizers, early stopping learning rate decay, etc. to stop overfitting
+> * Using model specifications from published models that achieve state-of-the-art
+> * Following rules of thumb such as reducing the output size as you go deeper into the network
+
+#### Understanding the data
+
+* The example is an unsupervised task, so just need the data.
+* Using a final output layer of `tanh` so want data to be normalized in `[-1, 1]` 
+* Want to reshape data to be a vector rather than 2D image
+* Want to create corrupted images 
+  * Create a mask using the binomial distribution with `n=1`
+    * `n`: the number of trials
+    * `p`: probability of success
+    * `size`: the number of tests
+
+#### Autoencoder model
+
+* In supervised learning, the multilayer perceptron is trained to solve a classification problem
+* In an autoencoder, the multilayer perceptron is trained to solve an unsupervised task (e.g. reconstruct the original image given a noisy/corrupted image)
+
+> Supervised vs. unsupervised learning (model-based)
+>
+> * In supervised learning, each input has a corresponding label or continuous value(s) (e.g. bounding boxes). The model is trained to predict the correct label/value(s)
+> * In unsupervised learning, the models are trained using unlabeled data. The training process varies depending on the final expected outcome. 
+>   * For example, autoencoders are trained to reconstruct images as a pre-training step for image-based supervised learning. 
+
+* Autoencoder has two phases of functionality:
+
+  * Compression phase: compress an image into a compressed hidden (i.e. latent) representation
+  * Reconstruction phase: reconstruct the original image from the hidden representation
+
+  ![image-20201102204716103](figures/image-20201102204716103.png)
+
+* When using an autoencoder to denoise, they are called denoising autoencoders
+* Can't use accuracy metric in unsupervised learning
+* Why use autoencoders?
+  * Can learn unsupervised features that are useful for down-stream tasks like image classificaiton.
+    * Can lead to well-performing models faster and with less data
+  * The low dimensional hidden representation can be used as a low-dimensional proxy for clustering
+
+```python
+from tensorflow.keras.datasets.mnist import load_data
+(x_train, y_train), (x_test, y_test) = load_data()
+
+norm_x_train = ((x_train - 128.0) / 128.0).reshape([-1,784]) # Can use -1 to infer the last dimension
+
+import numpy as np
+
+def generate_masked_inputs(x, p, seed = None):
+    if seed:
+        np.random.seed(seed)
+    mask = np.random.binomial(n=1,p=p, size=x.shape).astype('float32')
+    return x * mask
+
+masked_x_train = generate_masked_inputs(norm_x_train, 0.5)
+
+from tensorflow.keras import layers, models
+
+autoencoder = models.Sequential(
+    [layers.Dense(64, activation='relu', input_shape=(784,)),
+    layers.Dense(32, activation='relu'),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(784, activation='tanh')]
+)
+autoencoder.compile(loss='mse', optimizer='adam')
+autoencoder.summary()
+
+history = autoencoder.fit(masked_x_train, norm_x_train, batch_size=64, epochs=10)
+
+x_train_sample = x_train[:10]
+y_train_sample = y_train[:10]
+
+masked_x_train_sample = generate_masked_inputs(x_train_sample, 0.5, seed = 2048)
+norm_masked_x = ((x_train - 128.0)/128.0).reshape(-1, 784)
+
+y_pred = autoencoder.predict(norm_masked_x)
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+# Plotting the corrupted and restored images side-by-side
+f, axes = plt.subplots(2, 10, figsize=(18,4))
+for i, (img, res) in enumerate(zip(masked_x_train_sample, y_pred)):
+    r1, c1 = 0, i
+    r2, c2 = 1, i
+    axes[r1,c1].imshow(img,cmap='gray')
+    axes[r1,c1].axis('off')
+    
+    res = ((res * 128.0)+128.0).reshape(28,28)
+    axes[r2,c2].imshow(res,cmap='gray')
+    axes[r2,c2].axis('off')
+```
+
+* Exercise: Create an autoencoder with input 512, hidden layer of 32 nodes, a hidden layer of 16 nodes, and an output layer. All layers have sigmoid activation
+
+  ```python
+  from tensorflow.keras import models, layers
+  
+  autoencoder = models.Autoencoder(
+  	[layers.Dense(32, activation='sigmoid', input_shape=(512,)),
+     layers.Dense(16, activation='sigmoid'),
+     layers.Dense(512, activation='sigmoid')]
+  )
+  ```
+
+### Convolution neural networks
 
