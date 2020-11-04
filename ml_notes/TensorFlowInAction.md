@@ -957,3 +957,150 @@ tr_data = data['train'].map(lambda x: format_data(x, depth=10)).batch(32)
 
 ![image-20201103215208598](figures/image-20201103215208598.png)
 
+* Stride has two components: height and width
+
+  * Defines how many pixels to stip during shifting
+
+  * Accounting for size, the output size follows
+    $$
+    \textrm{size}(y) = \left \lfloor \frac{\textrm{size}(x) - \textrm{size}(f)}{s} \right \rfloor +1
+    $$
+
+  * Helps control the output size
+
+  ![image-20201104062902607](figures/image-20201104062902607.png)
+
+* Padding determines the effects of the border.
+  * Can add imaginary zeros around the edges of the images to get the same output image size : add a border of size $\textrm{size}(f)-1$
+    * This is `same` padding
+  * Theoretically, you can use other (i.e. non-zero) padding techniques, but they are not supported natively in TensorFlow
+    * Constant value
+    * Reflection
+    * nearest value
+  * Not applying padding is called `valid` padding
+* Max-pooling is provided by `tensorflow.keras.layers.MaxPool2D` with hyperparameters
+  * `pool_size`: analogous to kernel size in convolution layer
+  * `strides`: analogous to convolution layer
+  * `padding`: `same` or `valid`. analogous to padding in convolution layer 
+* Need a `Flatten()` layer prior to `Dense` layer to convert to a vector
+  * provided by `tensorflow.keras.layers.Flatten`
+* First `Dense` layer can be huge if not careful
+
+```python
+# Create network
+from tensorflow.keras import layers, models
+import tensorflow.keras.backend as K
+
+K.clear_session()
+
+cnn = models.Sequential(
+    [layers.Conv2D(filters=16, kernel_size=(9,9), strides=(2,2), activation='relu',
+                      padding='same', input_shape=(32,32,3)),
+     layers.MaxPool2D(pool_size=(2,2), strides=(2,2), padding='same'),
+     layers.Conv2D(filters=32, kernel_size=(7,7), activation='relu', padding='same'),
+     layers.MaxPool2D(pool_size=(2,2), strides=(2,2), padding='same'),
+     layers.Flatten(),
+     layers.Dense(64, activation='relu'),
+     layers.Dense(10, activation='softmax')
+    ]
+)
+```
+
+### One Step at a Time: Recurrent neural networks
+
+* Typical feed-forward networks (i.e. fully-connected networks, convolution neural networks) cannot handle time-series data
+
+  * Each input is assumed to be i.i.d.
+  * Cannot look "into the past"
+
+* Recurrent neural networks are designed to handle time-series data
+
+  ![image-20201104070137172](figures/image-20201104070137172.png)
+
+#### Understanding the data
+
+* Example: CO2 concentration
+
+  ![image-20201104071024381](figures/image-20201104071024381.png)
+
+* Note: do not want to use data as is because the values are increasing into ranges that haven't been seen, so it's difficult for a network to extrapolate. 
+
+  * Idea: Use differences between samples
+
+    ```python
+    data['Average Diff']=data['Average'] - data['Average'].shift(1).fillna(method='bfill')
+    ```
+
+    
+
+  ![image-20201104071246212](figures/image-20201104071246212.png)
+
+  ![image-20201104071340029](figures/image-20201104071340029.png)
+
+* How to take batches from time-series?
+
+  * Can't sample i.i.d. (i.e. shuffle)
+
+  * Determine window into the past we want to look
+
+  * Pick random starting position, take window number of samples as input and then subsequent sample as the target
+
+    ```python
+    import numpy as np
+    
+    def generate_data(co2_arr, n_seq):
+        x, y = [], []
+        for i in range(co2_arr.shape[0]-n_seq):
+            x.append(co2_arr[i:i+n_seq-1])
+            y.append(co2_arr[i+n_seq-1:i+n_seq])
+        x = np.array(x).reshape(-1,n_seq-1,1)
+        y = np.array(y)
+        return x,y
+    ```
+
+  * `SimpleRNN` need specific input(hence the `reshape` above)
+
+    * batch dimension
+    * time dimension
+    * feature dimension
+
+*  network:
+
+  * a recurrent neural network layer with 64 hidden units
+  * a dense layer with 64 hidden units, relu activation 
+  * a dense layer with a single output, linear activation
+
+  ![e](figures/image-20201104071923249.png)
+
+#### Predicting future CO2 values with the trained model
+
+```python
+# Prediction
+history = data['Average Diff'].values[-12:].reshape(1,-1,1)
+true_vals = []
+prev_true = data['Average'].values[-1]
+for i in range(60): # predict next 60 months
+    p_diff = rnn.predict(history).reshape(1,-1,1) # prediction
+    history = np.concatenate((history[:,1:,:],p_diff), axis=1) # update history to include latest prediction
+    true_vals.append(prev_true+p_diff[0,0,0]) # Compute the absolute CO2 concentration
+    prev_true = true_vals[-1] # Update prev_true so that the absolute CO2 concentration can be computed in the next time step
+```
+
+![image-20201104073929305](figures/image-20201104073929305.png)
+
+* Question: if we wanted to predict temperature and CO2 concentration, how would we change the network?
+
+  ```python
+  rnn = models.Sequential([
+    layers.SimpleRNN(64, input_shape=(12,2)), # (12,2) instead of (12,1)
+    layers.Dense(64, activation='relu'),
+    layers.Dense(2) # two outputs instead of 1
+  ])
+  ```
+
+### Summary
+
+* Fully-connected network: use `Dense` layers
+* Convolutional neural network: use `Conv2D`, `MaxPool2D`, `Flatten`
+* RNNs used mostly for time series
+  * typical RNNs expect 3-dimensional input tensor with batch dimension, time dimension and feature dimension
