@@ -1104,3 +1104,57 @@ for i in range(60): # predict next 60 months
 * Convolutional neural network: use `Conv2D`, `MaxPool2D`, `Flatten`
 * RNNs used mostly for time series
   * typical RNNs expect 3-dimensional input tensor with batch dimension, time dimension and feature dimension
+
+## Chapter 5: State-of-the-art in deep learning: Transformers
+
+* Transformers originated in "Attention is all you need"
+  * Understanding transformers is essential to excel at deep learning
+
+### Representing text as numbers
+
+* Question: How do you represent text as numbers?
+
+* Start by assigning each word a number starting from 1. 0 is reserved for a special token
+
+  * Then map each word in a phrase/sentence to the number to get a list/tensor of numbers
+
+* Need fixed length phrases
+
+  * Pad short phrases
+  * Truncate long phrases
+
+* One-hot encode words
+
+  ![image-20201104112812753](figures/image-20201104112812753.png)
+
+  ![image-20201104113315649](figures/image-20201104113315649.png)
+
+* Question: why not feed in the word IDs directly?
+  * Very large range of IDs which leads to instabilities
+  * Feeding in integer IDs would falsely indicate there's an ordering/notion of similiarity
+* Different ways of converting IDs to vectors
+  * One-hot encodings
+  * Embeddings
+
+### Understanding the Transformer model
+
+#### The encoder-decoder view of the Transformer
+
+* The transformer network is based on an encoder-decoder architecture 
+
+  * encoder-decoder is common in many tasks (e.g. translation, question answering, unsupervised image reconstruction)
+  * Encoder converts input into some latent representation
+  * Decoder converts latent representation to meaning output
+
+  ![image-20201104113829977](figures/image-20201104113829977.png)
+
+#### Diving deeper
+
+* The encoder layer comprises two sub-layers:
+  * self-attention layer (innovative part)
+  * fully connected layer
+* Idea behind self-attention:
+  * When processing a word, can attend to other words
+  * E.g. "I kicked the **ball** and **it** disappeared" 
+    * Can attend to the word "ball" when processing "it"
+  * The fully-connected layer takes the output of the self-attention sub-layer and produces the hidden representation
