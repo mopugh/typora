@@ -434,3 +434,111 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 
 ### Moving tensors to the GPU
 
+* All tensors can be moved onto a GPU
+
+#### Managing a tensor's device attribute
+
+* Can specify the `device` for a tensor
+
+  * `points_gpu = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]], device='cuda')`
+
+  * `points_gpu = points.to(device='cuda')`
+
+  * These return a new tensor that has the same data but stored on a GPU.
+
+  * If more than one GPU, can specify the specific GPU using 0 based indexing
+
+    * `points_gpu = points.to(device='cuda:0')`
+
+    ```python
+    points = 2 * points # CPU computation
+    points_gpu = 2 * points.to(device='cuda') # GPU computation
+    points_gpu = points_gpu + 4 # still done on GPU
+    points_cpu = points_gpu.to(device='cpu') # move to CPU
+    
+    # Shorthand
+    points_gpu = points.cuda() # default to cuda:0
+    points_gpu = points.cuda(0) # specify GPU
+    points_gpu = points_gpu.cpu()
+    ```
+
+    * Returned tensor on GPU stays on GPU
+
+  * Can change `dtype` and `device` using `to` method
+
+### NumPy Interoperability
+
+* PyTorch has zero-copy interoperability with NumPy
+
+  * Due to Python buffer protocol: share underlying buffer
+
+  ```python
+  points = torch.ones(3,4)
+  points_np = points.numpy() # create numpy array from tensor
+  points = torch.from_numpy(points_np) # convert from numpy array to tensor
+  ```
+
+  * As long as tensor is on CPU, no cost
+  * Modifying numpy array will modify the tensor
+  * If the tensor is on the GPU, then it will create a numpy array copy on the CPU
+
+* PyTorch default is 32-bit floating point, while NumPy is 64-bit floating point
+
+  * Make sure tensors have `dtype=torch.float` after conversions
+
+### Generalized tensors are tensors, too
+
+* Any implemention that meets the contract of the tensor API can be considered a tensor.
+
+  ![image-20201105063550598](figures/image-20201105063550598.png)
+
+### Serializing tensors
+
+* PyTorch uses `pickle` to serialize tensor objects
+
+  ```python
+  # Saving
+  torch.save(points, '../data/p1ch3/ourpoints.t')
+  # alternatively
+  with open('../data/p1ch3/ourpoints.t', 'wb') as f:
+    torch.save(points, f)
+    
+  # Loading
+  points = torch.load('../data/p1ch3/ourpoints.t')
+  # Alternatively
+  with open('../data/p1ch3/ourpoints.t', 'rb') as f:
+    points = torch.load(f)
+  ```
+
+* Can't load PyTorch models with software other than PyTorch this way
+
+#### Serializing to HDF5 with h5py
+
+HDF5 allows for greater interoperability
+
+```python
+import h5py
+
+# Saving
+f = h5py.File('../data/p1ch3/ourpoints.hdf5', 'w')
+dset = f.create_dataset('coords', data=points.numpy())
+f.close()
+
+# Example loading
+f = h5py.File('../data/p1ch3/ourpoints.hdf5', 'r')
+dset = f['coords']
+last_points = dset[-2:]
+last_points = torch.from_numpy(dset[-2:])
+f.close() # invalidates dset
+```
+
+* `coords` in the above is the key into the HDF5 file. 
+* closing HDF5 file invalidates its data: get error if you try to access it
+
+### Summary
+
+* Neural networks transform floating-point representations to floating-point representations
+* trailing underscore indicates inplace function, e.g. `Tensor.sqrt_` 
+
+## Chapter 4: Real-world data represention using tensors
+
