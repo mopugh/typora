@@ -7,8 +7,9 @@
 - [ ] NYU Deep Learning Course
 - [ ] Deep Learning with PyTorch
 - [ ] Deep Learning with Python
-- [ ] Grooking Deep Learning
+- [ ] Grokking Deep Learning
 - [ ] TensorFlow 2.0 in Action
+- [ ] Look at Kaparthy hacker series
 
 #### Additional
 
@@ -92,6 +93,7 @@
 
 - [ ] NYU Deep Learning Course
 - [ ] Deep Learning in PyTorch
+  - [ ] Look at Kaparthy hacker series
 
 ### Math
 
