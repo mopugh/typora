@@ -1151,10 +1151,253 @@ for i in range(60): # predict next 60 months
 #### Diving deeper
 
 * The encoder layer comprises two sub-layers:
+
   * self-attention layer (innovative part)
   * fully connected layer
+
 * Idea behind self-attention:
+
   * When processing a word, can attend to other words
   * E.g. "I kicked the **ball** and **it** disappeared" 
     * Can attend to the word "ball" when processing "it"
   * The fully-connected layer takes the output of the self-attention sub-layer and produces the hidden representation
+
+  ![image-20201104134442167](figures/image-20201104134442167.png)
+  * Encoder: Each sub-layer has:
+    * attended representation/out is a weighted sum of the input where the weights are based on the attention layer
+    * The hidden layer takes the attended representation and:
+      * $h_{1} = \textrm{ReLU}(xW_{1} + b_{1})$
+      * $h_{2} = h_{1}W_{2} + b_{2}$ 
+  * Decoder: Each sublayer has 
+    * masked self-attention layer: masks words ahead of currently processed word
+      * Don't look into the future
+    * self-attention layer: learn hidden representatio (i.e. attended representation)
+    * fully connected layer
+
+#### Self-attention layer
+
+* When processing word $w_{t}$ at time $t$, determine how important it is to attend to the $i$th word. 
+
+* Three different entities in the computation:
+
+  * query: represent the word that is currently being processed
+    * $W_{q}$ is a $d_{model} \times d_{q}$ matrix to compute query
+  * key: represent candidate words to be attended to while processing the current word
+    * $W_{k}$ is a $d_{model} \times d_{k}$ matrix
+  * value: compute a weighted sum of all the words in the sequence, where the weight for each word is based on how important it is for understanding the current word
+    * $W_{v}$ is a $d_{model} \times d_{v}$ matrix
+
+* First convert words to vectors using an embedding
+
+* Compute query, key and value as matrix product
+
+* Then compute probabilities as:
+  $$
+  p = \textrm{softmax} \left ( \frac{qk^{t}}{\sqrt{d_{k}}} \right )
+  $$
+
+* Multiply probabilities by value:
+  $$
+  h = pv
+  $$
+
+```python
+import tensorflow as tf
+import numpy as np
+
+n_seq = 7 # Sequence length
+
+# Defining the input
+x = tf.constant(np.random.normal(size=(1,n_seq,512)), dtype='float32')
+
+# Query, Key and Value matrices
+Wq = tf.Variable(np.random.normal(size=(512,512)), dtype='float32')
+Wk = tf.Variable(np.random.normal(size=(512,512)), dtype='float32')
+Wv = tf.Variable(np.random.normal(size=(512,512)), dtype='float32')
+
+# Printing the shapes of the data
+print('x.shape={}'.format(x.shape))
+print('Wq.shape={}'.format(Wq.shape))
+print('Wk.shape={}'.format(Wk.shape))
+print('Wv.shape={}'.format(Wv.shape))
+
+import tensorflow as tf
+from tensorflow.keras import layers
+import math
+
+class SelfAttentionLayer(layers.Layer):
+    """ Defines the computations in the self attention layer """
+    def __init__(self, d):
+        super(SelfAttentionLayer, self).__init__()
+        # Feature dimensionality of the output
+        self.d = d
+    
+    def build(self, input_shape):
+        # Query weight matrix
+        self.Wq = self.add_weight(
+            shape=(input_shape[-1], self.d), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )        
+        # Key weight matrix
+        self.Wk = self.add_weight(
+            shape=(input_shape[-1], self.d), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )
+        # Value weight matrix
+        self.Wv = self.add_weight(
+            shape=(input_shape[-1], self.d), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )
+    
+    def call(self, q_x, k_x, v_x):
+        # Computing query, key and value
+        q = tf.matmul(q_x,self.Wq)
+        k = tf.matmul(k_x,self.Wk)
+        v = tf.matmul(v_x,self.Wv)
+        
+        # Computing the probability matrix
+        p = tf.nn.softmax(tf.matmul(q, k, transpose_b=True)/math.sqrt(self.d))
+        p = tf.squeeze(p)
+
+        # Computing the final output
+        h = tf.matmul(p, v)
+        return h,p
+
+# Creating a dummy self attention layer
+layer = SelfAttentionLayer(512)
+# Getting the output
+h, p = layer(x, x, x)
+print(h.shape)
+```
+
+* Why transformers over RNNs?
+  * RNN performance degrades as the length increases: forget the beginning
+  * Self-attention alleviates this problem
+
+#### Self-attention as a cooking competition
+
+![image-20201104160036239](figures/image-20201104160036239.png)
+
+#### Masked self-attention layers
+
+* Make probability matrix $P$ lower triangular so the model can't look ahead
+
+  ![image-20201104160519261](figures/image-20201104160519261.png)
+
+```python
+# Masked self-attention
+import tensorflow as tf
+
+class SelfAttentionLayer(layers.Layer):
+    """ Defines the computations in the self attention layer """
+    
+    def __init__(self, d):        
+        super(SelfAttentionLayer, self).__init__()
+        # Feature dimensionality of the output
+        self.d = d
+    
+    def build(self, input_shape):
+        # Query weight matrix
+        self.Wq = self.add_weight(
+            shape=(input_shape[-1], self.d), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )        
+        # Key weight matrix
+        self.Wk = self.add_weight(
+            shape=(input_shape[-1], self.d), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )
+        # Value weight matrix
+        self.Wv = self.add_weight(
+            shape=(input_shape[-1], self.d), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )
+    
+    def call(self, q_x, k_x, v_x, mask=None):
+        # Computing query, key and value
+        q = tf.matmul(q_x,self.Wq) #[None, t, d]
+        k = tf.matmul(k_x,self.Wk) #[None, t, d]
+        v = tf.matmul(v_x,self.Wv) #[None, t, d]
+        
+        # Computing the probability matrix
+        p = tf.matmul(q, k, transpose_b=True)/math.sqrt(self.d) # [None, t, t]
+                
+        if mask is None:
+            p = tf.nn.softmax(p)
+        else:
+            # Creating the mask
+            p += mask * -1e9
+            p = tf.nn.softmax(p)
+                
+        # Computing the final output
+        h = tf.matmul(p, v) # [None, t, t] . [None, t, d] => [None, t, d]
+        return h,p
+
+layer = SelfAttentionLayer(512)
+mask = 1 - tf.linalg.band_part(tf.ones((7, 7)), -1, 0) # Create triangular matrix
+h, p = layer(x, x, x, mask)
+print(h.shape)
+```
+
+#### Multi-head attention
+
+* Multi-head attention creates multiple parallel self-attention heads
+
+  * When the model is given the opportunity to learn multiple attention patterns, it performs better
+
+  ```python
+  multi_attn_head = [SelfAttentionLayer(64) for i in range(8)]
+  outputs = [head(x, x, x)[0] for head in multi_attn_head]
+  outputs = tf.concat(outputs, axis=-1)
+  print(outputs.shape)
+  ```
+
+#### Fully-connected layer
+
+```python
+# Section 5.2
+# Code listing 5.3
+import tensorflow as tf
+
+class FCLayer(layers.Layer):
+    """ The computations of a fully connected sublayer """
+    def __init__(self, d1, d2):
+        super(FCLayer, self).__init__()
+        # Dimensionality of the first hidden layer
+        self.d1 = d1
+        # Dimensionality of the second hidden layer
+        self.d2 = d2
+    
+    def build(self, input_shape):
+        # First layer's weights and biases
+        self.W1 = self.add_weight(
+            shape=(input_shape[-1], self.d1), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )
+        self.b1 = self.add_weight(
+            shape=(self.d1,), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )        
+        # Second layer's weights and biases
+        self.W2 = self.add_weight(
+            shape=(input_shape[-1], self.d2), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )
+        self.b2 = self.add_weight(
+            shape=(self.d2,), initializer='glorot_uniform',
+            trainable=True, dtype='float32'
+        )  
+    
+    def call(self, x):
+        # Computing the first fully connected output
+        ff1 = tf.nn.relu(tf.matmul(x,self.W1)+self.b1)
+        # Computing the second fully connected output
+        # Note that the second layer doesn't use an activation
+        ff2 = tf.matmul(x,self.W2)+self.b2
+        return ff2
+    
+# Creating a dummy fully connected layer
+ff = FCLayer(2048, 512)(h)
+print(ff.shape)
+```
+
