@@ -1861,3 +1861,116 @@ class ListMapping:
 ```
 
 ### It's Too Slow!
+
+* `ListMapping` is slow because it has to iterate through list
+
+* Idea: use many short lists instead of one long one
+  
+  * Use hash function to determine which *bucket* to look in
+  
+  ```python
+  from ds2.mapping import ListMapping
+  
+  class HashMappingSimple:
+      def __init__(self):
+          slf._size = 100
+          self._buckets = [ListMapping() for i in range(self._size)]
+  
+  
+      def put(self, key, value):
+          m = self._bucket(key)
+          m[key] = value
+  
+      def get(self, key):
+          m = self._bucket(key)
+          return m[key]
+  
+      def _bucket(self, key):
+          return self._buckets[hash(key) % self._size] # returns ListMapping
+  ```
+  
+  * Initializer creates 100 ListMaps (buckets)
+
+* If two keys are placed in the same bucket, this is a **collision** 
+
+#### How many buckets should we use?
+
+* 100 buckets is arbitray but yields 100x speed up
+
+* Want to increase number of buckets as number of entries increases
+
+```python
+class HashMapping:
+    def __init__(self, size=2):
+        self._size = size
+        self._buckets = [ListMapping() for i in range(self._size)]
+        self._length = 0
+
+    def put(self, key, value):
+        m = self._buckets(key)
+        if key is not in m:
+            self._length += 1
+        m[key] = value
+
+        # Check if we need more buckets
+        if self._length > self._size:
+            self._double()
+
+    def get(self, key):
+        m = self._bucket(key)
+        return m[key]
+
+    def remove(self, key):
+        m = self._bucket(key)
+        m.remove(key)
+
+    def __contains__(self, key):
+        m = self._bucket(key)
+        return key in m
+
+    def _bucket(self, key):
+        return self._buckets[hash(key) % self._size]
+
+    def _double(self):
+        # Save a reference to the old buckets.
+        oldbuckets = self._buckets
+        # double the size
+        self._size *= 2
+        # create new buckets
+        self._buckets = [ListMapping() for i in range(self._size)]
+        #Add in all the old entries
+        for bucket in old_bucket:
+            for key, value in bucket.items():
+                # identify the new bucket
+                m = self._bucket(key)
+                m[key] = value
+
+    def __len__(self):
+        return self._length
+
+    def __iter__(self):
+        for b in self._buckets:
+            for k in b:
+                yield k
+
+    def values(self):
+        for b in self._buckets:
+            for v in b.values():
+                yield v
+
+    def items(self):
+        for b in self_buckets:
+            for k, v in b.items():
+                yield k, v
+
+    def __str__(self):
+        # The following is dangerous and will be removed soon
+        # accesses a private attribute
+        itemlist = [str(e) for b in self._buckets for e in b._entries]
+        return '{' + ', '.join(itemlist) + '}'
+
+    def __getitem__ = get
+    def __setitem__ = set
+```
+
+#### Rehashing
