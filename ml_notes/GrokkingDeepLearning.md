@@ -356,3 +356,176 @@ error = (pred - goal_pred) ** 2
 * Want positive error so cancellation doesn't occur when averaging
   
   * i.e. don't want -100 and 100 to cancel out
+
+### What's the simplest form of neural learning?
+
+* Learning is about adjusting weights
+
+* Simple idea: hot and cold learning
+
+  * Wiggle the weights to see which direction reduce the error most and move the weights in that direction
+  * Repeat until error is minimized
+
+* Learning in neural networks is really a **search problem**
+
+  * Searching for the best possible configuration of weights
+
+  ```python
+  weight = 0.5
+  input = 0.5
+  goal_prediction = 0.8
+  
+  step_amount = 0.001
+  
+  for iteration in range(1101):
+      
+      prediction = input * weight
+      error = (prediction - goal_prediction) ** 2
+      
+      print('Error:', str(error), ' Prediction:', str(prediction))
+      
+      up_prediction = input * (weight + step_amount)
+      up_error = (goal_prediction - up_prediction) ** 2
+      
+      down_prediction = input * (weight - step_amount)
+      down_error = (goal_prediction - down_prediction) ** 2
+      
+      if(down_error < up_error):
+          weight -= step_amount
+      if(down_error > up_error):
+          weight += step_amount
+  ```
+
+### Characteristics of hot and cold learning
+
+* Simple
+* Inefficient
+* Sometimes impossible to predict exact goal due to fixed step size
+  * Know correct direction to move, but not the correct amount
+  * This amount is unrelated to the error in this case
+* Can we determine amount and direction without repeated predictions?
+
+### Calculating both direction and amount from error
+
+```python
+weight = 0.5
+goal_pred = 0.8
+input = 0.5
+
+for iteration in range(20):
+    pred = input * weight
+    error = (pred - goal_pred) ** 2
+    direction_and_amount = (pred - goal_pred) * input
+    weight -= direction_and_amount
+    
+    print('Error', str(error), ' Prediction:', str(pred))
+```
+
+* "Pure error": `(pred-goal_pred)` indicates raw direction and amount missed.
+  * If positive: predicted too high
+  * If negative: predicted too low
+  * If large: missed by a big amount
+* Multiplying by input scales, provides negative reversal and stopping
+  * input of zero has no effect in learning
+  * if input is negative, then increase `pred` decreases `direction_and_amount`
+  * larger the input, the larger the in magnitude `direction_and_amount` 
+
+### One iteration of gradient descent
+
+```python
+alpha = 0.01
+delta = pred - goal # difference
+weight_delta = input * delta # weigh by input
+weight -= weight_delta * alpha # weigh by alpha
+```
+
+* `weight_delta` is a measure of how much a weight caused the network to miss
+* `alpha` controls how fast the network learns
+
+### Learning is just reducing error
+
+* Adjust the weight in the correct direction and the correct amount so the error keeps getting reduced
+* Note that input and goal are fixed. The variables are the weights.
+
+### Let's watch several steps of learning
+
+```python
+weight, goal_pred, input = (0.0, 0.8, 1.1)
+
+for iteration in range(4):
+    print("-----\nWeight:" + str(weight))
+    pred = input * weight
+    error = (pred - goal_pred) ** 2
+    delta = pred - goal_pred
+    weight_delta = delta * input
+    weight = weight - weight_delta
+    print("Error:" + str(error) + " Prediction:" + str(pred))
+    print("Delta:" + str(delta) + " Weight Delta:" + str(weight_delta))
+```
+
+### Why does this work? What is weight_delta, really?
+
+* Changing the weight means the function *conforms to the patterns in the data*. 
+  * Changes only how predict works
+* **Key takeaway**: you can modify anything in the `pred` calculation except `input` 
+
+### Concept: Learning is adjusting the weight to reduce the error to 0
+
+* Want to understand the relationship between `weight` and `error`
+  * Hot and cold learning tried this by experimenting
+  * `error = ((input * weight) - goal_pred) ** 2` is the exact relationship 
+    * How do we change `weight` to reduce `error`
+  
+  ![image-20201109060942101](figures/image-20201109060942101.png)
+
+* The slope points to the lowest error. So use slope information to help reduce error.
+* Modify error function until the `erro` goes to 0.
+  * Can't change input data, output data, error logic
+  * Can change weights
+* The derivative describes how one variable changes w.r.t. another variable.
+  * derivative's sign gives direction
+  * derivative's value gives amount
+* A neural network is just a bunch of weights used to compute an error function
+  * Can compute the relationship (derivative) between any weight and the error
+* The derivative points in the opposite direction that you want to move to minimize error
+  * E.g. if the slope is negative, want to increase the value to get closer to the error minimizer.
+  * This metho is gradient descent
+
+### Divergence 
+
+* Need to take small steps as to not overcorrect
+
+  * If derivative is large, can take large steps and lead to oscillation
+
+    ![image-20201109063231573](figures/image-20201109063231573.png)
+
+* Solution: multiply the derivative by a factor to reduce step size
+  * How this factor is chosen is "guessing"
+  * `weight = weight - alpha * derivative` 
+
+### Memorize
+
+* Write code from memory:
+
+  ```python
+  weight, input, goal = 0.5, 2, 0.8
+  alpha = 0.1
+  
+  num_iter = 100
+  tol = 1e-10
+  
+  for i in range(num_iter):
+      pred = weight * input
+      error = (pred - goal) ** 2
+      delta = pred - goal
+      step = input * delta
+      
+      print('Iteration:',i,'Error:', error,' Prediction:', pred)
+      
+      weight = weight - alpha * step
+      
+      if abs(error) < tol:
+          break
+  ```
+
+  

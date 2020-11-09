@@ -27,6 +27,7 @@
 #### Additional
 
 - [ ] Category Theory
+- [ ] Graphical linear algebra
 
 ### Python
 
