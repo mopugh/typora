@@ -354,6 +354,7 @@ dz = (forwardCircuit(x,y,z+h) - forwardCircuit(x,y,z)) / h # 3
   * The multiply gate takes two inputs that each hold a value and creates a unit that stores its output.
   * The gradient is initialized to zero. 
 * In the backward pass we get the gradient from the output unit that we generated during the forward pass and multiply it with the local gradient for this gate (the chain rule). 
+  
   * Use `+=` to add onto the gradient in the `backward` function. This allows us to possibly use the output of one gate multiple times (think of wire branching), since it turns out that the gradients from these different branches just add up when computing the final gradient w.r.t. the circuit output. 
   
 * Add Gate:
@@ -666,3 +667,319 @@ vector -> label
 
 #### Training Protocol
 
+* Consider a linear classifier: $f(x,y) = ax + by + c$
+  * The inputs are `x` and `y`
+  * The parameters of the function we are learning are `a,b,c` 
+* Training works as follows (**stochastic gradient descent**):
+  1. Select a datapoint at random to feed through the network
+  2. Interpret the output as a confidence that the datapoint has class `+1` 
+  3. Measure how well the prediction aligns with the label
+  4. Backpropagate to better align prediction with label
+  5. Since `x,y` is the fixed datapoint, ignore the the tug (i.e. do not update with gradient during backpropagation - can think of as fixed pegs in the ground)
+  6. Update parameters `a,b,c` (**parameter update**)
+  7. Iterate! Go back to step 1
+* Note: `x,y` change from sample to sample, but `a,b,c` are shared
+
+#### Learning a Support Vector Machine
+
+* Support Vector Machine "Force Specification":
+
+  * If we feed a positive datapoint through the SVM and the output is less than 1, pull on the circuit with force `+1`
+  * Conversely, if we feed a negative datapoint through the SVM and the output is greater than -1, then pull the circuit downwards with force `-1` 
+  * Additionally, always add a small amount of pull on the parameters `a,b` (but not `c`) that pulls them towards zero. 
+    * Think of `a,b` as being a spring attached to zero 
+    * Pull towards zero proportional to the value of `a,b` (Hooke's law?)
+      * This is **regularization**: makes sure `a,b` don't get too large
+      * Since `a,b` multiply `x,y`, don't want `f` to be overly sensitive 
+
+  ```python
+  class Circuit:
+      def __init__(self):
+          # Create the gates
+          mulg0 = MultiplyGate()
+          mulg1 = MultiplyGate()
+          addg0 = AddGate()
+          addg1 = AddGate()
+      
+      def forward(self,x,y,a,b,c):
+          ax = mulg0.forward(a,x)
+          by = mulg1.forward(b,y)
+          axpby = addg0.forward(ax,by)
+          axpbypc = addg1.forward(axpby, c)
+          self.axpbypc = axpbypc
+          return self.axpbypc
+          
+      def backward(self, gradient_top):
+          self.axpbypc.grad = gradient_top
+          addg1.backward()
+          addg0.backward()
+          mulg1.backward()
+          mulg0.backward()
+          
+  # SVM
+  class SVM:
+      def __init__(self):
+          self.a = Unit(1.0, 0.0)
+          self.b = Unit(-2.0, 0.0)
+          self.c = Unit(-1.0, 0.0)
+          self.circuit = Circuit()
+      
+      def forward(self, x, y):
+          self.unit_out = self.circuit.forward(x,y,self.a,self.b,self.c)
+          return self.unit_out
+      
+      def backward(self, label):
+          
+          # reset pulls on a,b,c
+          self.a.grad = 0.0
+          self.b.grad = 0.0
+          self.c.grad = 0.0
+          
+          # compute the pull based on what the circuit output was
+          pull = 0
+          if label == 1 and self.unit_out.value < 1:
+              pull = 1 # the score was too low: pull up
+          elif label == -1 and self.unit_out.value > 1:
+              pull = -1 # the score was too high, pull down
+          
+          self.circuit.backward(pull) # writes gradient into x,y,a,b,c
+          
+          # add regularization pull for parameters
+          # towards zero and proportional to value
+          self.a.grad += -self.a.value
+          self.b.grad += -self.b.value
+          
+      def learnFrom(self, x, y, label):
+          self.forward(x,y)
+          self.backward(label)
+          self.parameterUpdate()
+          
+      def parameterUpdate(self):
+          step_size = 0.01
+          self.a.value += step_size * self.a.grad
+          self.b.value += step_size * self.b.grad
+          self.c.value += step_size * self.c.grad
+  
+  # Train SVM with SGD
+  data, labels = [], []
+  
+  data.append([1.2, 0.7])
+  labels.append(1)
+  
+  data.append([-0.3, -0.5])
+  labels.append(-1)
+  
+  data.append([3.0, 0.1])
+  labels.append(1)
+  
+  data.append([-0.1, -1.0])
+  labels.append(-1)
+  
+  data.append([-1.0, 1.1])
+  labels.append(-1)
+  
+  data.append([2.1, -3])
+  labels.append(1)
+  
+  svm = SVM()
+  
+  # a function that computes the classification accuracy
+  def evalTrainingAccuracy(data, labels):
+      num_correct = 0
+      for i in range(len(data)):
+          x = Unit(data[i][0], 0.0)
+          y = Unit(data[i][1], 0.0)
+          true_label = labels[i]
+          
+          predicted_label = 1 if svm.forward(x,y).value > 0 else -1
+          if predicted_label == true_label:
+              num_correct += 1
+              
+      return num_correct / len(data)
+    
+  # the learning loop
+  import random
+  num_iter = 400
+  for i in range(num_iter):
+      i = random.randint(0,len(data)-1)
+      x = Unit(data[i][0], 0.0)
+      y = Unit(data[i][1], 0.0)
+      label = labels[i]
+      svm.learnFrom(x,y,label)
+      
+      if i % 25 == 0:
+          print('Training accuracy at iter {}: {}'.format(i, evalTrainingAccuracy(data,labels)))
+  ```
+
+  * Variable pull: Notice that the pull was always `+1` or `-1`. Can consider alternatives such as making it proportional to the mistake (squared hinge loss SVM). 
+
+#### Generalizing the SVM into a Neural Network
+
+```python
+# 2-layer NN example
+
+# Randomly initialize parameters
+a1 = random.random() - 0.5
+b1 = random.random() - 0.5
+c1 = random.random() - 0.5
+a2 = random.random() - 0.5
+b2 = random.random() - 0.5
+c2 = random.random() - 0.5
+a3 = random.random() - 0.5
+b3 = random.random() - 0.5
+c3 = random.random() - 0.5
+a4 = random.random() - 0.5
+b4 = random.random() - 0.5
+c4 = random.random() - 0.5
+d4 = random.random() - 0.5
+
+for iteration in range(400):
+    
+    # pick a random data point
+    i = random.randint(0,len(data)-1)
+    x = data[i][0]
+    y = data[i][1]
+    label = labels[i]
+
+    # forward pass
+    n1 = max(0, a1*x + b1*y + c1) # Activation of 1st hidden neuron
+    n2 = max(0, a2*x + b2*y + c2) # 2nd neuron
+    n3 = max(0, a3*x + b3*y + c3) # 3rd neuron
+    score = a4*n1 + b4*n2 + c4*n3 + d4 # score
+
+    # compute the pull on top
+    pull = 0
+    if label == 1 and score < 1:
+        pull = 1
+    elif label == -1 and score > -1:
+        pull = -1
+
+    # Backpropagation
+
+    # backprop through the last "score" neuron
+    dscore = pull
+    da4 = n1 * dscore
+    dn1 = a4 * dscore
+    db4 = n2 * dscore
+    dn2 = b4 * dscore
+    dc4 = n3 * dscore
+    dn3 = c4 * dscore
+    dd4 = 1.0 * dscore
+
+    # backprop the relu non-lineariteies, in place
+    # i.e. just set the gradients to zero if the neurons did not fire
+    dn3 = 0 if n3 == 0 else dn3
+    dn2 = 0 if n2 == 0 else dn2
+    dn1 = 0 if n1 == 0 else dn1
+
+    # backprop to parameters of neuron 1
+    da1 = x * dn1
+    db1 = y * dn1
+    dc1 = 1.0 * dn1
+
+    # backprop to parameters of neuron 2
+    da2 = x * dn2
+    db2 = y * dn2
+    dc2 = 1.0 * dn2
+
+    # backprop to parameters of neuron 3
+    da3 = x * dn3
+    db3 = y * dn3
+    dc3 = 1.0 * dn3
+
+    # Note: did not need to backprop into x or y
+
+    # Add the pulls due to regularization
+    # don't regularize affine coefficients
+    da1 += -a1
+    da2 += -a2
+    da3 += -a3
+
+    db1 += -b1
+    db2 += -b2
+    db3 += -b3
+
+    da4 += -a4
+    db4 += -b4
+    dc4 += -c4
+
+    # Parameter update
+    step_size = 0.01
+    a1 += step_size * da1
+    b1 += step_size * db1
+    c1 += step_size * dc1
+
+    a2 += step_size * da2
+    b2 += step_size * db2
+    c2 += step_size * dc2
+
+    a3 += step_size * da3
+    b3 += step_size * db3
+    c3 += step_size * dc3
+
+    a4 += step_size * da4
+    b4 += step_size * db4
+    c4 += step_size * dc4
+    d4 += step_size * dd4
+```
+
+## A More Conventional Approach: Loss Functions
+
+* In real life, will not see **force specifications**, but rather **loss functions** (a.k.a. **cost functions** or **objectives**) 
+
+* For SVM example above, let the dataset have $N$ points of the form $(x_{i0}, x_{i1})$ and label $y_{i}$ where the labels are either `+1` or `-1` 
+
+* The SVM loss is then:
+  $$
+  L = \sum_{i=1}^{N} \max \left ( 0, -y_{i} (w_{0}x_{i0} + w_{1} x_{i1} + w_{2}) + 1 \right ) + \alpha (w_{0}^{2} + w_{1}^{2})
+  $$
+
+  ```python
+  X = [[1.2, 0.7],
+       [-0.3, 0.5],
+       [3, 2.5]]
+  y = [1, -1, 1]
+  w = [0.1, 0.2, 0.3] 
+  alpha = 0.1
+  
+  def cost(X, y, w):
+      total_cost = 0
+      for i in range(len(X)):
+          # loop over data points and compute their score
+          xi = X[i]
+          score = w[0] * xi[0] + w[1] * xi[1] + w[2]
+          
+          # accumulate cost 
+          yi = y[i]
+          costi = max(0, -yi*score+1)
+          total_cost += costi
+          
+      # regularization
+      reg_cost = alpha * (w[0]**2 + w[1] ** 2)
+      total_cost += reg_cost
+      
+      print('total cost is:', total_cost)
+      
+      return total_cost
+  
+  cost(X,y,w)
+  ```
+
+  * Note: always positive due to thresholding at 0 and squaring in the regularization
+  * Want to minimize the loss
+  * Last term is regularization: saying we want the model parameters to be small.
+    * Means the loss function will never be zero
+
+> A cost function is an expression that measures how bad your classifier is. When the training set is perfectly classified, the cost (ignoring regularization) will be zero.
+>
+> A majority of cost functions in machine learning consit of two parts: 1. A part that measures how well a model fits the data, and 2. Regularization, which measures some notion of how complex or likely a model is.
+
+* To get a good SVM, wan to make the **cost as small as possible**. 
+
+  * Use backpropagation!
+    * Forward pass examples through circuit
+    * Compute backward pass
+    * Update parameters such that the circuit will output a smaller cost in the future
+  * Specifically, compute the gradient and then update the parameters in the **opposite direction** of the gradient (since we weant to make the cost small, not large)
+
+  > We know exactly what to do: the cost function written above is our circuit
