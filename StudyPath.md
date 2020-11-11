@@ -2,6 +2,10 @@
 
 ## Path 10/28/20
 
+### Blog
+
+* Deep sets like [depthfirstlearning](http://www.depthfirstlearning.com/)
+
 ### Deep Learing
 
 - [ ] NYU Deep Learning Course
