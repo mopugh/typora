@@ -476,4 +476,193 @@ dz = (forwardCircuit(x,y,z+h) - forwardCircuit(x,y,z)) / h # 3
   y_grad = (forwardCircuitFast(a,b,c,x,y+h) - forwardCircuitFast(a,b,c,x,y)) / h
   ```
 
+* The above code generalizes to compute gradients of arbitrary expressions
+
+  * Just have to write small gates that compute the local derivatives w.r.t. their inputs
+
+### Becoming a Backprop Ninja
+
+* Example: consider variables `a,b,c,x` with gradients as `da, db,dc,dx` 
+
+  * Think of variables as forward flow, and gradients as backward flow along every wire
+
+* `*` gate
+
+  ```python
+  x = a * b
+  da = b * dx # assume dx is given coming from where above us in the circuit (or +1 by default otherwise)
+  db = a * dx
+  ```
+
+  * `*` gate acts as a switcher during the backward pass
+    * It remembers twhat its inputs were
+    * The gradients on each one will be the value of the other during the forward pass
+    * Multiplies by the gradient from above
+
+* `+` gate
+
+  ```python
+  x = a + b
+  da = 1.0 * dx
+  db = 1.0 * dx
+  ```
+
+  * where `1.0` is the local gradient and the multiplication is the chain rule
+  * `+` gate takes the gradient from the top and routes it equally to all its inputs (since its local gradient is always simply `1.0` for all its inputs regardless of their actual values)
+
+* Adding three numbers?
+
+  ```python
+  # lets compute x = a + b + c in two steps
+  q = a + b # gate 1
+  x = q + c # gate 2
   
+  # backward pass
+  dc = 1.0 * dx # backprop gate 2
+  dq = 1.0 * dx
+  da = 1.0 * dq # backprop gate 1
+  db = 1.0 * dq
+  
+  # do it faster
+  x = a + b + c
+  da = 1.0 * dx
+  db = 1.0 * dx
+  dc = 1.0 * dx
+  ```
+
+* Combining gates
+
+  ```python
+  x = a * b + c
+  da = b * dx
+  db = a * dx
+  dc = 1.0 * dx
+  ```
+
+* Neuron
+
+  ```python
+  # lets do our neuron in two steps:
+  q = a*x + b*y + c
+  f = sig(q) # sig is the sigmoid function
+  # and now the backward pass, we are given df, and:
+  df = 1.0
+  dq = (f * (1 - f)) * df
+  # and now we chain it to the inputs
+  da = x * dq
+  dx = a * dq
+  db = y * dq
+  dy = b * dq
+  dc = 1.0 * dq
+  ```
+
+* Test
+
+  ```python
+  x = a * a
+  da = a * dx
+  da += a * dx
+  # short form:
+  da = 2 * a * dx
+  ```
+
+  * Think of this as value `a` flowing to the `*` gate, but the wire gets split and becomes both inputs.
+    * The backward flow of gradients always adds up
+
+* Another test
+
+  ```python
+  x = a*a + b*b + c*c
+  da = 2*a*dx
+  db = 2*b*dx
+  dc = 2*c*dx
+  ```
+
+* More complex example
+
+  ```python
+  x = math.pow((a * b + c) * d, 2)
+  # break into chunks
+  x1 = a * b + c
+  x2 = x1 * d
+  x = x2 * x2 # this is identical to the above expression for x
+  # and now in backprop we go backwards
+  dx2 = 2 * x2 * dx # backprop into d
+  dd = x1 * dx2 # backprop into d
+  dx1 = d * dx2 # backprop into x1
+  da = b * dx1
+  db = a * dx1
+  dc = 1.0 * dx1
+  ```
+
+  * For every variable in the forward pass, we have an equivalent variable in the backward pass that contains its gradient w.r.t. the circuit's final output.
+
+* More examples:
+
+  ```python
+  x = 1.0/a # division
+  dx = -1.0/(a*a)
+  
+  x = (a + b)/(c + d)
+  # decompose
+  x1 = a + b
+  x2 = c + d
+  x3  = 1.0 / x2
+  x = x1 * x3 # equivalent to the above
+  # backprop (again in reverse order)
+  dx1 = x3 * dx
+  dx3 = x1 * dx
+  dx2 = (-1.0/(x2*x2)) * dx3 # local gradient as shown above, and chain rule
+  dc = 1.0 * dx2 # finally into the original variables
+  dd = 1.0 * dx2
+  da = 1.0 * dx1
+  db = 1.0 * dx1
+  ```
+
+  ```python
+  # another example
+  x = math.max(a, b)
+  da = 1.0 if a > b else 0
+  db = 1.0 if b > a else 0
+  ```
+
+  * In the backward pass, the max gate will take the gradient from the top and route it to the input that actually flowed through it during the forward pass
+
+* Rectified Lienar Unit (ReLU) non-linearity
+
+  ```python
+  x = max(a, 0)
+  # Backprop
+  da = 1.0 if a > 0 else 0.0
+  ```
+
+  * The gate passes the value through if it's larger than 0, or it stops the flow and sets it to zero
+  * In the backward pass, the gate will pass on the gradient from the top if it was activate during the forward pass or stop the gradient flow if the original input was below zero
+
+## Chapter 2: Machine Learning
+
+### Binary Classification
+
+Given a dataset of $N$ vectors and every one of them is labeled with a `+1` or a `-1`, e.g. 
+
+```javascript
+vector -> label
+---------------
+[1.2, 0.7] -> +1
+[-0.3, 0.5] -> -1
+[-3, -1] -> +1
+[0.1, 1.0] -> -1
+[3.0, 1.1] -> -1
+[2.1, -3] -> +1
+```
+
+* Here `N=6` datapoints, where every datapoint has two **features** (`D=2`). 
+* Three have a **label** `+1` and three have a label `-1` 
+
+**Goal**: In this example, the goal of binary classification is to learn a function that takes a 2-dimensional vector and predicts the label. 
+
+	* This function is usually parameterized by a certain set of parameters. We want to tune the parameters of the function so that its outputs are consistent with the labeling in the provided dataset. 
+	* Use the learned function to predict future values
+
+#### Training Protocol
+

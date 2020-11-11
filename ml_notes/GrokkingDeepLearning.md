@@ -486,6 +486,7 @@ for iteration in range(4):
   * derivative's sign gives direction
   * derivative's value gives amount
 * A neural network is just a bunch of weights used to compute an error function
+  
   * Can compute the relationship (derivative) between any weight and the error
 * The derivative points in the opposite direction that you want to move to minimize error
   * E.g. if the slope is negative, want to increase the value to get closer to the error minimizer.
@@ -528,4 +529,19 @@ for iteration in range(4):
           break
   ```
 
-  
+## Generalizing Gradient Descent
+
+### Gradient descent learning with multiple inputs
+
+Comparing single input and multiple input
+
+![image-20201110220205885](figures/image-20201110220205885.png)
+
+* **delta**: a measure of how much higher or lower you want a node's value to be to predict perfectly given the current training example
+* **weight_delta**: a derivative-based estimate of the direction and amount you should move a weight to reduce `node_delta` accounting for scaling, negative reversal and stopping
+* **normalization** helps encourage learning across all weights despite dataset characteristics.
+* **error plane** is the graph of error vs. all the weights
+  * curvature is determined by the training data
+
+### Gradient descent learning with multiple outputs
+
