@@ -60,3 +60,62 @@
 
 #### Feature Information
 
+* **attribute** or **feature** information associated with a graph
+  
+  * E.g. a profile picture associated with a user in a social network
+
+* Represent node-level attributes as a matrix $\mathbf{X} \in \mathbb{R}^{\vert \mathcal{V} \vert\times m}$ where the node ordering is the same as in the adjacency matrix.
+
+### Machine learning on graphs
+
+* Categorize machine learning model on the type of task they seek to solve
+  
+  * supervised: predict target output given input data point
+  
+  * unsupervised: intfer patterns, such as clusters of points, in the data
+
+* This categorization isn't the best for machine learning with graphs
+
+#### Node Classification
+
+* Example: given a social network, identify bots
+
+* Goal: predict the label $y_{u}$ (which could be a type, category, attribute) associated with nodes $u \in \mathcal{V}$ when given the true labels on a **training set** of nodes $\mathcal{V}_{train} \subset \mathcal{V}$ 
+
+* Note: nodes in a graph are **not** i.i.d. as opposed to standard supervised learning problems
+
+#### Relation prediction
+
+**Relation prediction**: )a.k.a. relational inference, graph completion, or link prediction) has the goal of infering the edges between nodes in a graph.
+
+* Standard setup: given all the nodes $\mathcal{V}$ and an incomplete set of edges $\mathcal{E}_{train} \subset \mathcal{E}$. 
+  
+  * Want to infer the missing edges $\mathcal{E} \setminus \mathcal{E}_{train}$
+
+#### Clustering and community detection
+
+* Node classification and relation prediction infer **missing** information and are analogs of supervised learning
+
+* Community detection is the graph analog of unsupervised clustering.
+
+* Given an input graph $\mathcal{G} = (\mathcal{V}, \mathcal{E})$, infer latent community structures
+
+#### Graph classification, regression, and clustering
+
+* Perform classification, regression and clustering over entire graphs
+  
+  * E.g. Given a graph representing the structure of a molecule, build a regression model to predict the molecule's toxicity or solubility.
+
+* Note: as opposed to making predictions over individual components of a single graph, for **graph regression** or **graph classification**, we are given a dataset of multiple different graphs and the goal is to make independent predictions specific to each graph.
+
+* In **graph clustering**, the goal is to learn an unsupervised measure of similarity between pairs of graphs.
+
+* Graph regression and classification are the closest analog of supervised learning because each graph is i.i.d. and we map from a graph data point to labels.
+
+* Graph classification is the closest analog of unsupervised learning.
+
+## Chapter 2: Background and Traditional Approaches
+
+
+
+
