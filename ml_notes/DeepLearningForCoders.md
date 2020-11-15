@@ -83,3 +83,46 @@
 * **Fine tuning**: a transfer learning technique that updates the parameters of a pre-trained model by training for additional epochs using a different task from that used for pre-training.
 
 * **Epochs**: Number of time each datapoint is seen by the algorithm. 
+
+* Be creative in how to represent data:
+  
+  * converting time series to images or mouse movement to images led to state-of-the-art results
+
+  | Term | Meaning |
+
+  |Label | The data that we're trying to predict, such as "dog" or "cat"
+  |Architecture | The _template_ of the model that we're trying to fit; the actual mathematical function that we're passing the input data and parameters to
+  |Model | The combination of the architecture with a particular set of parameters
+  |Parameters | The values in the model that change what task it can do, and are updated through model training
+  |Fit | Update the parameters of the model such that the predictions of the model using the input data match the target labels
+  |Train | A synonym for _fit_
+  |Pretrained model | A model that has already been trained, generally using a large dataset, and will be fine-tuned
+  |Fine-tune | Update a pretrained model for a different task
+  |Epoch | One complete pass through the input data
+  |Loss | A measure of how good the model is, chosen to drive training via SGD
+  |Metric | A measurement of how good the model is, using the validation set, chosen for human consumption
+  |Validation set | A set of data held out from training, used only for measuring how good the model is
+  |Training set | The data used for fitting the model; does not include any data from the validation set
+  |Overfitting | Training a model in such a way that it _remembers_ specific features of the input data, rather than generalizing well to data not seen during training
+  |CNN | Convolutional neural network; a type of neural network that works particularly well for computer vision tasks
+  |=====
+
+* **Tabular model**: tries to predict one column of a table based on information in other columns of the table.
+
+* Datasets are food for models
+  
+  * consider starting with a smaller dataset and move to a larger dataset once one understands the problem.
+
+* We can overfit the validation data since we (the modeler) are adjusting the hyperparameters to get better performance on the validation set.
+  
+  * Create a third set (besides test and validation): the **test set**
+  
+  * Only use the **test set** once at the end!
+  
+  * If using a 3rd party to model/solve problem, set aside a test set and metric to verify their work meets your needs.
+
+* Make sure test/validation sets are representative of what you want to test
+  
+  * E.g. for time series, if you want to predict the future, make sure to hold out a future sequence to test
+    
+    * Don't select random time samples!
