@@ -1,5 +1,27 @@
 # Study Path
 
+## Path 11/15/20
+
+### AM
+
+- [ ] Deep Learning with PyTorch
+
+- [ ] Deep Learning with Python
+
+- [ ] A Course in Machine Learning
+
+- [ ] Mathematics for Machine Learning 
+
+### PM
+
+- [ ] Graph Neural Networks
+
+- [ ] Sheehy Course
+
+- [ ] Open Data Structures
+
+- [ ] Leet Code
+
 ## Path 10/28/20
 
 ### Blog
