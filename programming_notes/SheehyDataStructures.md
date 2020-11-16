@@ -1875,20 +1875,20 @@ class ListMapping:
       def __init__(self):
           slf._size = 100
           self._buckets = [ListMapping() for i in range(self._size)]
-  
-  
+  ```
+
       def put(self, key, value):
           m = self._bucket(key)
           m[key] = value
-  
+    
       def get(self, key):
           m = self._bucket(key)
           return m[key]
-  
+    
       def _bucket(self, key):
           return self._buckets[hash(key) % self._size] # returns ListMapping
-  ```
-  
+
+```
   * Initializer creates 100 ListMaps (buckets)
 
 * If two keys are placed in the same bucket, this is a **collision** 
@@ -1974,3 +1974,210 @@ class HashMapping:
 ```
 
 #### Rehashing
+
+* Can't just append onto the end
+  
+  * Need to rehash previous entries
+
+### Factoring Out a Superclass
+
+* When two classes want to share some code, **factor out a superclass** that both can inherit from and share the underlying code.
+
+* If we expect the subclass to implement some method, can include it in the superclass but have it raise an error if the method isn't implemented in the subclass
+  
+  ```python
+  # Superclass
+  class Mapping:
+  
+      # child class needs to implement this!
+      def get(self, key):
+          raise NotImplementedError
+  
+      def put(self, key, value):
+          raise NotImplementedError
+  
+      def __len__(self):
+          raise NotImplementedError
+  
+      def _entryiter(self):
+          raise NotImplementedError
+  
+      def __iter__(self):
+          return (e.key for e in self._entryiter())
+  
+      def values(self):
+          return (e.value for e in self._entryiter())
+  
+      def items(self):
+          return ((e.key, e.value) for e in self._entryiter())
+  
+      def __contains__(self, key):
+          try:
+              self.get(key)
+          except KeyError:
+              return False
+          return True
+  
+      def __getitem__(self, key):
+          return self.get(key)
+  
+      def __setitem__(self, key, value):
+          self.put(key, value)
+  
+      def __str__(self):
+          return "{" + ", ".join(str(e) for e in self._entryiter()) + "}"
+  ```
+
+* Subclass only needs to implement `get`, `put`, `__len__`, and `_entryiter` which is private.
+  
+  ```python
+  # List Mapping
+  class ListMapping(Mapping):
+      def __init__(self):
+          self._entries = []
+          
+      def put(self, key, value):
+          e = self._entry(key)
+          if e is not None:
+              e.value = value
+          else:
+              self._entries.append(Entry(key, value))
+              
+      def get(self, key):
+          e = self._entry(key)
+          if e is not None:
+              return e.value
+          else:
+              raise KeyError
+          
+      def _entry(self, key):
+          for e in self._entries:
+              if e.key == key:
+                  return e
+          return None
+      
+      def __len__(self):
+          return len(self._entries)
+  ```
+
+```python
+# Hash Mapping
+class HashMapping(Mapping):
+    def __init__(self, size=100):
+        self._size = size
+        self._buckets = [ListMapping() for i in range(self._size)]
+        self._length = 0
+        
+    def _entryiter(self):
+        return (e for bucket in self._buckets for e in bucket._entryiter())
+    
+    def get(self, key):
+        bucket = self._bucket[key]
+        return bucket[key]
+    
+    def put(self, key, value):
+        bucket = self._bucket(key)
+        if key not in bucket:
+            self._length += 1
+        bucket[key] = value
+        
+        # check if we need more buckets
+        if self._length > self._size:
+            self._double()
+            
+    def __len__(self):
+        return self._length
+    
+    def _bucket(self, key):
+        return self._buckets[hash(key) % self._size]
+    
+    def _double(self):
+        # save old buckets
+        oldbuckets = self._buckets
+        # reinitialize with more buckets
+        self.__init__(self._size * 2)
+        for bucket in oldbuckets:
+            for key, value in bucket.items():
+                self[key] = value
+```
+
+## Chapter 16: Trees
+
+* A **tree** is a data type that is ideal for representing hierarchical structure
+
+* Trees are composed of **nodes** and each node has 0 or more **children**. A node can have at most one **parent**. 
+  
+  * The **root** is the only node with no parents
+  
+  * A node with no children is a **leaf node**
+
+### Some more definitions
+
+* A **path** is a sequence of nodes in which each node is a child of the previous node. 
+  
+  * There exists a path from the root to every node in the tree
+  
+  * **length of the path** is the number of hops or edges.
+  
+  * The **descendants** of a node $x$ are all the nodes $y$ for which thiere is a path from $x$ to $y$ 
+  
+  * If $y$ is a descendant of $x$, then $x$ is an **ancestor** of $y$
+
+* Given a tree $T$ and a node $n$ in that tree, the **subtree rooted at $n$** is the tree whose root is $n$ that contains all descendants of $n$. 
+
+* The **depth** of a tree is the length of the path from the root to the node
+
+* The **height** of a tree is the maximum depth of any node in the tree
+
+### A recursive view of trees
+
+* A tree can be defined recursively as a root with zero or more children, each of which is a tree
+
+* Can use lists to represent hierarchical structure
+  
+  *  Example:
+    
+    `T = ['c', ['a', ['p'], ['n'], ['t']], ['o', ['n']]]`
+    
+    ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-11-15-22-17-06-image.png)
+  
+  ```python
+  def printtree(T):
+      print(T[0])
+      for child in range(1, len(T)):
+          printtree(T[child])
+  ```
+
+* Want to improve the above: make it work for any iterable collection
+  
+  ```python
+  def printtree(T):
+      iterator = iter(T)
+      print(next(iterator))
+      for child in iterator:
+          printtree(child)
+  ```
+
+## A Tree ADT
+
+* `__init__(L)`: Initialize a new tree given a list of lists. 
+  
+  * Convention: firstelement in the list is the data and the later elements are children
+
+* `height()`: return the height of the tree
+
+* `__str__()`: return a string representating the entire tree
+
+* `__eq__(other)`: return `True` if the tree is equal to `other`. This means they have the same data and their children are equal (and in the same order)
+
+* `__contains__(k)`: return `True` if and only if the tree contains the data `k`
+
+* `preorder()`: return an iterator over the data in the tree that yields values according to the **preorder** traversal
+
+* `postorder()`: return an iterator over the data in the tree that yields values according to the **postorder** traversal
+
+* `__iter__()`: an alias for `preorder` 
+
+* `layerorder()`: Return an iterator over the data in the tree that yields values according to the **layer order** traversal of the tree.
+
+### An implementation
