@@ -12,6 +12,8 @@
 
 - [ ] Mathematics for Machine Learning 
 
+- [ ] An Introduction to Mathematics for Computer Science
+
 ### PM
 
 - [ ] Graph Neural Networks

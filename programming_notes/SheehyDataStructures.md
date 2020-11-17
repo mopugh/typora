@@ -1876,15 +1876,15 @@ class ListMapping:
           slf._size = 100
           self._buckets = [ListMapping() for i in range(self._size)]
   ```
-
+  
       def put(self, key, value):
           m = self._bucket(key)
           m[key] = value
-    
+      
       def get(self, key):
           m = self._bucket(key)
           return m[key]
-    
+      
       def _bucket(self, key):
           return self._buckets[hash(key) % self._size] # returns ListMapping
 
@@ -2035,27 +2035,27 @@ class HashMapping:
   class ListMapping(Mapping):
       def __init__(self):
           self._entries = []
-          
+  
       def put(self, key, value):
           e = self._entry(key)
           if e is not None:
               e.value = value
           else:
               self._entries.append(Entry(key, value))
-              
+  
       def get(self, key):
           e = self._entry(key)
           if e is not None:
               return e.value
           else:
               raise KeyError
-          
+  
       def _entry(self, key):
           for e in self._entries:
               if e.key == key:
                   return e
           return None
-      
+  
       def __len__(self):
           return len(self._entries)
   ```
@@ -2067,30 +2067,30 @@ class HashMapping(Mapping):
         self._size = size
         self._buckets = [ListMapping() for i in range(self._size)]
         self._length = 0
-        
+
     def _entryiter(self):
         return (e for bucket in self._buckets for e in bucket._entryiter())
-    
+
     def get(self, key):
         bucket = self._bucket[key]
         return bucket[key]
-    
+
     def put(self, key, value):
         bucket = self._bucket(key)
         if key not in bucket:
             self._length += 1
         bucket[key] = value
-        
+
         # check if we need more buckets
         if self._length > self._size:
             self._double()
-            
+
     def __len__(self):
         return self._length
-    
+
     def _bucket(self, key):
         return self._buckets[hash(key) % self._size]
-    
+
     def _double(self):
         # save old buckets
         oldbuckets = self._buckets
@@ -2135,7 +2135,7 @@ class HashMapping(Mapping):
 
 * Can use lists to represent hierarchical structure
   
-  *  Example:
+  * Example:
     
     `T = ['c', ['a', ['p'], ['n'], ['t']], ['o', ['n']]]`
     
@@ -2181,3 +2181,85 @@ class HashMapping(Mapping):
 * `layerorder()`: Return an iterator over the data in the tree that yields values according to the **layer order** traversal of the tree.
 
 ### An implementation
+
+```python
+class Tree:
+    def __init__(self, L):
+        iterator = iter(L)
+        self.data = next(iterator)
+        self.children = [Tree(c) for c in iterator]
+
+    def __eq__(self, other):
+        # recursion because of == on children
+        return self.data == other.data and self.children == other.children
+
+    def height(self):
+        if len(self.children) == 0:
+            return 0
+        else:
+            # Note generator expression!
+            return 1 + max(child.height() for child in self.children)
+
+    def __contains__(self, k):
+        # this is also recursive
+        # k in ch uses __contains__
+        # also uses a generator expression
+        return self.data == k or any(k in ch for ch in self.children)
+
+def printtree(T):
+    print(T.data)
+    for child in T.children:
+        printtree(child)
+```
+
+* Notice recursive definition
+
+* Common pattern for working on tree:
+  
+  * operate on the data
+  
+  * apply function recursively on the children
+
+### Tree Traversal
+
+* Recall sequential collections: list, tuple, str
+
+* Non-sequential: dict, set
+
+* Trees lie inbetween them
+
+* No unique way to visit all the nodes: **tree traversal**
+  
+  * **preorder**: visit the node first followed by the traversal of the children
+  
+  * **postorder**: visit the children and then visit the node
+    
+    ```python
+    def printpostorder(T):
+        for child in T.children:
+            printpostorder(child)
+        print(T.data)
+    ```
+
+### If you want to get fancy...
+
+Recursive generator!
+
+```python
+    def preorder(self):
+        yield self.data
+        for child in self.children:
+            for data in child.preorder():
+                yield data
+
+    # set __iter__ to be an alias for preorder
+    __iter__ = preorder
+
+    def _preorder(self):
+        yield self
+        for child in self.children:
+            for descendant in child._preorder():
+                yield descendant
+```
+
+#### There's a catch
