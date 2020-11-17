@@ -116,6 +116,96 @@
 
 ## Chapter 2: Background and Traditional Approaches
 
+### Graph Statistics and Kernel Methods
 
+#### Node-level statistics and features
+
+Motivating example: 
+
+![](/home/mopugh/Documents/typora/ml_notes/figures/2020-11-16-20-46-25-image.png)
+
+Motivating question: what features or statistics could a machine learning model use to predict the Medici's rise?
+
+* What are useful properties and statistics that can be used to characterize the nodes in the graph?
+
+##### Node degree
+
+* Simplest node feature is the **degree**: the number of edges incident to a node
+  
+  $$
+  d_{u} = \sum_{v \in V} A[u,v]
+  $$
+
+* For directed and weighted graphs, can differentiate between incoming and outgoing edges
+
+* For the motivating example, the Medici family has the largest degree
+
+##### Node centrality
+
+* Node degree isn't sufficient to measure the *importance* of a node
+
+* **Eigenvector centrality**: take into account how important the neighbors are and not just the number of neighbors.
+  
+  * Define as a recurrence relation: proportional to the average centrality of its neighbors
+    
+    $$
+    e_{u} = \frac{1}{\lambda}\sum_{u\ in V}A[u,v]e_{v} \forall u \in \mathcal{V}
+    $$
+    
+    where $\lambda$ is a constant.
+  
+  * Rewriting in vector notation:
+    
+    $$
+    \lambda \mathbf{e} = A\mathbf{e}
+    $$
+    
+    i.e. eigvenvector of the adjacency matrix
+    
+    * By the Perron-Frobenius Theorem, $\mathbf{e}$ is given by the eigenvector corresponding to the largest eigenvalue of $\mathbf{A}$ 
+    
+    * Can interpret as the likelihood that a node is visited on a random walk of infinite length on the graph.
+  
+  * In the motivating example, the Medici family has the highest eigenvector centrality
+
+* Other notions of node centrality
+  
+  * **betweenness centrality**: how often a node lies on the shortest path between two other nodes
+  
+  * **closeness centrality**: the average shortest path length between a node and all other nodes
+
+##### The clustering coefficient
+
+Note in the motivating example, the Peruzzi and Guadagni families have similar degrees and eigenvector centralities, but their roles in the graph appear different.
+
+* The **clustering coefficient** measures the proportion of closed triangles in a node's local neighborhood.
+
+* The **local variant** of the clustering coefficient:
+  
+  $$
+  c_{u} = \frac{\vert (v_{1}, v_{2}) \in \mathcal{E} : v_{1},v_{2} \in \mathcal{N}(u)}{{d_{u} \choose 2}}
+  $$
+  
+  * The numerator calculates the number of edges between neighbors of $u$.
+  
+  * The denominator computes the number of pairs of nodes in $u$'s neighborhood.
+
+* Measures how tightly clustered a node's neighborhood is
+  
+  *  A cluster coefficient of 1 means that all of $u$'s neighors are also neighbors of each other.
+
+##### Closed triangles, ego graphs, and motifs
+
+Can interpret the clustering coefficient as counting the number of closed triangles within each node's local neighborhood:
+
+* the ratio between the number of triangles and the total possible number of triangles within a node's **ego graph**
+  
+  * ego graph: the subgraph containing the node, its neighbors and all the edges between nodes in its neighborhood.
+
+* Can consider general **motifs** or **graphlets**, e.g. cycles of a particular lengh, and then count how often these motifs occur in a node's ego graph.
+
+* Ego graphs transform computing node-level statistics and features to a graph-level task.
+
+#### Graph-level features and graph kernels
 
 
