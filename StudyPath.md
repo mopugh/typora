@@ -15,14 +15,19 @@
 ### PM
 
 - [ ] Seehy Course
-
 - [ ] Open Data Structures
-
 - [ ] Intro to Math for CS
-
 - [ ] MIT Computational Thinking Course
-
 - [ ] Leet Code
+
+### Future Considerations
+
+* Haskell + [SICP](https://web.mit.edu/alexmv/6.037/sicp.pdf) + Functional Data Structures
+* Category theory
+* Probability Theory
+* Unsupervised Learning
+  * Berkeley course
+  * Columbia course
 
 ## Path 11/15/20
 

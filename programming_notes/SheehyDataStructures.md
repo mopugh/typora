@@ -1899,7 +1899,7 @@ class ListMapping:
 
 * Want to increase number of buckets as number of entries increases
 
-```python
+​```python
 class HashMapping:
     def __init__(self, size=2):
         self._size = size
@@ -2263,3 +2263,231 @@ Recursive generator!
 ```
 
 #### There's a catch
+
+* The recursive generator does not run in linear time:
+  * The object does not go away because it may have to yield more values
+  * value yielded is passed all the way from the node to the root
+  * running time proporational to the sum of the depths of all nodes
+    * $n^2$ for degenerate tree
+    * $n \log n$ for balanced binary tree
+
+```python
+def _postorder(self):
+    node, childiter = self, iter(self.children)
+    stack = [(node, childiter)]
+    while stack:
+        node, childiter = stack[-1]
+        try:
+            child = next(childiter)
+            stack.append((child, iter(child.children)))
+        except StopIteration:
+            yield node
+            stack.pop()
+
+def postorder(self):
+    return (node.data for node in self._postorder())
+```
+
+* Not ideal that reassigning node and childiter at each iteration
+
+#### Layer by Layer
+
+```python
+def _layerorder(self):
+    node, childiter = self, iter(self.children)
+    queue = Queue()
+    queue.enqueue((node, childiter))
+    while queue:
+        node, childiter = queue.peek()
+        try:
+            child = next(childiter)
+            queue.enqueue((child, iter(child.children)))
+        except StopIteration:
+            yield node
+            queue.dequeue()
+
+def layerorder(self):
+    return (node.data for node in self._layerorder)
+```
+
+## Chapter 17: Binary Search Trees
+
+* An **ordered mapping** is a mapping data type for which the keys are ordered.
+
+### The Ordered Mapping ADT
+
+* An **ordered mapping** stores a collection of key-value pairs with comparable keys supporting:
+  * `get(k)`: return the value associated to the key k. An error (`KeyError`) is raised if the given key is not present
+  * `put(k, v)`: Add the key-value pair `(k, v)` to the mapping
+  * `floor(k)`: Return a tuple `(k, v)` corresponding to the key-value pair in the mapping with the largest key that is less than or equal to `k`. If there is no such tuple, it return `(None, None)`. 
+  * `remove(k)`: Remove the key-value pair with key `k` from the ordered mapping. An error (`KeyError`) is raised if the given key is not present
+
+### Binary Search Tree Properties and Definitions
+
+* A tree is a **binary tree** if every node has at most two children.
+
+  * Call the children `left` and `right` 
+
+* A binary tree is a **binary search tree** if for every node x, all the keys in the subtree `x.left` are less than the key at `x` and all the keys in the subtree `x.right` are greater than the key `x`. 
+
+  * This ordering property is the `BST property` 
+
+  ![image-20201117204955523](figures/image-20201117204955523.png)
+
+* A new kind of traversal that was not previously possible: **inorder** traversal: visits all nodes in the left child prior to visiting the root and then visits all the nodes in the right child after visiting the root. 
+  * Traversal of the nodes in order according to the ordering of the keys
+  * Different BSTs with teh same nodes will have the same inorder traversal
+
+### A Minimal Implementation
+
+* Distinguish between a class for the tree (`BSTMapping`) and a class for the nodes (`BSTNode`). 
+  * Convention: operations on the `BSTNode` class will operate on and return other `BSTNode` objects. `BSTMapping` class will abstract away the existence of the nodes for the user, only returning keys and values.
+
+```python
+# import mapping abstract class
+# from ds2.mapping import Mapping
+
+class BSTMapping(Mapping):
+    def __init__(self):
+        self._root = None
+
+    def get(self, key):
+        if self._root:
+            return self._root.get(key).value
+        raise KeyError
+
+    def put(self, key, value):
+        if self._root:
+            self._root = self._root.put(key, value)
+        raise KeyError
+
+    def __len__(self):
+        return len(self._root) if self._root is not None else 0
+
+    def _entryiter(self):
+        if self._root:
+            yield from self._root # new function
+            # yield from self._root is equivalent to
+            # for item in iter(self._root): yield item
+
+    def floor(self, key):
+        if self._root:
+            floornode = self._root.floor(key)
+            if floornode is not None:
+                return floornode.key, floornode.value
+        return None, None
+
+    def remove(self, key):
+        if self._root:
+            self._root = self._root.remove(key)
+        else:
+            raise KeyError
+
+    def __delitem__(self, key):
+        self.remove(key)
+
+
+class BSTNode:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.left = None
+        self.right = None
+        self._length = 1
+
+    def __len__(self):
+        return self._length
+        # objects with __len__ are true if > 0
+
+    def __str__(self):
+        return str(self.key) + " : " + str(self.value)
+
+    # Get method uses binary search to find the desired key
+    def get(self, key):
+        if key == self.key:
+            return self
+        elif key < self.key and self.left:
+            return self.left.get(key)
+        elif key > self.key and self.right:
+            return self.right.get(key)
+        else:
+            raise KeyError
+
+    # put method replaces existing key if there
+    # otherwise places at the bottom
+    def put(self, key, value):
+        if key == self.key:
+            self.value = value
+        elif key < self.key:
+            if self.left:
+                self.left.put(key, value)
+            else:
+                self.left = BSTNode(key, value)
+        elif key > self.key:
+            if self.right:
+                self.right.put(key, value)
+            else:
+                self.right = BSTNode(key, value)
+        self._udpatelength()
+
+    def _updatelength(self):
+        len_left = len(self.left) if self.left else 0
+        len_right = len(self.right) if self.right else 0
+        self._length = 1 + len_left + len_right
+
+    def floor(self, key):
+        if key == self.key:
+            return self
+        elif key < self.key:
+            if self.left is not None:
+                return self.left.floor(key)
+            else:
+                return None
+        elif key > self.key:
+            if self.right is not None:
+                floor = self.right.floor(key)
+                return floor if floor is not None else self
+            else:
+                return self
+
+    def __iter__(self):
+        if self.left is not None:
+            yield from self.left
+        yield self
+        if self.right is not None:
+            yield from self.right
+
+    def _swapwith(self, other):
+        self.key, other.key = other.key, self.key
+        self.value, other.value = other.value, self.value
+
+    def maxnode(self):
+        return self.right.maxnode() if self.right else self
+
+    def remove(self, key):
+        if key == self.key:
+            if self.left is None: return self.right
+            if self.right is None: return self.left
+            self._swapwith(self.left.maxnode())
+            self.left = self.left.remove(key)
+        elif key < self.key and self.left:
+            self.left = self.left.remove(key)
+        elif key > self.key and self.right:
+            self.right = self.right.remove(key)
+        else: raise KeyError
+        self._updatelength()
+        return self
+```
+
+### Removal
+
+* Think algorithmically: start with easist problem and turn every problem into the easiest case.
+  * If the node is a leaf, remove it.
+  * If the node has only a single child, can remove node and repalce with child
+  * Hard case: node has two children
+    * Swap node with node with the largest key in the left subtree
+    * Rerun remove
+    * Swapping the nodes violates the BST, but the violation will be removed
+
+## Chapter 18: Balanced Binary Search Trees
+
