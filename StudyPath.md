@@ -1,5 +1,29 @@
 # Study Path
 
+## Path 11/17/20
+
+### AM
+
+- [ ] Deep Learning with PyTorch
+
+- [ ] NYU Course on Deep Learning
+
+- [ ] A Course in Machine Learning
+
+- [ ] Mathematics for Machine Learning
+
+### PM
+
+- [ ] Seehy Course
+
+- [ ] Open Data Structures
+
+- [ ] Intro to Math for CS
+
+- [ ] MIT Computational Thinking Course
+
+- [ ] Leet Code
+
 ## Path 11/15/20
 
 ### AM
