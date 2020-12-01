@@ -174,7 +174,75 @@ SSet supports `size()`, `add(x)`, `remove(x)` methods with exactly the same sema
 * The **Binomial Coefficient** counts the number of subsets of an n element set that have size k, i.e. the number of ways of choosing k distinct integers from the set $\{ 1, \ldots, n \}$:
   
   $$
-  n \choose k = \frac{n!}{k! (n-k)!}
+  {n \choose k} = \frac{n!}{k! (n-k)!}
+  $$
+
+#### Asymptotic Notation
+
+$$
+O(f(n)) = \left \{ g(n): \exists c > 0, \textrm{ and } n_{0} \textrm{ s.t. } g(n) \leq c \cdot f(n) \forall n \geq n_{0} \right \}
+$$
+
+* Graphically, the set of functions that are dominated by $c \cdot f(n)$ for large enough $n$. 
+
+* Short-cuts:
+  
+  $$
+  O(n^{c_{1}}) \subset O(n^{c_{2}}) \textrm{ for any } c_{1} < c_{2}
+  $$
+  
+  $$
+  O(a) \subset O(\log n) \subset O(n^{b}) \subset O(c^{n})
+  $$
+
+* Can multiply by any positive value and maintain relationship
+  
+  $$
+  O(n) \subset O(n \log n) \subset O(n^{1+b}) \subset O(n c^{n})
   $$
   
   
+
+* Abuse notation: write $f_{1}(n) = O(f(n))$ when we mean $f_{1}(n) \in O(f(n))$ 
+  
+  * Example:
+    
+    $$
+    T(n) = 2 \log n + O(1)
+    $$
+    
+    means $T(n) \leq 2 \log n + [\textrm{some member of } O(1)]$
+
+#### Randomization and Probability
+
+* Randomized data structures make random choices that are independent of the data being stored in them or the operations being performed on them.
+
+* $E[X] = \sum_{x \in U} x \cdot \Pr\{X = x\}$
+
+* Linearity of expectation: $E[X+Y] = E[X] + E[Y]$
+
+### The Model of Computation
+
+* In this book: **w-bit word RAM model** (Random Access Machine)
+
+* Basic operations on words take constant time
+
+### Correctness, Time Complexity, and Space Complexity
+
+Three critical points:
+
+* **Correctness**: The data structure should correctly implement its interface
+
+* **Time complexity**: The running times of operations on the data structure should be as small as possible
+
+* **Space complexity**: The data structure should use as little memory as possible
+
+Three types of running time guarantees:
+
+* **Worst-case running times**
+
+* **Amortized running times**: If a data structure has an amortized running time of $f(n)$, then a sequnece of m operations takes at most $mf(n)$ time. Some individual operations may take more than $f(n)$ time but the average, over the entire sequence of operations, is at most $f(n)$. 
+
+* **Expected running times**: randomization is with respect to the random choices made by the data structure. 
+
+## Chapter 2: Array-Based Lists
