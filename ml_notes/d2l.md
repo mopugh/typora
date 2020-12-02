@@ -24,4 +24,106 @@
 
 ### Kinds of Machine Learning Problems
 
+#### Supervised Learning
+
+* predicting labels given input features
+
+* The supervised learning algorithm takes in the training data set and returns a learned model
+  
+  ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-02-06-12-50-image.png)
+
+##### Regression
+
+* the label is an arbitrary  numerical value
+  
+  * "How much?" problems
+  
+  * "How many?" problems
+
+##### Classification
+
+* "Which one?" type problems
+  
+  * assign category (class)
+
+##### Tagging
+
+* Multi-label classification
+  
+  * E.g. tagging subjects of a blog post
+
+##### Search
+
+* Care about the rankings of the results
+  
+  * E.g. the results from a search engine
+
+##### Recommender Systems
+
+##### Sequence Learning
+
+* model ingests sequences of inputs or emits sequences of outputs (or both)
+
+* Examples:
+  
+  * Tagging and parsing
+  
+  * Automatic speech recognition
+  
+  * Text to speech
+  
+  * Machine translation
+
+#### Unsupervised Learning
+
+* clustering
+
+* subspace estimation
+  
+  * E.g. principal component analysis
+
+* embeddings
+
+* causality and probabilistic graphical models
+
+* generative adversarial networks
+
+#### Interacting with an Environment
+
+* Supervised learning
+  
+  ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-02-06-43-07-image.png)
+  
+  * offline learning
+
+* Consider interactions with the environment
+
+#### Reinforcement Learning
+
+* policy is a function that maps from observations of the environment to actions
+  
+  ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-02-06-47-17-image.png)
+
+* Reinforcement learning is very general
+  
+  * Can recast supervised learning as reinforcement learning
+    
+    > We could create a reinforcement learning agent with one action corresponding to each class. We could then create an environment which gave a reward that was exactly equal to the loss function from the original supervised learning problem.
+
+* **Credit assignment problem**: determining which actions to credit or blame for an outcome
+
+* Partial observability
+  
+  * Current observation might not tell you everything about the current state
+
+* Exploitation vs. exploration
+
+* **Markov decision process**: fully observed environment
+
+* **Contextual bandit problem**: the state does not depend on the previous actions
+
+* **Multi-armed bandit**: No stae, just a set of available actions
+
+### Roots
+
 
