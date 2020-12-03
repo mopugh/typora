@@ -8,7 +8,7 @@
 
 * **Family of models**: set of distinct programs (input-output mappings) produced by the parameters
 
-* **Learning algorithm**: the meta-program that uses data to choose the parameters<img title="" src="file:///home/mopugh/Documents/typora/ml_notes/figures/2020-12-01-06-34-22-image.png" alt="" data-align="left">
+* **Learning algorithm**: the meta-program that uses data to choose the parameters<img title="" src="file:///home/mopugh/Documents/typora/ml_notes/figures/b8e47ea963144820d7219370374532a02bc122e0.png" alt="" data-align="left">
 
 * "Programming with data"
 
@@ -30,7 +30,7 @@
 
 * The supervised learning algorithm takes in the training data set and returns a learned model
   
-  ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-02-06-12-50-image.png)
+  ![](/home/mopugh/Documents/typora/ml_notes/figures/f9dae24ed9377d3302cfd808a586801562e3de9a.png)
 
 ##### Regression
 
@@ -92,7 +92,7 @@
 
 * Supervised learning
   
-  ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-02-06-43-07-image.png)
+  ![](/home/mopugh/Documents/typora/ml_notes/figures/6db0c90d040ab35bdb96a32aa89e34fba7cecfb8.png)
   
   * offline learning
 
@@ -102,7 +102,7 @@
 
 * policy is a function that maps from observations of the environment to actions
   
-  ![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-02-06-47-17-image.png)
+  ![](/home/mopugh/Documents/typora/ml_notes/figures/df2d232286ab5f43a43dfcf36e1ff666921e93cb.png)
 
 * Reinforcement learning is very general
   
@@ -126,4 +126,14 @@
 
 ### Roots
 
+Key principles at the heart of neural networks:
 
+* The alternation of linear and nonlinear processing units, often referred to as layers
+
+* The use of the chain rule (also known as **backpropagation**) for adjusting the parameters in the entire network at once
+
+### The Road to Deep Learning
+
+### Success Stories
+
+### Characteristics
