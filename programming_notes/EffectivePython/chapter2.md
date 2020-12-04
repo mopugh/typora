@@ -161,3 +161,95 @@
 
 ## Item 16: Prefer `get` over `in` and `KeyError` to handle missing dictionary keys
 
+* Three fundamental operations for interacting with dictionaries
+
+  * accessing
+  * assigning
+  * deleting keys and their associated values
+
+* Use `get` built in method which automatically checks if the key exists and if it doesn't assigns a default value
+
+  ```python
+  count = counters.get(key, 0)
+  counters[key] = count + 1
+  ```
+
+  ```python
+  # for lists
+  names = votes.get(key)
+  if names is None:
+    votes[key] = names = []
+  names.append(who)
+  
+  # or using assignment expressions
+  if (names := votes.get(key)) is None:
+    votes[key] = names = []
+  names.append(who)
+  ```
+
+* `setdefault` method for check and default value if it doesn't exist
+
+  ```python
+  names = votes.setdefault(key, [])
+  names.append(who)
+  ```
+
+  * *Note*: the default value in `setdefault` is always called, which can be expensive
+
+* Four common ways to detect and handle missing keys in dictionaries
+
+  * `in`
+  * `KeyError`
+  * `get`
+  * `setdefault`
+
+## Item 17: Prefer `defaultdict` Over `setdefault` to Handle Missing Items in Internal State
+
+```python
+from collections import defaultdict
+
+class Visits:
+    def __init__(self):
+       self.data = defaultdict(set) # accepts function (e.g. constructor)
+
+    def add(self, country, city):
+       self.data[country].add(city) # adds to returned set
+
+visits = Visits()
+visits.add('England', 'Bath')
+visits.add('England', 'London')
+print(visits.data)
+
+>>>
+defaultdict(<class 'set'>, {'England': {'London', 'Bath'}})
+```
+
+* *Note*: The function to `defaultdict` cannot take any arguments.
+
+## Item 18: Know How to Construct Key-Dependent Default Values with `__missing__` 
+
+* Subclass `dict` and implement `__missing__` 
+
+```python
+def open_picture(profile_path):
+    try:
+        return open(profile_path, 'a+b')
+    except OSError:
+        print(f'Failed to open path {profile_path}')
+        raise
+
+class Pictures(dict):
+    def __missing__(self, key):
+        value = open_picture(key)
+        self[key] = value
+        return value
+
+pictures = Pictures()
+handle = pictures[path]
+handle.seek(0)
+image_data = handle.read()
+```
+
+* `__missing__` must create the new default value for the key, insert it into the dictionary, and return it to the caller.
+* `setdefault` is a bad fit when creating the default value has high computational cost or may raise exceptions
+* Since the function passed to `defaultdict` cannot have any arguments, it's impossible to have a default value that depends on the key being accessed.
