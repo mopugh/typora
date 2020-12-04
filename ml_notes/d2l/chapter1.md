@@ -137,3 +137,25 @@ Key principles at the heart of neural networks:
 ### Success Stories
 
 ### Characteristics
+
+* machine learning can use data to learn transformations between inputs and outputs
+
+* *Deep learning is deep* in precisely the sense that its models learn many layers of transformations
+  
+  * each layer offers the representation at one level
+    
+    * e.g. layers near the input may represent more low-level details of the data while layers closer to the classification output may represent more abstract concepts used for discrimination
+
+* *representation learning* aims at finding the representation itself
+  
+  * *deep learning* can be referred to as multi-level representation learning
+
+* Most significant commonality in deep learning methods is the use of *end-to-end training*
+  
+  * Rather than assembling a system based on individually tuned components, build a system that tuns the performance jointly
+    
+    * E.g. replace feature engineering
+
+## Summary
+
+* Whole system optimization is a key component in obtaining high performance
