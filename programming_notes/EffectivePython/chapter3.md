@@ -292,6 +292,99 @@ Average: 67.5, Median: 68.5, Count 10
 
     * Default arguments in functions are only evaluated once per module load
 
-    ## Item 24: Enforce Clarity with Keyword-Only and Positional-Only Arguments
+    ## Item 25: Enforce Clarity with Keyword-Only and Positional-Only Arguments
 
+    ```python
+    # example
+    # note * indicates the end of the position arguments
+    # and start of the keyword only arguments
+    # thus can only be specified by keyword and not by position
+    def safe_division_c(number, divisor, *, # Changed
+                 ignore_overflow=False,
+                 ignore_zero_division=False):
+      
+    # Will lead to error since not key-word
+    safe_division_c(1.0, 10**500, True, False)
+    ```
     
+    * Python 3.8 introduced **position-only arguments** that are the opposite of keyword only arguments. 
+    
+      * These arguments can only be specified by position, never by keyword
+    
+      ```python
+      # / indicates end of position-only arguments
+      def safe_division_d(numerator, denominator, /, *, # Changed
+               ignore_overflow=False,
+               ignore_zero_division=False):
+        
+      # the following will lead to an error
+      # since using keywords for position only arguments
+      safe_division_d(numerator=2, denominator=5)
+      ```
+    
+    * Any arguments between `/` and `*` may be passed either by position or keyword
+  
+  ## Item 26: Define Function Decorators with `functors.wraps`
+  
+  * A decorator has the ability to run additional code before and after each call to a function it wraps. 
+  
+    * This means decorators can access and modify input arguments, return values, and raised exceptions.
+  
+    ```python
+    # Example: print out arguments to a function and the return value
+    def trace(func):
+      def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        print(f'{func.__name__}({args!r}, {kwargs!r}) '
+             f'-> {result!r}')
+        return result
+      return wrapper
+    
+    @trace
+    def fibonacci(n):
+      """Return the n-th Fibonacci number"""
+      if n in (0, 1):
+        return n
+      return (fibonacci(n-2) + fibonacci(n-1))
+    
+    # @-syntax equivalent to
+    # fibonacci = trace(fibonacci)
+    ```
+  
+  * The above has a problem because `fibonacci` doesn't think it's name is `fibonacci`
+  
+    ```python
+    fibonacci((0,), {}) -> 0
+    fibonacci((1,), {}) -> 1
+    fibonacci((2,), {}) -> 1
+    fibonacci((1,), {}) -> 1
+    fibonacci((0,), {}) -> 0
+    fibonacci((1,), {}) -> 1
+    fibonacci((2,), {}) -> 1
+    fibonacci((3,), {}) -> 2
+    fibonacci((4,), {}) -> 3
+    
+    # due to wrapper
+    print(fibonacci)
+    <function trace.<locals>.wrapper at 0x108955dc0>
+    ```
+  
+    * This undermines debuggers, breaks serializers such as `pickle`, `help` function, etc.
+  
+  * Use `functools` to copy metadata from the wrapped function
+  
+    ```python
+    from functools import wraps
+    
+    def trace(func):
+      @wraps(func)
+      def wrapper(*args, **kwargs):
+        ...
+      return wrapper
+    
+    @trace
+    def fibonacci(n):
+      ...
+    ```
+  
+  * Decorators in Python are syntax to allow one function to modify another function as runtime
