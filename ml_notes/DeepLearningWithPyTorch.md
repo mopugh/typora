@@ -166,14 +166,14 @@ _, indices = torch.sort(out, descending=True)
 ![image-20201103060152908](figures/image-20201103060152908.png)
 
 * Example: A network that turns horses into zebras
-
+  
   ```python
   netG = ResNetGenerator() # resnet architecture with random weights
   model_path = ... # path to model weights stored as a pickle file .pth
   model_data = torch.load(model_path) # load 
   netG.load_state_dict(model_data) # load parameters into model
   ```
-
+  
   * Can use `transforms.ToPILImage()(tensor)` to go from output to image format
 
 ### A pretrained network that describes scenes
@@ -183,9 +183,9 @@ _, indices = torch.sort(out, descending=True)
 * network trained on images paired with descriptive sentence
 
 * to run the NeuralTalk2 model
-
+  
   * place images in the `data` directory of the cloned repository and then run the script:
-
+    
     ```python
     python eval.py --model ./data/FC/fc-model.pth --infos_path ./data/FC/fc-infos.pkl --image_folder ./data
     ```
@@ -193,11 +193,11 @@ _, indices = torch.sort(out, descending=True)
 ### Torch Hub
 
 * Torch Hub is a mechanism through which authors can publish a model on Github, with or without trained pretrained weights, and expose it through an interface that PyTorch understands. 
-
+  
   * Look at `hubconf.py` to find entry-point
 
 * Example:
-
+  
   ```python
   import torch
   from torch import hub
@@ -206,13 +206,15 @@ _, indices = torch.sort(out, descending=True)
                            'resnet18',
                            pretrained=True)
   ```
-
+  
   * First line is the name and branch of the GitHub repo
   * Second line is the entry-point function
   * Third line is keyword argument (found from `hubconf.py`)
 
 * Torch Hub will not install missing dependencies, but it will report them
+
 * Entry points are suppose to return models, but do not have to.
+
 * Find models on Torch Hub by googling "GitHub hubconf.py"
 
 ### Summary
@@ -236,7 +238,7 @@ _, indices = torch.sort(out, descending=True)
 * Deep learning learns in stages. The output of the stages are intermediate representations
 
 * Tensors are a generalization of vectors and matrices to an arbitrary number of dimensions (i.e. a multidimensional array)
-
+  
   ![image-20201103070037183](figures/image-20201103070037183.png)
 
 ### Tensors: Multidimensional arrays
@@ -249,30 +251,30 @@ _, indices = torch.sort(out, descending=True)
 ### Named tensors
 
 * Can give names to dimensions
-
+  
   `weights_named = torch.tensor([0.2126, 0.7152, 0.0722], names=['channels'])`
 
 * Can add names to dimensions of an existing tensor
-
+  
   ```python
   img_named = img_t.refine_names(..., 'channels', 'rows', 'columns')
   batch_named = batch_t.refine_names(..., 'channels', 'rows', 'columns')
   ```
 
 * When doing operations, PyTorch will check name of dimensions as well
-
+  
   * It does not automatically align dimensions
-
+  
   * `align_as` returns a tensor with missing dimensions added and existing ones permuted to the right order
-
+    
     `weights_aligned = weights_named.align_as(img_named)` 
 
 * Functions accepting dimension arguments can also take named dimensions
-
+  
   `gray_named = (img_named * weights_aligned).sum('channels')`
 
 * If we want to used named tensors outside functions that operate on named tensors, need to drop the names by renaming them to `None`
-
+  
   `gray_plain = gray_named.rename(None)`
 
 ### Tensor element types
@@ -288,7 +290,7 @@ _, indices = torch.sort(out, descending=True)
 
 `dtype` in the tensor constructor specifies the type of data the tensor holds:
 
-*  `torch.float32` or `torch.float`
+* `torch.float32` or `torch.float`
 * `torch.float64` of `torch.double`
 * `torch.float16` or `torch.half`
 * `torch.int8`
@@ -311,7 +313,7 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 #### Managing a tensor's dtype attribute
 
 * Specify in constructor
-
+  
   ```python
   double_points = torch.ones(10, 2, dtype=torch.double)
   short_points = torch.tensor([[1,2], [3,4]], dtype=torch.short)
@@ -320,7 +322,7 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 * Can get `dtype` by accessing the attribute: `short_points.dtype`
 
 * Can cast: `double_points = torch.zeros(10, 2).double()`
-
+  
   * Also use `to` method: `double_points = torch.zeros(10, 2).to(torch.double)`
 
 * When mixing input types in operations, the inputs are converted to the large type automatically
@@ -328,7 +330,7 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 ### The tensor API
 
 * A vast majority of operations on an between tensors are available in the `torch` module or can be called as a method of the tensor object
-
+  
   ```python
   a = torch.ones(3,2)
   a_t = torch.transpose(a, 0, 1)
@@ -340,12 +342,12 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 ### Tensors: Scenic views of storage
 
 * Values in tensors are allocated in contiguous chunks of memory managed by `torch.Storage` 
-
+  
   * Storage is a one-dimensional contiguous array of numerical data.
   * Use offset and per-dimension strides to index
 
 * Multiple tensors can index the same storage even if they index into the data differently
-
+  
   ![image-20201103203850438](figures/image-20201103203850438.png)
 
 #### Indexing into storage
@@ -357,7 +359,7 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 #### Modifying stored values: In-place operations
 
 * Methods ending in an underscore operate in-place rather than return a new tensor
-
+  
   ```python
   a = torch.ones(3,2)
   a.zero_() # zeros out the tensor
@@ -366,11 +368,11 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 ### Tensor metadata: Size, offset, and stride
 
 * To index into storage, tensors rely on:
-
+  
   * size: a tuple indicating how many elements are in each dimension
   * offset: offset to first element of tensor
   * stride: a tuple indicating how many elements in storage need to be skipped over to obtain the next element along each dimension
-
+  
   ![image-20201103204713907](figures/image-20201103204713907.png)
 
 #### Views of another tensor's storage
@@ -378,7 +380,7 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 * To access element `i`, `j` in a 2D tensor: `storage_offset + stride[0] * i + stride[1] * j` 
 
 * Changing a sub-tensor changes the original tensor
-
+  
   ```python
   points = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]])
   second_point = points[1]
@@ -389,9 +391,9 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 #### Transposing without copying
 
 * Transposing changes the strides.
-
+  
   * Does not allocate new memory
-
+  
   ```python
   points = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]])
   points_t = points.t() # transpose
@@ -399,37 +401,37 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
   assert(points.stride() == (2,1))
   assert(points_t.stride() == (1,2))
   ```
-
+  
   ![image-20201103205837663](figures/image-20201103205837663.png)
 
 #### Transposing in higher dimensions
 
 * Specify the two dimensions to transpose
-
+  
   ```
   some_t = torch.ones(3,4,5)
   transpose_t = some_t.transpose(0,2)
   ```
 
 * A tensor laid out in storage starting from the rightmost dimension onward (i.e. moving along rows in a 2D tensor) is defined as contiguous. 
-
+  
   * Contiguous tensors have better performance because there is less jumping around in memory (better memory locality)
 
 #### Contiguous tensors
 
 * Some operators in PyTorch only work on contiguous tensors
-
+  
   * E.g. `view`
 
 * Use `is_contiguous()` method on tensors
-
+  
   * E.g. `points.is_contiguous()`
 
 * Can get a new contiguous tensor from another tensor by using the `contiguous` method
-
+  
   * `points_t_cont = points_t.contiguous()`
   * does not hurt performance to call `contiguous()` on a tensor that is already contiguous
-
+  
   ![image-20201103210847422](figures/image-20201103210847422.png)
 
 ### Moving tensors to the GPU
@@ -439,17 +441,17 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
 #### Managing a tensor's device attribute
 
 * Can specify the `device` for a tensor
-
+  
   * `points_gpu = torch.tensor([[4.0, 1.0], [5.0, 3.0], [2.0, 1.0]], device='cuda')`
-
+  
   * `points_gpu = points.to(device='cuda')`
-
+  
   * These return a new tensor that has the same data but stored on a GPU.
-
+  
   * If more than one GPU, can specify the specific GPU using 0 based indexing
-
+    
     * `points_gpu = points.to(device='cuda:0')`
-
+    
     ```python
     points = 2 * points # CPU computation
     points_gpu = 2 * points.to(device='cuda') # GPU computation
@@ -461,48 +463,48 @@ Predicates on tensors produce `torch.bool`, such as `points > 1.0`
     points_gpu = points.cuda(0) # specify GPU
     points_gpu = points_gpu.cpu()
     ```
-
+    
     * Returned tensor on GPU stays on GPU
-
+  
   * Can change `dtype` and `device` using `to` method
 
 ### NumPy Interoperability
 
 * PyTorch has zero-copy interoperability with NumPy
-
+  
   * Due to Python buffer protocol: share underlying buffer
-
+  
   ```python
   points = torch.ones(3,4)
   points_np = points.numpy() # create numpy array from tensor
   points = torch.from_numpy(points_np) # convert from numpy array to tensor
   ```
-
+  
   * As long as tensor is on CPU, no cost
   * Modifying numpy array will modify the tensor
   * If the tensor is on the GPU, then it will create a numpy array copy on the CPU
 
 * PyTorch default is 32-bit floating point, while NumPy is 64-bit floating point
-
+  
   * Make sure tensors have `dtype=torch.float` after conversions
 
 ### Generalized tensors are tensors, too
 
 * Any implemention that meets the contract of the tensor API can be considered a tensor.
-
+  
   ![image-20201105063550598](figures/image-20201105063550598.png)
 
 ### Serializing tensors
 
 * PyTorch uses `pickle` to serialize tensor objects
-
+  
   ```python
   # Saving
   torch.save(points, '../data/p1ch3/ourpoints.t')
   # alternatively
   with open('../data/p1ch3/ourpoints.t', 'wb') as f:
     torch.save(points, f)
-    
+  
   # Loading
   points = torch.load('../data/p1ch3/ourpoints.t')
   # Alternatively
@@ -542,3 +544,8 @@ f.close() # invalidates dset
 
 ## Chapter 4: Real-world data represention using tensors
 
+Most notes in "Chapter4.ipynb"
+
+#### When to categorize
+
+![](/home/mopugh/Documents/typora/ml_notes/figures/2020-12-07-16-43-49-image.png)
