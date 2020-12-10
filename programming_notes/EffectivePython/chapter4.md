@@ -104,3 +104,150 @@ print(count) # Exception because loop variable didn't leak
 
 ## Item 31: Be Defensive When Iterating Over Arguments
 
+* An iterator produces its results only a single time.
+
+  * Iterate over an iterator or generator that has already raised a `StopIteration` exception, you will not get a result the second time
+  * will not get an error
+
+* If you want to iterate mulitple times, create a new container class that implements the **iterator protocol**
+
+  ```python
+  class ReadVisits:
+    def __init__(self, data_path):
+      self.data_path = data_path
+      
+    def __iter__(self):
+      with open(self.data_path) as f:
+        for line in f:
+          yield int(line)
+  ```
+
+* Beware of functions and methods that iterate over input arguments multiple times. 
+
+* Can detect if a value is an iterator if calling `iter` produces the same value. 
+
+  * Or can use `isinstance` built-in along with `collections.abc.Iterator` class
+
+## Item 32: Consider Generator Expressions for Large List Comprehensions
+
+* List comprehensions generate new lists and thus take up potentially a lot of memory
+
+* Consider **generator expressions** which evaluate to an iterator that yields one item at a time
+
+  ```python
+  it = (len(x) for x in open('my_file.txt'))
+  print(it)
+  
+  >>>
+  <generator object <genexpr> at 0x108993dd0>
+  
+  print(next(it))
+  print(next(it))
+  
+  >>>
+  100
+  57
+  ```
+
+* Can compose generator expressions
+
+  ```python
+  roots = ((x, x**0.5) for x in it)
+  ```
+
+## Item 33: Compose Multiple Generators with `yield from`
+
+* `yield from` allows you to yield all values from a nested generator before returning control to the parent generator.
+
+  ```python
+  import timeit
+  
+  def child():
+      for i in range(1_000_000):
+          yield i
+  
+  def slow():
+      for i in child():
+          yield i
+  
+  def fast():
+      yield from child()
+  
+  baseline = timeit.timeit(
+      stmt='for _ in slow(): pass',
+      globals=globals(),
+      number=50)
+  print(f'Manual nesting {baseline:.2f}s')
+  comparison = timeit.timeit(
+     stmt='for _ in fast(): pass',
+     globals=globals(),
+     number=50)
+  print(f'Composed nesting {comparison:.2f}s')
+  
+  reduction = -(comparison - baseline) / baseline
+  print(f'{reduction:.1%} less time')
+  
+  >>>
+  Manual nesting 4.02s
+  Composed nesting 3.47s
+  13.5% less time
+  ```
+
+* `yield from` allows you to compose multiple nested generators together into a single combined generator
+
+* `yield from` provides better performance than manually iterating nested generators and yielding their outputs.
+
+## Item 34: Avoid Injecting Data into Generators with `send`
+
+* `send` method can be used to provide streaming inputs to a generator at the same time it's yielding outputs.
+
+  ```python
+  def wave_modulating(steps):
+      step_size = 2 * math.pi / steps
+      amplitude = yield             # Receive initial amplitude
+      for step in range(steps):
+          radians = step * step_size
+          fraction = math.sin(radians)
+          output = amplitude * fraction
+          amplitude = yield output  # Receive next amplitude
+  
+  def run_modulating(it):
+      amplitudes = [
+          None, 7, 7, 7, 2, 2, 2, 2, 10, 10, 10, 10, 10]
+      for amplitude in amplitudes:
+          output = it.send(amplitude)
+          transmit(output)
+  
+  run_modulating(wave_modulating(12))
+  
+  >>>
+  Output is None
+  Output:   0.0
+  Output:   3.5
+  Output:   6.1
+  Output:   2.0
+  Output:   1.7
+  Output:   1.0
+  Output:   0.0
+  Output:  -5.0
+  Output:  -8.7
+  Output: -10.0
+  Output:  -8.7
+  Output:  -5.0
+  ```
+
+* providing an input iterator to a set of composed generators is a better approach than the `send` method, which should be avoided.
+
+  ```python
+  def wave_cascading(amplitude_it, steps):
+      step_size = 2 * math.pi / steps
+      for step in range(steps):
+          radians = step * step_size
+          fraction = math.sin(radians)
+          amplitude = next(amplitude_it) # Get next input
+          output = amplitude * fraction
+          yield output 
+  ```
+
+## Item 35: Avoid Causing State Transitions in Generators with `throw`
+
