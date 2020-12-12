@@ -1,5 +1,46 @@
 # Study Path
 
+## Path 12/11/20
+
+### AM
+
+- [ ] D2L/Deep Learning Without Ph.D./Deep Learning with PyTorch
+  
+  * Also Jax
+
+- [ ] Unsupervised/Generative Modeling
+  
+  * Berkeley Course
+  
+  * Generative Deep Learning Book
+- [ ] Probability
+  
+  - Harvard text
+  
+  - MacKay
+  
+  - Fat Chance
+
+- [ ] Mathematics for Machine Learning
+
+### PM
+
+- [ ] Mathematics for Computer Science
+
+- [ ] Algorithms
+  
+  * DasGupta
+  
+  * Erickson
+  
+  * Kleinberg
+  
+  * Open Data Structures
+
+- [ ] Competitive Programming/Programming
+
+
+
 ## Path 11/17/20
 
 ### AM
